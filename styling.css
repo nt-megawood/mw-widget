@@ -71,11 +71,37 @@
   object-fit: contain;
 }
 
+.header-icons {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--primary-red);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
 .header-icons span {
-  font-size: 18px;
-  color: #999;
-  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  background: var(--bg-white);
+  color: var(--primary-red);
+  font-size: 15px;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.header-icons span:first-child {
+  border-right: 1.5px solid var(--primary-red);
+}
+
+.header-icons span:hover {
+  background: var(--primary-red);
+  color: #fff;
 }
 
 /* Chat Bubble & Avatar */
