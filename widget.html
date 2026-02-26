@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chatbot Widget</title>
+  <link rel="stylesheet" href="styling.css">
+  <style>
+    body{margin:0;font-family:Arial, sans-serif}
+    .chatbot-container{width:100%;height:100vh;display:flex;flex-direction:column}
+    .header{background:#0b5;padding:8px;color:#fff}
+    .messages{flex:1;padding:10px;overflow:auto;background:#f9f9f9}
+    .input-row{display:flex;border-top:1px solid #ddd}
+    .input-row input{flex:1;padding:10px;border:0}
+    .input-row button{padding:10px;border:0;background:#007bff;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="chatbot-container" role="application">
+    <div class="header">Chatbot</div>
+    <div class="messages" id="messages">Willkommen! Dies ist das Chatbot-Fenster.</div>
+    <div class="input-row">
+      <input id="chat-input" placeholder="Nachricht...">
+      <button id="send">Senden</button>
+    </div>
+  </div>
+  <script>
+    document.getElementById('send').addEventListener('click', ()=>{
+      const input = document.getElementById('chat-input');
+      if(!input.value) return;
+      const msg = document.createElement('div');
+      msg.textContent = 'Du: ' + input.value;
+      document.getElementById('messages').appendChild(msg);
+      input.value='';
+    });
+  </script>
+</body>
+</html>

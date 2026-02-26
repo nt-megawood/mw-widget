@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot</title>
+  <link rel="stylesheet" href="styling.css">
+</head>
+<body>
+
+<!-- toggle bubble shown when chat is closed -->
+<div id="chat-toggle" class="chat-toggle">
+  💬
+</div>
+
+<div class="chat-container closed">
+  <div class="chat-header">
+    <img src="https://assets.planungswelten.de/wp-content/uploads/2022/03/08172642/megawood_logo.png" alt="megawood" class="logo-img">
+    <div class="header-icons">
+      <span>&#8634;</span> <span>&times;</span> </div>
+  </div>
+
+  <div class="chat-body">
+    <!-- initial bot greeting; will be replaced by script on first user message -->
+    <div class="message-wrapper bot initial">
+      <div class="bot-icon">🤖</div>
+      <div class="bubble">
+        <p>Wilkommen bei megawood®! 👋</p>
+        <p>Ich bin <b>Woody</b>, die megawood® KI...</p>
+        <p>Womit kann ich dir heute helfen?</p>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="chat-btn">Wie kannst du mir helfen?</button>
+      <button class="chat-btn"></button>
+      <button class="chat-btn"></button>
+      <button class="chat-btn"></button>
+    </div>
+  </div>
+
+  <div class="chat-footer">
+    <input id="chat-input" type="text" placeholder="Type your message...">
+    <button class="send-btn">➤</button>
+    <div class="footer-tools">
+      <span class="branding">KI-Unterstützung kann Fehler machen</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const chat = document.querySelector('.chat-container');
+  const toggle = document.getElementById('chat-toggle');
+  toggle.addEventListener('click', () => {
+    chat.classList.remove('closed');
+    toggle.classList.add('hidden');
+  });
+  // add a close icon handler
+  const closeIcon = document.querySelector('.header-icons span:last-child');
+  if (closeIcon) {
+    closeIcon.addEventListener('click', () => {
+      chat.classList.add('closed');
+      toggle.classList.remove('hidden');
+    });
+  }
+  // refresh button: first span resets the conversation
+  const refreshIcon = document.querySelector('.header-icons span:first-child');
+  if (refreshIcon) {
+    refreshIcon.addEventListener('click', () => {
+      // simply reload the page to reset state
+      window.location.reload();
+    });
+  }
+
+  // utility for bot replies: bubble with avatar icon
+  function addBotMessage(text) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'message-wrapper bot';
+    const icon = document.createElement('div');
+    icon.className = 'bot-icon';
+    icon.textContent = '🤖';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+    wrapper.appendChild(icon);
+    wrapper.appendChild(bubble);
+    document.querySelector('.chat-body').appendChild(wrapper);
+  }
+
+  // send button behavior: echo user message and optionally respond
+  const sendBtn = document.querySelector('.send-btn');
+  const input = document.getElementById('chat-input');
+  if (sendBtn && input) {
+    sendBtn.addEventListener('click', () => {
+      const text = input.value.trim();
+      if (!text) return;
+      // remove initial bot greeting if still present
+      const initMsg = document.querySelector('.chat-body .message-wrapper.bot.initial');
+      if (initMsg) {
+        initMsg.remove();
+        const btnGroup = document.querySelector('.button-group');
+        if (btnGroup) btnGroup.remove();
+      }
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message-wrapper user';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble user';
+      bubble.textContent = text;
+      wrapper.appendChild(bubble);
+      document.querySelector('.chat-body').appendChild(wrapper);
+      input.value = '';
+      // example bot response (can be replaced with real logic)
+      setTimeout(() => addBotMessage('Danke für deine Nachricht!'), 500);
+    });
+    // also send on enter
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+        e.preventDefault();
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
