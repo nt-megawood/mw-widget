@@ -16,7 +16,7 @@
     <img src="woody.jpg" alt="Woody" class="teaser-avatar">
     <span class="teaser-title" id="teaser-title">Willkommen bei megawood® 👋</span>
   </div>
-  <p class="teaser-text" id="teaser-text">Ich bin Woody, dein persönlicher KI-Assistent. Wie kann ich dir heute helfen?</p>
+  <p class="teaser-text" id="teaser-text">Ich bin Woody, dein persönlicher KI-Assistent. Du kannst mich jederzeit über den Button in der unteren rechten Ecke erreichen!</p>
 </div>
 
 <!-- toggle bubble shown when chat is closed -->
@@ -52,7 +52,7 @@
 
   <div class="chat-footer">
     <div class="chat-footer-input-row">
-      <input id="chat-input" type="text" placeholder="Stelle deine Frage...">
+      <textarea id="chat-input" rows="1" placeholder="Stelle deine Frage..."></textarea>
       <button class="send-btn">➤</button>
     </div>
     <div class="footer-tools">
@@ -165,15 +165,20 @@
       wrapper.appendChild(bubble);
       document.querySelector('.chat-body').appendChild(wrapper);
       input.value = '';
-      // example bot response (can be replaced with real logic)
+      input.style.height = 'auto';
       setTimeout(() => addBotMessage('Danke für deine Nachricht!'), 500);
     });
-    // also send on enter
+    // also send on enter (shift+enter = newline)
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.shiftKey) {
         sendBtn.click();
         e.preventDefault();
       }
+    });
+    // auto-grow textarea
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     });
   }
 </script>
