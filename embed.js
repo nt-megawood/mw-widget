@@ -1,35 +1,38 @@
 (function(){
   const script = document.currentScript;
-  const widgetUrl = (script && script.getAttribute('data-chatbot-url')) || 'https://nt-megawood.github.io/mw-widget/widget.html';
-  const position = (script && script.getAttribute('data-position')) || 'bottom-right';
-  const sizeW = (script && script.getAttribute('data-width')) || '350';
-  const sizeH = (script && script.getAttribute('data-height')) || '500';
+  // URL zur index.html des Chatbots (deine echte Version)
+  const widgetUrl = (script && script.getAttribute('data-chatbot-url')) || 'https://nt-megawood.github.io/mw-widget/index.html';
 
-  const container = document.createElement('div');
-  container.id = 'gh-chatbot-container';
-  container.className = position==='bottom-left' ? 'bottom-left' : 'bottom-right';
-
-  const css = document.createElement('style');
-  css.textContent = '\n#gh-chatbot-container{position:fixed;z-index:99999}\n#gh-chatbot-container.bottom-right{right:20px;bottom:20px}\n#gh-chatbot-container.bottom-left{left:20px;bottom:20px}\n#gh-chatbot-container iframe{border:0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.2)}\n#gh-chatbot-toggle{position:fixed;z-index:999999;border-radius:50%;width:56px;height:56px;border:0;background:#007bff;color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer}\n#gh-chatbot-toggle.bottom-right{right:20px;bottom:20px}\n#gh-chatbot-toggle.bottom-left{left:20px;bottom:20px}\n';
-
+  // Transparentes iframe — die index.html bringt ihren eigenen Toggle-Button mit
   const iframe = document.createElement('iframe');
   iframe.src = widgetUrl;
-  iframe.width = sizeW;
-  iframe.height = sizeH;
-  iframe.style.display = 'none';
+  iframe.id = 'gh-chatbot-iframe';
   iframe.title = 'Chatbot';
+  iframe.allowTransparency = true;
   iframe.loading = 'lazy';
+  iframe.setAttribute('frameborder', '0');
+  iframe.setAttribute('scrolling', 'no');
 
-  const toggle = document.createElement('button');
-  toggle.id = 'gh-chatbot-toggle';
-  toggle.className = container.className;
-  toggle.innerHTML = '&#128172;';
-  toggle.addEventListener('click', ()=>{
-    iframe.style.display = iframe.style.display === 'none' ? 'block' : 'none';
-  });
+  const css = document.createElement('style');
+  css.textContent = [
+    '#gh-chatbot-iframe{',
+    '  position:fixed;',
+    '  bottom:0;',
+    '  right:0;',
+    '  width:480px;',
+    '  height:720px;',
+    '  border:none;',
+    '  background:transparent;',
+    '  z-index:999999;',
+    '  pointer-events:none;',  // iframe selbst nicht klickbar, Inhalte schon (s.u.)
+    '}'
+  ].join('\n');
 
-  container.appendChild(iframe);
   document.head.appendChild(css);
-  document.body.appendChild(container);
-  document.body.appendChild(toggle);
+  document.body.appendChild(iframe);
+
+  // pointer-events nach Laden aktivieren, damit Klicks im iframe funktionieren
+  iframe.addEventListener('load', function(){
+    iframe.style.pointerEvents = 'auto';
+  });
 })();
