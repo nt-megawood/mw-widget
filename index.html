@@ -35,18 +35,23 @@
     <!-- initial bot greeting; will be replaced by script on first user message -->
     <div class="message-wrapper bot initial">
       <div class="bot-icon"><img src="woody.jpg" alt="Woody"></div>
-      <div class="bubble">
-        <p>Wilkommen bei megawood®! 👋</p>
-        <p>Ich bin <b>Woody</b>, die megawood® KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
-        <p>Womit kann ich dir heute helfen?</p>
+      <div class="bot-bubble-col">
+        <div class="bubble">
+          <p>Wilkommen bei megawood&#174;! &#128075;</p>
+          <p>Ich bin <b>Woody</b>, die megawood&#174; KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
+          <p>Womit kann ich dir heute helfen?</p>
+        </div>
+        <div class="bot-meta">
+          <span class="meta-time" id="initial-time"></span>
+          <span class="meta-brand">Erstellt von megawood KI</span>
+        </div>
       </div>
     </div>
 
     <div class="button-group">
-      <button class="chat-btn">Wie kannst du mir helfen?</button>
-      <button class="chat-btn" disabled>Händlersuche</button>
-      <button class="chat-btn" disabled></button>
-      <button class="chat-btn" disabled></button>
+      <button class="chat-btn" data-message="Was kannst du alles für mich tun?">Wie kannst du mir helfen?</button>
+      <button class="chat-btn" data-message="Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.">Informationen zu den megawood&#174; Dielen</button>
+      <button class="chat-btn" data-message="Ich suche einen Händler in meiner Nähe.">Händlersuche</button>
     </div>
   </div>
 
@@ -83,6 +88,10 @@
     document.querySelector('.teaser-close').addEventListener('click', hideTeaser);
   }
 
+  // set time on initial greeting
+  const initTimeEl = document.getElementById('initial-time');
+  if (initTimeEl) initTimeEl.textContent = currentTime();
+
   // --- Chat toggle ---
   const chat = document.querySelector('.chat-container');
   const toggle = document.getElementById('chat-toggle');
@@ -110,17 +119,22 @@
       chatBody.insertAdjacentHTML('afterbegin', `
         <div class="message-wrapper bot initial">
           <div class="bot-icon"><img src="woody.jpg" alt="Woody"></div>
-          <div class="bubble">
-            <p>Wilkommen bei megawood®! 👋</p>
-            <p>Ich bin <b>Woody</b>, die megawood® KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
-            <p>Womit kann ich dir heute helfen?</p>
+          <div class="bot-bubble-col">
+            <div class="bubble">
+              <p>Wilkommen bei megawood&#174;! &#128075;</p>
+              <p>Ich bin <b>Woody</b>, die megawood&#174; KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
+              <p>Womit kann ich dir heute helfen?</p>
+            </div>
+            <div class="bot-meta">
+              <span class="meta-time">${currentTime()}</span>
+              <span class="meta-brand">Erstellt von megawood KI</span>
+            </div>
           </div>
         </div>
         <div class="button-group">
-          <button class="chat-btn">Wie kannst du mir helfen?</button>
-          <button class="chat-btn" disabled>Händlersuche</button>
-          <button class="chat-btn" disabled></button>
-          <button class="chat-btn" disabled></button>
+            <button class="chat-btn" data-message="Was kannst du alles für mich tun?">Wie kannst du mir helfen?</button>
+            <button class="chat-btn" data-message="Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.">Informationen zu den megawood&#174; Dielen</button>
+            <button class="chat-btn" data-message="Ich suche einen Händler in meiner Nähe.">Händlersuche</button>
         </div>
       `);
       // clear input field
@@ -129,6 +143,28 @@
   }
 
   // utility for bot replies: bubble with avatar icon
+  function currentTime() {
+    return new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+  }
+
+  function makeBotMeta(text) {
+    const meta = document.createElement('div');
+    meta.className = 'bot-meta';
+    meta.innerHTML = `
+      <button class="copy-btn" title="Kopieren"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+      <span class="meta-time">${currentTime()}</span>
+      <span class="meta-brand">Erstellt von megawood KI</span>
+    `;
+    meta.querySelector('.copy-btn').addEventListener('click', () => {
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = meta.querySelector('.copy-btn');
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => { btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; }, 1500);
+      });
+    });
+    return meta;
+  }
+
   function addBotMessage(text) {
     const wrapper = document.createElement('div');
     wrapper.className = 'message-wrapper bot';
@@ -139,34 +175,51 @@
     bubble.className = 'bubble';
     bubble.textContent = text;
     wrapper.appendChild(icon);
-    wrapper.appendChild(bubble);
+    const right = document.createElement('div');
+    right.className = 'bot-bubble-col';
+    right.appendChild(bubble);
+    right.appendChild(makeBotMeta(text));
+    wrapper.appendChild(right);
     document.querySelector('.chat-body').appendChild(wrapper);
   }
 
   // send button behavior: echo user message and optionally respond
   const sendBtn = document.querySelector('.send-btn');
   const input = document.getElementById('chat-input');
+
+  function sendUserMessage(text) {
+    if (!text) return;
+    // remove initial greeting + buttons if still present
+    const initMsg = document.querySelector('.chat-body .message-wrapper.bot.initial');
+    if (initMsg) {
+      initMsg.remove();
+      const btnGroup = document.querySelector('.button-group');
+      if (btnGroup) btnGroup.remove();
+    }
+    const wrapper = document.createElement('div');
+    wrapper.className = 'message-wrapper user';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble user';
+    bubble.textContent = text;
+    wrapper.appendChild(bubble);
+    document.querySelector('.chat-body').appendChild(wrapper);
+    // example bot response (can be replaced with real logic)
+    setTimeout(() => addBotMessage('Danke für deine Nachricht!'), 500);
+  }
+
+  // click on quick-reply buttons (event delegation — works after reset too)
+  document.querySelector('.chat-body').addEventListener('click', (e) => {
+    const btn = e.target.closest('.chat-btn:not([disabled])');
+    if (!btn) return;
+    sendUserMessage(btn.dataset.message || btn.textContent.trim());
+  });
+
   if (sendBtn && input) {
     sendBtn.addEventListener('click', () => {
       const text = input.value.trim();
-      if (!text) return;
-      // remove initial bot greeting if still present
-      const initMsg = document.querySelector('.chat-body .message-wrapper.bot.initial');
-      if (initMsg) {
-        initMsg.remove();
-        const btnGroup = document.querySelector('.button-group');
-        if (btnGroup) btnGroup.remove();
-      }
-      const wrapper = document.createElement('div');
-      wrapper.className = 'message-wrapper user';
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble user';
-      bubble.textContent = text;
-      wrapper.appendChild(bubble);
-      document.querySelector('.chat-body').appendChild(wrapper);
+      sendUserMessage(text);
       input.value = '';
       input.style.height = 'auto';
-      setTimeout(() => addBotMessage('Danke für deine Nachricht!'), 500);
     });
     // also send on enter (shift+enter = newline)
     input.addEventListener('keydown', (e) => {
