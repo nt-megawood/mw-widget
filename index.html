@@ -9,9 +9,19 @@
 </head>
 <body>
 
+<!-- teaser popup shown after delay if chat is still closed -->
+<div id="chat-teaser" class="chat-teaser hidden">
+  <button class="teaser-close">&times;</button>
+  <div class="teaser-header">
+    <img src="woody.jpg" alt="Woody" class="teaser-avatar">
+    <span class="teaser-title" id="teaser-title">Willkommen bei megawood® 👋</span>
+  </div>
+  <p class="teaser-text" id="teaser-text">Ich bin Woody, dein persönlicher KI-Assistent. Wie kann ich dir heute helfen?</p>
+</div>
+
 <!-- toggle bubble shown when chat is closed -->
 <div id="chat-toggle" class="chat-toggle">
-  💬
+  <img src="woody.jpg" alt="Woody" class="toggle-img">
 </div>
 
 <div class="chat-container closed">
@@ -24,7 +34,7 @@
   <div class="chat-body">
     <!-- initial bot greeting; will be replaced by script on first user message -->
     <div class="message-wrapper bot initial">
-      <div class="bot-icon">🤖</div>
+      <div class="bot-icon"><img src="woody.jpg" alt="Woody"></div>
       <div class="bubble">
         <p>Wilkommen bei megawood®! 👋</p>
         <p>Ich bin <b>Woody</b>, die megawood® KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
@@ -42,7 +52,7 @@
 
   <div class="chat-footer">
     <div class="chat-footer-input-row">
-      <input id="chat-input" type="text" placeholder="Type your message...">
+      <input id="chat-input" type="text" placeholder="Stelle deine Frage...">
       <button class="send-btn">➤</button>
     </div>
     <div class="footer-tools">
@@ -52,11 +62,34 @@
 </div>
 
 <script>
+  // --- Teaser logic ---
+  const params = new URLSearchParams(window.location.search);
+  const teaserEnabled = params.get('teaser') === '1';
+  const teaserEl = document.getElementById('chat-teaser');
+  if (params.get('teaser-title')) document.getElementById('teaser-title').textContent = params.get('teaser-title');
+  if (params.get('teaser-text'))  document.getElementById('teaser-text').textContent  = params.get('teaser-text');
+
+  function hideTeaser() {
+    teaserEl.classList.add('hidden');
+  }
+
+  if (teaserEnabled) {
+    setTimeout(() => {
+      // only show if chat is still closed
+      if (document.querySelector('.chat-container.closed')) {
+        teaserEl.classList.remove('hidden');
+      }
+    }, 10000);
+    document.querySelector('.teaser-close').addEventListener('click', hideTeaser);
+  }
+
+  // --- Chat toggle ---
   const chat = document.querySelector('.chat-container');
   const toggle = document.getElementById('chat-toggle');
   toggle.addEventListener('click', () => {
     chat.classList.remove('closed');
     toggle.classList.add('hidden');
+    hideTeaser();
   });
   // add a close icon handler
   const closeIcon = document.querySelector('.header-icons span:last-child');
@@ -76,7 +109,7 @@
       // restore initial greeting
       chatBody.insertAdjacentHTML('afterbegin', `
         <div class="message-wrapper bot initial">
-          <div class="bot-icon">🤖</div>
+          <div class="bot-icon"><img src="woody.jpg" alt="Woody"></div>
           <div class="bubble">
             <p>Wilkommen bei megawood®! 👋</p>
             <p>Ich bin <b>Woody</b>, die megawood® KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
@@ -101,7 +134,7 @@
     wrapper.className = 'message-wrapper bot';
     const icon = document.createElement('div');
     icon.className = 'bot-icon';
-    icon.textContent = '🤖';
+    icon.innerHTML = '<img src="woody.jpg" alt="Woody">';
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
     bubble.textContent = text;

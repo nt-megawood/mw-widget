@@ -31,6 +31,71 @@
   transform: translateY(20px);
 }
 
+/* Teaser popup */
+.chat-teaser {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 260px;
+  background: var(--bg-white);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  padding: 14px 16px 12px;
+  z-index: 1099;
+  transition: opacity 0.25s, transform 0.25s;
+  transform: translateY(0);
+}
+
+.chat-teaser.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+
+.teaser-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.teaser-close:hover { color: #333; }
+
+.teaser-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  margin-right: 16px;
+}
+
+.teaser-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.teaser-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.teaser-text {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
 /* Toggle bubble */
 .chat-toggle {
   position: fixed;
@@ -46,8 +111,14 @@
   box-shadow: 0 4px 12px var(--shadow-light);
   cursor: pointer;
   z-index: 1100;
-  color: white;
-  font-size: 28px;
+  overflow: hidden;
+}
+
+.toggle-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .chat-toggle.hidden {
@@ -143,15 +214,21 @@
 
 /* small icon bubble for bot messages */
 .bot-icon {
-  width: 28px;
-  height: 28px;
-  background: var(--primary-red);
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 16px;
+}
+
+.bot-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .bubble.user {

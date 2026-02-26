@@ -3,9 +3,24 @@
   // URL zur index.html des Chatbots (deine echte Version)
   const widgetUrl = (script && script.getAttribute('data-chatbot-url')) || 'https://nt-megawood.github.io/mw-widget/index.html';
 
+  // Teaser-Optionen aus data-Attributen lesen
+  const teaserEnabled = (script && script.getAttribute('data-teaser')) === 'true';
+  const teaserTitle   = (script && script.getAttribute('data-teaser-title')) || '';
+  const teaserText    = (script && script.getAttribute('data-teaser-text'))  || '';
+
+  // Query-Params an widget-URL anhängen
+  let finalUrl = widgetUrl;
+  if (teaserEnabled) {
+    const sep = widgetUrl.includes('?') ? '&' : '?';
+    const parts = ['teaser=1'];
+    if (teaserTitle) parts.push('teaser-title=' + encodeURIComponent(teaserTitle));
+    if (teaserText)  parts.push('teaser-text='  + encodeURIComponent(teaserText));
+    finalUrl = widgetUrl + sep + parts.join('&');
+  }
+
   // Transparentes iframe — die index.html bringt ihren eigenen Toggle-Button mit
   const iframe = document.createElement('iframe');
-  iframe.src = widgetUrl;
+  iframe.src = finalUrl;
   iframe.id = 'gh-chatbot-iframe';
   iframe.title = 'Chatbot';
   iframe.allowTransparency = true;
