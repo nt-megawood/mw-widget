@@ -193,7 +193,9 @@
   max-width: 100%;
 }
 
-.copy-btn {
+.thumb-btn,
+.copy-btn,
+.speak-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -204,7 +206,12 @@
   user-select: none;
   transition: color 0.15s;
 }
-.copy-btn:hover { color: var(--primary-red); }
+.thumb-btn:hover,
+.copy-btn:hover,
+.speak-btn:hover { color: var(--primary-red); }
+
+.thumb-btn.active { color: var(--primary-red); }
+.speak-btn.active { color: var(--primary-red); }
 
 .meta-time {
   font-size: 11px;
@@ -230,6 +237,7 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
   padding: 14px 16px 12px;
   font-size: 13px;
+  font-family: inherit;
   color: #555;
   line-height: 1.5;
   max-width: 240px;
@@ -249,7 +257,7 @@
   font-size: 11px;
   color: #aaa;
   text-align: right;
-  font-style: italic;
+  font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: flex-end;

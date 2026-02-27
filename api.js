@@ -1,4 +1,4 @@
-const API_URL = 'https://mw-chatbot-backend.vercel.app/chat';
+const API_URL = 'http://localhost:8000/chat';
 
 /**
  * Send a message to the chatbot API.
