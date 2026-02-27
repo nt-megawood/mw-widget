@@ -238,6 +238,30 @@ document.querySelector('.chat-body').addEventListener('click', (e) => {
   sendUserMessage(btn.dataset.message || btn.textContent.trim());
 });
 
+// Brand popup: show on .meta-brand click
+const brandPopup = document.getElementById('brand-popup');
+document.addEventListener('click', (e) => {
+  const brand = e.target.closest('.meta-brand');
+  if (brand) {
+    e.stopPropagation();
+    // temporarily make visible to measure height
+    brandPopup.style.visibility = 'hidden';
+    brandPopup.classList.remove('hidden');
+    const popupH = brandPopup.offsetHeight;
+    const popupW = brandPopup.offsetWidth;
+    brandPopup.style.visibility = '';
+    const rect = brand.getBoundingClientRect();
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - popupW - 8));
+    const topAbove = rect.top - popupH - 8;
+    brandPopup.style.left = left + 'px';
+    brandPopup.style.top = (topAbove < 8 ? rect.bottom + 8 : topAbove) + 'px';
+    return;
+  }
+  if (!brandPopup.classList.contains('hidden') && !brandPopup.contains(e.target)) {
+    brandPopup.classList.add('hidden');
+  }
+});
+
 if (sendBtn && input) {
   sendBtn.addEventListener('click', () => {
     const text = input.value.trim();

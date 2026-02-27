@@ -214,6 +214,52 @@
 .meta-brand {
   font-size: 11px;
   color: #bbb;
+  cursor: pointer;
+  user-select: none;
+}
+.meta-brand:hover {
+  color: #999;
+  text-decoration: underline;
+}
+
+/* Brand info popup */
+.brand-popup {
+  position: fixed;
+  background: var(--bg-white);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  padding: 14px 16px 12px;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+  max-width: 240px;
+  z-index: 2000;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.brand-popup p {
+  margin: 0;
+}
+.brand-popup.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+}
+.brand-popup-footer {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #aaa;
+  text-align: right;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+.brand-popup-footer img {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* Chat Bubble & Avatar */
