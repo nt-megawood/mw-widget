@@ -175,6 +175,47 @@
   color: #fff;
 }
 
+.bot-bubble-col {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.bot-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding-left: 2px;
+}
+
+.bot-bubble-col .bubble {
+  max-width: 100%;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  color: #999;
+  line-height: 1;
+  user-select: none;
+  transition: color 0.15s;
+}
+.copy-btn:hover { color: var(--primary-red); }
+
+.meta-time {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.meta-brand {
+  font-size: 11px;
+  color: #bbb;
+}
+
 /* Chat Bubble & Avatar */
 .chat-body {
   flex: 1;
@@ -331,4 +372,92 @@
 }
 .footer-tools .branding {
   text-align: center;
+}
+
+/* Sources block below bot bubble */
+.bot-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #f5f5f5;
+  border-left: 3px solid var(--primary-red);
+  border-radius: 0 8px 8px 0;
+  max-width: 100%;
+}
+
+.sources-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.bot-sources a {
+  font-size: 12px;
+  color: var(--primary-red);
+  text-decoration: none;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.bot-sources a:hover {
+  text-decoration: underline;
+}
+
+/* Rendered markdown inside bot bubbles */
+.bubble p { margin: 0 0 8px; }
+.bubble p:last-child { margin-bottom: 0; }
+.bubble ul { margin: 4px 0 8px 0; padding-left: 18px; }
+.bubble li { margin-bottom: 4px; line-height: 1.4; }
+
+/* Thinking / loading indicator */
+.thinking-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 2px 0;
+}
+
+.thinking-text {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-style: italic;
+  color: #c0c0c0;
+  user-select: none;
+}
+
+.thinking-label {
+  transition: opacity 0.35s ease;
+}
+
+.thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 1px;
+}
+
+.thinking-dots span {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c8c8c8;
+  animation: thinking-dot 1.5s infinite ease-in-out;
+}
+
+.thinking-dots span:nth-child(1) { animation-delay: 0s; }
+.thinking-dots span:nth-child(2) { animation-delay: 0.25s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.5s; }
+
+@keyframes thinking-dot {
+  0%, 100% { opacity: 0.2; transform: translateY(0); }
+  50%       { opacity: 1;   transform: translateY(-3px); }
 }
