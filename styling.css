@@ -44,6 +44,12 @@
 .chat-container.pos-bottom-right {
   top: auto; bottom: 20px; left: auto; right: 20px; transform: translateY(0);
 }
+.chat-container.pos-middle-left {
+  top: 50%; bottom: auto; left: 20px; right: auto; transform: translateY(-50%);
+}
+.chat-container.pos-middle-right {
+  top: 50%; bottom: auto; left: auto; right: 20px; transform: translateY(-50%);
+}
 
 .chat-container.closed {
   opacity: 0;
@@ -83,6 +89,12 @@
 }
 .chat-teaser.pos-bottom-right {
   top: auto; bottom: 100px; left: auto; right: 20px; transform: translateY(0);
+}
+.chat-teaser.pos-middle-left {
+  top: 50%; bottom: auto; left: 20px; right: auto; transform: translateY(-50%);
+}
+.chat-teaser.pos-middle-right {
+  top: 50%; bottom: auto; left: auto; right: 20px; transform: translateY(-50%);
 }
 
 .chat-teaser.hidden {
@@ -170,7 +182,9 @@
 .chat-toggle.pos-top-right    { top: 30px;  right: 30px;              bottom: auto; left: auto; }
 .chat-toggle.pos-bottom-left  { bottom: 30px; left: 30px;             top: auto;    right: auto; }
 .chat-toggle.pos-bottom-center{ bottom: 30px; left: 50%; right: auto; top: auto;    transform: translateX(-50%); }
-.chat-toggle.pos-bottom-right { bottom: 30px; right: 30px;            top: auto;    left: auto; }
+.chat-toggle.pos-bottom-right  { bottom: 30px; right: 30px;            top: auto;    left: auto; }
+.chat-toggle.pos-middle-left   { top: 50%; left: 30px;   bottom: auto; right: auto;  transform: translateY(-50%); }
+.chat-toggle.pos-middle-right  { top: 50%; right: 30px;  bottom: auto; left: auto;   transform: translateY(-50%); }
 
 /* Header */
 .chat-header {

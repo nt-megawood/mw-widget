@@ -31,6 +31,8 @@ Das Widget kann an 6 verschiedenen Positionen angezeigt werden. Nutze das `data-
 - `bottom-right` (Standard) - Unten rechts
 - `bottom-left` - Unten links
 - `bottom-center` - Unten Mitte
+- `middle-right` - Mitte rechts
+- `middle-left` - Mitte links
 - `top-right` - Oben rechts
 - `top-left` - Oben links
 - `top-center` - Oben Mitte
@@ -68,7 +70,7 @@ Zeige einen Willkommens-Popup nach 10 Sekunden, wenn der Chat noch geschlossen i
 ### Attribute
 
 - `data-chatbot-url` - URL zum Chat-Widget (erforderlich)
-- `data-position` - Position des Widgets: `bottom-right`, `bottom-left`, `bottom-center`, `top-right`, `top-left`, `top-center` (default: `bottom-right`)
+- `data-position` - Position des Widgets: `bottom-right`, `bottom-left`, `bottom-center`, `middle-right`, `middle-left`, `top-right`, `top-left`, `top-center` (default: `bottom-right`)
 - `data-teaser` - Teaser anzeigen? (`true`/`false`, default: `false`)
 - `data-teaser-title` - Teaser-Überschrift
 - `data-teaser-text` - Teaser-Text

@@ -39,6 +39,8 @@
     'top-left':      'top:0;left:0;bottom:auto;right:auto;',
     'top-center':    'top:0;left:calc(50% - 240px);bottom:auto;right:auto;',
     'top-right':     'top:0;right:0;bottom:auto;left:auto;',
+    'middle-left':   'top:calc(50% - 360px);left:0;bottom:auto;right:auto;',
+    'middle-right':  'top:calc(50% - 360px);right:0;bottom:auto;left:auto;',
     'bottom-left':   'bottom:0;left:0;top:auto;right:auto;',
     'bottom-center': 'bottom:0;left:calc(50% - 240px);top:auto;right:auto;',
     'bottom-right':  'bottom:0;right:0;top:auto;left:auto;'
