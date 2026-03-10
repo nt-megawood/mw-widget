@@ -3,6 +3,9 @@
   // URL zur index.html des Chatbots (deine echte Version)
   const widgetUrl = (script && script.getAttribute('data-chatbot-url')) || 'https://nt-megawood.github.io/mw-widget/index.html';
 
+  // Position aus data-Attributen lesen (default: bottom-right)
+  const position = (script && script.getAttribute('data-position')) || 'bottom-right';
+
   // Teaser-Optionen aus data-Attributen lesen
   const teaserEnabled = (script && script.getAttribute('data-teaser')) === 'true';
   const teaserTitle   = (script && script.getAttribute('data-teaser-title')) || '';
@@ -10,13 +13,15 @@
 
   // Query-Params an widget-URL anhängen
   let finalUrl = widgetUrl;
-  if (teaserEnabled) {
-    const sep = widgetUrl.includes('?') ? '&' : '?';
-    const parts = ['teaser=1'];
-    if (teaserTitle) parts.push('teaser-title=' + encodeURIComponent(teaserTitle));
-    if (teaserText)  parts.push('teaser-text='  + encodeURIComponent(teaserText));
-    finalUrl = widgetUrl + sep + parts.join('&');
-  }
+  const sep = widgetUrl.includes('?') ? '&' : '?';
+  const params = [];
+  
+  if (teaserEnabled) params.push('teaser=1');
+  params.push('position=' + encodeURIComponent(position));
+  if (teaserTitle) params.push('teaser-title=' + encodeURIComponent(teaserTitle));
+  if (teaserText) params.push('teaser-text=' + encodeURIComponent(teaserText));
+  
+  finalUrl = widgetUrl + sep + params.join('&');
 
   // Transparentes iframe — die index.html bringt ihren eigenen Toggle-Button mit
   const iframe = document.createElement('iframe');
@@ -29,17 +34,28 @@
   iframe.setAttribute('scrolling', 'no');
 
   const css = document.createElement('style');
+
+  const iframePositions = {
+    'top-left':      'top:0;left:0;bottom:auto;right:auto;',
+    'top-center':    'top:0;left:calc(50% - 240px);bottom:auto;right:auto;',
+    'top-right':     'top:0;right:0;bottom:auto;left:auto;',
+    'bottom-left':   'bottom:0;left:0;top:auto;right:auto;',
+    'bottom-center': 'bottom:0;left:calc(50% - 240px);top:auto;right:auto;',
+    'bottom-right':  'bottom:0;right:0;top:auto;left:auto;'
+  };
+
+  const posStyle = iframePositions[position] || iframePositions['bottom-right'];
+
   css.textContent = [
     '#gh-chatbot-iframe{',
     '  position:fixed;',
-    '  bottom:0;',
-    '  right:0;',
+    '  ' + posStyle,
     '  width:480px;',
     '  height:720px;',
     '  border:none;',
     '  background:transparent;',
-    '  z-index:999999;',
-    '  pointer-events:none;',  // iframe selbst nicht klickbar, Inhalte schon (s.u.)
+    '  z-index:999998;',
+    '  pointer-events:none;',
     '}'
   ].join('\n');
 

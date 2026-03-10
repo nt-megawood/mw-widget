@@ -2,6 +2,29 @@
 const params = new URLSearchParams(window.location.search);
 const teaserEnabled = params.get('teaser') === '1';
 const teaserEl = document.getElementById('chat-teaser');
+const position = params.get('position') || 'bottom-right';
+const positionClass = 'pos-' + position;
+
+// Apply position classes to chat container, toggle and teaser
+const chatContainer = document.querySelector('.chat-container');
+const chatTeaser = document.getElementById('chat-teaser');
+const chatToggle = document.getElementById('chat-toggle');
+
+console.log('Chatbot position:', position, 'class:', positionClass);
+
+if (chatContainer) {
+  chatContainer.classList.add(positionClass);
+  console.log('Applied class to chat-container:', positionClass);
+}
+if (chatTeaser) {
+  chatTeaser.classList.add(positionClass);
+  console.log('Applied class to teaser:', positionClass);
+}
+if (chatToggle) {
+  chatToggle.classList.add(positionClass);
+  console.log('Applied class to chat-toggle:', positionClass);
+}
+
 if (params.get('teaser-title')) document.getElementById('teaser-title').textContent = params.get('teaser-title');
 if (params.get('teaser-text'))  document.getElementById('teaser-text').textContent  = params.get('teaser-text');
 
