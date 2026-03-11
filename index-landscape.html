@@ -16,7 +16,7 @@
     <img src="woody.jpg" alt="Woody" class="teaser-avatar">
     <span class="teaser-title" id="teaser-title">Willkommen bei megawood® 👋</span>
   </div>
-  <p class="teaser-text" id="teaser-text">Ich bin Woody, dein persönlicher KI-Assistent. Du kannst mich jederzeit über den Button auf der rechten Seite erreichen!</p>
+  <p class="teaser-text" id="teaser-text">Ich bin Handwerker Woody, dein persönlicher KI-Assistent. Du kannst mich jederzeit über den Button auf der linken Seite erreichen!</p>
 </div>
 
 <div id="chat-toggle" class="chat-toggle">
@@ -39,8 +39,8 @@
           <div class="bot-bubble-col">
             <div class="bubble">
               <p>Willkommen bei megawood&#174;! &#128075;</p>
-              <p>Ich bin <b>Woody</b>, die megawood&#174; KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
-              <p>Womit kann ich dir heute helfen?</p>
+              <p>Ich bin <b>Handwerker Woody</b>, dein persönlicher KI-Assistent! Du kannst mir alle Fragen zu unseren Produkten stellen oder eine Planung mit mir erstellen.</p>
+              <p>Lass uns gleich mit der Planung beginnen!</p>
             </div>
             <div class="bot-meta">
               <span class="meta-time" id="initial-time"></span>
@@ -53,6 +53,8 @@
           <button class="chat-btn" data-message="Was kannst du alles für mich tun?">Wie kannst du mir helfen?</button>
           <button class="chat-btn" data-message="Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.">Informationen zu den megawood&#174; Dielen</button>
           <button class="chat-btn" data-message="Ich suche einen Händler in meiner Nähe.">Händlersuche</button>
+          <button class="chat-btn" data-message="Ich möchte eine neue Planung erstellen.">Neue Planung erstellen</button>
+          <button class="chat-btn" data-message="Ich brauche Hilfe bei meiner aktuellen Planung.">Vorhandene Planung nutzen</button>
         </div>
       </div>
 
@@ -83,6 +85,7 @@
   <div class="brand-popup-footer"><img src="woody.jpg" alt="Woody"> megawood KI</div>
 </div>
 
+<script>window.CHATBOT_API_URL = 'https://mw-chatbot-backend.vercel.app/terrassenplaner/chat';</script>
 <script src="api.js"></script>
 <script src="script.js"></script>
 

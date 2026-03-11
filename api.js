@@ -1,4 +1,4 @@
-const API_URL = 'https://mw-chatbot-backend.vercel.app/chat';
+const API_URL = window.CHATBOT_API_URL || 'https://mw-chatbot-backend.vercel.app/chat';
 
 /**
  * Send a message to the chatbot API.
