@@ -69,13 +69,19 @@
       </div>
     </div>
 
-    <aside class="chat-side-menu" aria-label="Zusatzfunktionen">
-      <h3>Features</h3>
-      <div class="side-menu-card">
-        <strong>Reserviert</strong>
-        <p>Hier können später Selects, Produktfilter oder weitere Aktionen ergänzt werden.</p>
+    <aside class="chat-side-menu" aria-label="Planung bearbeiten">
+      <h3>Planung bearbeiten</h3>
+      <div class="side-menu-card planning-card">
+        <label class="planning-label" for="planning-code-input">Planungscode</label>
+        <div class="planning-code-row">
+          <input id="planning-code-input" class="planning-input" type="text" placeholder="z.B. mgw150823" autocomplete="off">
+          <button id="planning-load-btn" class="side-menu-btn side-menu-btn-primary" type="button">Laden</button>
+        </div>
+        <p class="planning-hint">Sobald der Chat eine Planung erstellt hat, wird der Code hier automatisch erkannt.</p>
+        <p id="planning-status" class="planning-status" aria-live="polite"></p>
       </div>
-      <button class="side-menu-btn" type="button" disabled>Bald verfügbar</button>
+
+      <div id="planning-editor" class="side-menu-card planning-editor hidden" aria-live="polite"></div>
     </aside>
   </div>
 </div>

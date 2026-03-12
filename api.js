@@ -1,4 +1,6 @@
 const API_URL = window.CHATBOT_API_URL || 'https://mw-chatbot-backend.vercel.app/chat';
+const TERRACE_LOAD_URL = 'https://betaplaner.megawood.com/api/terrassedaten/ladeDaten';
+const TERRACE_SAVE_URL = 'https://betaplaner.megawood.com/api/terrassedaten/speichereDaten';
 
 /**
  * Send a message to the chatbot API.
@@ -20,4 +22,81 @@ async function sendMessage(message) {
   }
 
   return response.json();
+}
+
+function appendFormValue(formData, key, value) {
+  if (value === undefined || value === null) return;
+  if (typeof value === 'string') {
+    formData.append(key, value);
+    return;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    formData.append(key, String(value));
+    return;
+  }
+  if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+    // The planner API expects JSON-like fields as serialized JSON strings.
+    formData.append(key, JSON.stringify(value));
+    return;
+  }
+  formData.append(key, String(value));
+}
+
+/**
+ * Load terrace planner data by plan code.
+ * @param {string} terraceCode
+ * @returns {Promise<object>}
+ */
+async function loadTerracePlanData(terraceCode) {
+  const cleanedCode = String(terraceCode || '').trim();
+  if (!cleanedCode) throw new Error('Bitte einen gueltigen Planungscode angeben.');
+
+  const formData = new FormData();
+  appendFormValue(formData, 'terrassencode', cleanedCode);
+
+  const response = await fetch(TERRACE_LOAD_URL, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    throw new Error(`Planungsdaten konnten nicht geladen werden (${response.status}).`);
+  }
+
+  const result = await response.json();
+  if (!result || !result.terrassencode) {
+    throw new Error('Die Planer-API hat keine gueltigen Daten zurueckgegeben.');
+  }
+  return result;
+}
+
+/**
+ * Save a terrace planner payload and return the API response.
+ * @param {object} payload
+ * @returns {Promise<object>}
+ */
+async function saveTerracePlanData(payload) {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Ungueltige Planungsdaten zum Speichern.');
+  }
+
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    appendFormValue(formData, key, value);
+  });
+
+  const response = await fetch(TERRACE_SAVE_URL, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    throw new Error(`Planung konnte nicht gespeichert werden (${response.status}).`);
+  }
+
+  const result = await response.json();
+  if (!result || !result.terrassencode) {
+    throw new Error('Die Planer-API hat keinen Planungscode zurueckgegeben.');
+  }
+  return result;
 }
