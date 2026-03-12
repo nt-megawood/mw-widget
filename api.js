@@ -8,7 +8,10 @@ const API_URL = window.CHATBOT_API_URL || 'https://mw-chatbot-backend.vercel.app
 async function sendMessage(message) {
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer 42vombj8mp9an8jv5evp3vfup8izma7oh9yxma4tp9b6anemudxb2ei3bw2koiqyx7umnp55w3rodpp79k6izp27wchm2u2vjvviwwvqxqgb2j859c4dk2g4s6k7wpct'
+    },
     body: JSON.stringify({ message })
   });
 
