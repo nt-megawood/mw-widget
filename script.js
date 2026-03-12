@@ -50,6 +50,17 @@ const originalChatBodyHTML = chatBody ? chatBody.innerHTML : '';
 const initTimeEl = document.getElementById('initial-time');
 if (initTimeEl) initTimeEl.textContent = currentTime();
 
+// chat session counter to disregard out-of-band responses
+let chatSessionId = 0;
+
+function removeInitialGreeting() {
+  const chatBody = document.querySelector('.chat-body');
+  const initMsg = chatBody && chatBody.querySelector('.message-wrapper.bot.initial');
+  if (initMsg) initMsg.remove();
+  const btnGroup = chatBody && chatBody.querySelector('.button-group');
+  if (btnGroup) btnGroup.remove();
+}
+
 // --- Landscape planning editor ---
 const planningUi = {
   codeInput: document.getElementById('planning-code-input'),
@@ -439,6 +450,7 @@ async function loadPlanningByCode(terraceCode, options = {}) {
     renderPlanningEditor(payload);
     setPlanningStatus('Planungsdaten erfolgreich geladen.', 'success');
     if (announceInChat) {
+      removeInitialGreeting();
       addBotMessage(buildPlanningSummaryMessage(payload));
     }
   } catch (err) {
@@ -488,6 +500,7 @@ function initPlanningEditor() {
 
   planningUi.loadBtn.addEventListener('click', () => {
     loadPlanningByCode(planningUi.codeInput.value, { announceInChat: true });
+    chatSessionId += 1; // new context when loading manually
   });
 
   planningUi.codeInput.addEventListener('keydown', (e) => {
@@ -546,6 +559,8 @@ if (refreshIcon) {
       if (initTimeEl2) initTimeEl2.textContent = currentTime();
     }
     resetPlanningEditor();
+    // bump session id: ignore any inflight responses
+    chatSessionId += 1;
   });
 }
 
@@ -711,13 +726,8 @@ const input = document.getElementById('chat-input');
 
 function sendUserMessage(text) {
   if (!text) return;
-  // remove initial greeting + buttons if still present
-  const initMsg = document.querySelector('.chat-body .message-wrapper.bot.initial');
-  if (initMsg) {
-    initMsg.remove();
-    const btnGroup = document.querySelector('.button-group');
-    if (btnGroup) btnGroup.remove();
-  }
+  removeInitialGreeting();
+  const mySession = chatSessionId;
   const wrapper = document.createElement('div');
   wrapper.className = 'message-wrapper user';
   const bubble = document.createElement('div');
@@ -735,8 +745,10 @@ function sendUserMessage(text) {
   // call the real API
   sendMessage(text)
     .then(({ answer, sources }) => {
+      if (mySession !== chatSessionId) return; // outdated response
       removeIndicator();
       syncPlanningCodeFromAnswer(answer);
+      removeInitialGreeting();
       addBotMessage(answer, sources);
     })
     .catch(err => {
