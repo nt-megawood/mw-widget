@@ -42,6 +42,10 @@ if (teaserEnabled) {
   document.querySelector('.teaser-close').addEventListener('click', hideTeaser);
 }
 
+// remember original chat body HTML so we can reset later
+const chatBody = document.querySelector('.chat-body');
+const originalChatBodyHTML = chatBody ? chatBody.innerHTML : '';
+
 // set time on initial greeting
 const initTimeEl = document.getElementById('initial-time');
 if (initTimeEl) initTimeEl.textContent = currentTime();
@@ -534,32 +538,13 @@ const refreshIcon = document.querySelector('.header-icons span:first-child');
 if (refreshIcon) {
   refreshIcon.addEventListener('click', () => {
     const chatBody = document.querySelector('.chat-body');
-    // remove all messages and button groups added during the session
-    chatBody.querySelectorAll('.message-wrapper, .button-group').forEach(el => el.remove());
-    // restore initial greeting
-    chatBody.insertAdjacentHTML('afterbegin', `
-      <div class="message-wrapper bot initial">
-        <div class="bot-icon"><img src="woody.jpg" alt="Woody"></div>
-        <div class="bot-bubble-col">
-          <div class="bubble">
-            <p>Willkommen bei megawood&#174;! &#128075;</p>
-            <p>Ich bin <b>Woody</b>, die megawood&#174; KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
-            <p>Womit kann ich dir heute helfen?</p>
-          </div>
-          <div class="bot-meta">
-            <span class="meta-time">${currentTime()}</span>
-            <span class="meta-brand">Erstellt von megawood KI</span>
-          </div>
-        </div>
-      </div>
-      <div class="button-group">
-          <button class="chat-btn" data-message="Was kannst du alles für mich tun?">Wie kannst du mir helfen?</button>
-          <button class="chat-btn" data-message="Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.">Informationen zu den megawood&#174; Dielen</button>
-          <button class="chat-btn" data-message="Ich suche einen Händler in meiner Nähe.">Händlersuche</button>
-      </div>
-    `);
-    // clear input field
-    document.getElementById('chat-input').value = '';
+    if (chatBody) {
+      // restore original markup
+      chatBody.innerHTML = originalChatBodyHTML;
+      // reset timestamp if present
+      const initTimeEl2 = document.getElementById('initial-time');
+      if (initTimeEl2) initTimeEl2.textContent = currentTime();
+    }
     resetPlanningEditor();
   });
 }
