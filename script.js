@@ -598,6 +598,8 @@ if (closeIcon) {
       deleteConversation(conversationId);
       conversationId = null;
     }
+    // bump session id: ignore any inflight responses from the old conversation
+    chatSessionId += 1;
     chat.classList.add('closed');
     toggle.classList.remove('hidden');
   });
