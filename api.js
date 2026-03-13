@@ -11,7 +11,7 @@ const TERRACE_SAVE_URL = 'https://betaplaner.megawood.com/api/terrassedaten/spei
  * Send a message to the chatbot API.
  * @param {string} message
  * @param {string|null} conversationId - existing conversation ID, or null for first message
- * @returns {Promise<{ answer: string, sources: string[], conversation_id: string }>}
+ * @returns {Promise<{ answer: string, sources: string[], conversation_id?: string }>}
  */
 async function sendMessage(message, conversationId) {
   const body = { message };
