@@ -53,6 +53,22 @@ if (initTimeEl) initTimeEl.textContent = currentTime();
 // chat session counter to disregard out-of-band responses
 let chatSessionId = 0;
 
+// active conversation ID (null until the first message is sent)
+let conversationId = null;
+
+// Generate a random UUID for conversation tracking
+function generateConversationId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback for environments without crypto.randomUUID
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 function removeInitialGreeting() {
   const chatBody = document.querySelector('.chat-body');
   const initMsg = chatBody && chatBody.querySelector('.message-wrapper.bot.initial');
@@ -542,6 +558,10 @@ toggle.addEventListener('click', () => {
 const closeIcon = document.querySelector('.header-icons span:last-child');
 if (closeIcon) {
   closeIcon.addEventListener('click', () => {
+    if (conversationId) {
+      deleteConversation(conversationId);
+      conversationId = null;
+    }
     chat.classList.add('closed');
     toggle.classList.remove('hidden');
   });
@@ -550,6 +570,10 @@ if (closeIcon) {
 const refreshIcon = document.querySelector('.header-icons span:first-child');
 if (refreshIcon) {
   refreshIcon.addEventListener('click', () => {
+    if (conversationId) {
+      deleteConversation(conversationId);
+      conversationId = null;
+    }
     const chatBody = document.querySelector('.chat-body');
     if (chatBody) {
       // restore original markup
@@ -727,7 +751,12 @@ const input = document.getElementById('chat-input');
 function sendUserMessage(text) {
   if (!text) return;
   removeInitialGreeting();
+  // Generate a conversation ID on the very first message of a session
+  if (!conversationId) {
+    conversationId = generateConversationId();
+  }
   const mySession = chatSessionId;
+  const myConversationId = conversationId;
   const wrapper = document.createElement('div');
   wrapper.className = 'message-wrapper user';
   const bubble = document.createElement('div');
@@ -742,10 +771,12 @@ function sendUserMessage(text) {
 
   // show thinking indicator while waiting for response
   const removeIndicator = showThinkingIndicator();
-  // call the real API
-  sendMessage(text)
-    .then(({ answer, sources }) => {
+  // call the real API with the active conversation ID
+  sendMessage(text, myConversationId)
+    .then(({ answer, sources, conversation_id }) => {
       if (mySession !== chatSessionId) return; // outdated response
+      // Keep conversation ID in sync with whatever the backend returns
+      if (conversation_id) conversationId = conversation_id;
       removeIndicator();
       syncPlanningCodeFromAnswer(answer);
       removeInitialGreeting();
