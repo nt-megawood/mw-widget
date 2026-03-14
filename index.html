@@ -1,80 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chatbot</title>
-  <link rel="stylesheet" href="styling.css">
-  <style>html,body{background:transparent!important;margin:0;padding:0}</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>megawood® Chat Widget</title>
 </head>
 <body>
-
-<!-- teaser popup shown after delay if chat is still closed -->
-<div id="chat-teaser" class="chat-teaser hidden">
-  <button class="teaser-close">&times;</button>
-  <div class="teaser-header">
-    <img src="woody.jpg" alt="Woody" class="teaser-avatar">
-    <span class="teaser-title" id="teaser-title">Willkommen bei megawood® 👋</span>
-  </div>
-  <p class="teaser-text" id="teaser-text">Ich bin Woody, dein persönlicher KI-Assistent. Du kannst mich jederzeit über den Button in der unteren rechten Ecke erreichen!</p>
-</div>
-
-<!-- toggle bubble shown when chat is closed -->
-<div id="chat-toggle" class="chat-toggle">
-  <img src="woody.jpg" alt="Woody" class="toggle-img">
-</div>
-
-<div class="chat-container closed">
-  <div class="chat-header">
-    <img src="https://assets.planungswelten.de/wp-content/uploads/2022/03/08172642/megawood_logo.png" alt="megawood" class="logo-img">
-    <div class="header-icons">
-      <span>&#8634;</span> <span>&times;</span> </div>
-  </div>
-
-  <div class="chat-body">
-    <!-- initial bot greeting; will be replaced by script on first user message -->
-    <div class="message-wrapper bot initial">
-      <div class="bot-icon"><img src="woody.jpg" alt="Woody"></div>
-      <div class="bot-bubble-col">
-        <div class="bubble">
-          <p>Willkommen bei megawood&#174;! &#128075;</p>
-          <p>Ich bin <b>Woody</b>, die megawood&#174; KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
-          <p>Womit kann ich dir heute helfen?</p>
-        </div>
-        <div class="bot-meta">
-          <span class="meta-time" id="initial-time"></span>
-          <span class="meta-brand">Erstellt von megawood KI</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="button-group">
-      <button class="chat-btn" data-message="Was kannst du alles für mich tun?">Wie kannst du mir helfen?</button>
-      <button class="chat-btn" data-message="Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.">Informationen zu den megawood&#174; Dielen</button>
-      <button class="chat-btn" data-message="Ich suche einen Händler in meiner Nähe.">Händlersuche</button>
-    </div>
-  </div>
-
-  <div class="chat-footer">
-    <div class="chat-footer-input-row">
-      <textarea id="chat-input" rows="1" placeholder="Stelle deine Frage..."></textarea>
-      <button class="send-btn">➤</button>
-    </div>
-    <div class="footer-tools">
-      <span class="branding">KI-Unterstützung kann Fehler machen.</span>
-      <span class="conversation-id" id="conversation-id">Kontext-ID: –</span>
-    </div>
-  </div>
-</div>
-
-<!-- Brand info popup (shown on .meta-brand click) -->
-<div id="brand-popup" class="brand-popup hidden">
-  <p>Ich bin ein KI-gestützter Assistent und helfe dir bei Fragen rund um megawood&#174;. Meine Antworten werden automatisch generiert &ndash; ich bin daher möglicherweise nicht immer 100&nbsp;% korrekt. Bitte überprüfe wichtige Informationen.</p>
-  <div class="brand-popup-footer"><img src="woody.jpg" alt="Woody"> megawood KI</div>
-</div>
-
-<script src="api.js"></script>
-<script src="script.js"></script>
-
+  <div id="root"></div>
+  <script type="module" src="/src/classic/main.tsx"></script>
 </body>
 </html>
