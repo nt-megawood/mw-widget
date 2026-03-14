@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { loadTerracePlanData, saveTerracePlanData } from '../../services/api';
 import type { TerracePlanData } from '../../types';
-import { DIELEN_PRODUCTS, COLORS, PROFIL_OPTIONS, UK_OPTIONS, SHAPE_LABELS } from './planningData';
+import {
+  DIELEN_VARIANTS, DIELEN_COLORS, PLANNING_FORM_FIELDS, SHAPE_LABELS, PROFIL_OPTIONS, UK_OPTIONS,
+  normalizePlanningForm, parseGroesseValue, toPositiveNumber,
+} from './planningData';
 import type { ShapeVariant } from './planningData';
+
+const DEFAULT_DIELEN_ID = 5;
+const DEFAULT_FARBE_ID = 37;
+
+interface DimensionValues {
+  [key: string]: string;
+}
 
 interface PlanningEditorProps {
   onPlanningCodeDetected?: (code: string) => void;
@@ -11,124 +21,263 @@ interface PlanningEditorProps {
 
 export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) => {
   const [planningCode, setPlanningCode] = useState(detectedCode || '');
-  const [planData, setPlanData] = useState<TerracePlanData | null>(null);
+  const [loadedPayload, setLoadedPayload] = useState<TerracePlanData | null>(null);
+  const [selectedForm, setSelectedForm] = useState<ShapeVariant>('rechteck');
+  const [dimensionValues, setDimensionValues] = useState<DimensionValues>({});
+  const [selectedDielenId, setSelectedDielenId] = useState(DEFAULT_DIELEN_ID);
+  const [selectedFarbeId, setSelectedFarbeId] = useState(DEFAULT_FARBE_ID);
+  const [selectedProfil, setSelectedProfil] = useState('bronze');
+  const [selectedUK, setSelectedUK] = useState('standard');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [selectedShape, setSelectedShape] = useState<ShapeVariant>('rechteck');
-  const [selectedDielen, setSelectedDielen] = useState(DIELEN_PRODUCTS[0].id);
-  const [selectedColor, setSelectedColor] = useState(COLORS[0]);
-  const [selectedProfil, setSelectedProfil] = useState(PROFIL_OPTIONS[0]);
-  const [selectedUK, setSelectedUK] = useState(UK_OPTIONS[0]);
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | ''; message: string }>({ type: '', message: '' });
 
-  const handleLoad = async () => {
-    if (!planningCode.trim()) {
-      setStatus({ type: 'error', message: 'Bitte gib einen Planungscode ein.' });
-      return;
-    }
-    setIsLoading(true);
-    setStatus(null);
-    try {
-      const data = await loadTerracePlanData(planningCode.trim());
-      setPlanData(data);
-      if (data.terrasse?.grundform) {
-        setSelectedShape(data.terrasse.grundform as ShapeVariant);
-      }
-      setStatus({ type: 'success', message: 'Planung erfolgreich geladen.' });
-    } catch (error) {
-      setStatus({ type: 'error', message: 'Fehler beim Laden der Planung.' });
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+  const setStatusMsg = (message: string, type: 'success' | 'error' | '' = '') =>
+    setStatus({ type, message });
+
+  const getAvailableColors = (dielenId: number) =>
+    DIELEN_VARIANTS[dielenId]?.colors ?? DIELEN_VARIANTS[5].colors;
+
+  const handleDielenChange = (newDielenId: number) => {
+    setSelectedDielenId(newDielenId);
+    const colors = getAvailableColors(newDielenId);
+    if (!colors.includes(selectedFarbeId)) {
+      setSelectedFarbeId(colors[0] ?? 1);
     }
   };
 
-  const handleSave = async () => {
-    if (!planData) return;
-    setIsSaving(true);
-    setStatus(null);
+  const handleDimensionChange = (key: string, value: string) => {
+    setDimensionValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleFormChange = (newForm: ShapeVariant) => {
+    setSelectedForm(newForm);
+  };
+
+  const handleLoad = useCallback(async () => {
+    const code = planningCode.trim();
+    if (!code) {
+      setStatusMsg('Bitte zuerst einen Planungscode eingeben.', 'error');
+      return;
+    }
+    setIsLoading(true);
+    setStatusMsg('Planungsdaten werden geladen ...');
     try {
-      const updatedData = {
-        ...planData,
-        terrasse: { ...planData.terrasse, grundform: selectedShape },
-        dielen: { ...planData.dielen, art: selectedDielen, farbe: selectedColor, profil: selectedProfil },
-        unterkonstruktion: { art: selectedUK },
-      };
-      const result = await saveTerracePlanData(updatedData);
-      setStatus({ type: 'success', message: `Gespeichert! Code: ${result.terrassencode}` });
-    } catch (error) {
-      setStatus({ type: 'error', message: 'Fehler beim Speichern der Planung.' });
-      console.error(error);
+      const payload = await loadTerracePlanData(code);
+      setLoadedPayload(payload);
+      const form = normalizePlanningForm(payload.form);
+      const groesse = parseGroesseValue(payload.groesse);
+      const fields = PLANNING_FORM_FIELDS[form] || [];
+      const dims: DimensionValues = {};
+      fields.forEach((f) => { dims[f.key] = String(groesse[f.key] ?? ''); });
+      const dielenId = Number(payload.dielenId || DEFAULT_DIELEN_ID);
+      const farbeId = Number(payload.dielenFarbeId || DEFAULT_FARBE_ID);
+      setSelectedForm(form);
+      setDimensionValues(dims);
+      setSelectedDielenId(dielenId);
+      setSelectedFarbeId(farbeId);
+      setSelectedProfil(String(payload.profil || 'bronze'));
+      setSelectedUK(String(payload.uk || 'standard'));
+      if (payload.terrassencode) setPlanningCode(payload.terrassencode);
+      setStatusMsg('Planungsdaten erfolgreich geladen.', 'success');
+    } catch (err) {
+      setStatusMsg((err as Error).message || 'Planung konnte nicht geladen werden.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [planningCode]);
+
+  const buildPayload = (): TerracePlanData => {
+    if (!loadedPayload) throw new Error('Es sind noch keine Planungsdaten geladen.');
+    const fields = PLANNING_FORM_FIELDS[selectedForm] || [];
+    const groesseObj: Record<string, number> = {};
+    for (const field of fields) {
+      const val = toPositiveNumber(dimensionValues[field.key]);
+      if (val === null) throw new Error(`Bitte '${field.label}' als Zahl größer 0 eingeben.`);
+      groesseObj[field.key] = val;
+    }
+    return {
+      ...loadedPayload,
+      terrassencode: planningCode.trim() || loadedPayload.terrassencode,
+      form: selectedForm,
+      groesse: JSON.stringify(groesseObj),
+      dielenId: String(selectedDielenId),
+      dielenFarbeId: String(selectedFarbeId),
+      profil: selectedProfil,
+      uk: selectedUK,
+      language: String(loadedPayload.language || 'de'),
+      _tempSave: String(loadedPayload._tempSave || 'false'),
+    };
+  };
+
+  const handleSave = async () => {
+    if (!loadedPayload) return;
+    setIsSaving(true);
+    setStatusMsg('Änderungen werden gespeichert ...');
+    try {
+      const payload = buildPayload();
+      const result = await saveTerracePlanData(payload);
+      const nextCode = result.terrassencode || String(payload.terrassencode || '');
+      if (nextCode) setPlanningCode(nextCode);
+      setStatusMsg(`Planung gespeichert. Aktueller Code: ${nextCode}`, 'success');
+      // reload to reflect server state
+      const reloaded = await loadTerracePlanData(nextCode);
+      setLoadedPayload(reloaded);
+    } catch (err) {
+      setStatusMsg((err as Error).message || 'Speichern fehlgeschlagen.', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
+  const fields = PLANNING_FORM_FIELDS[selectedForm] || [];
+  const availableColors = getAvailableColors(selectedDielenId);
+
   return (
-    <aside className="chat-side-menu">
+    <aside className="chat-side-menu" aria-label="Planung bearbeiten">
       <h3>Planung bearbeiten</h3>
-      <div className="planning-load-row">
-        <input
-          type="text"
-          className="planning-code-input"
-          placeholder="Planungscode eingeben…"
-          value={planningCode}
-          onChange={(e) => setPlanningCode(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleLoad()}
-        />
-        <button className="planning-load-btn" onClick={handleLoad} disabled={isLoading}>
-          {isLoading ? '…' : 'Laden'}
-        </button>
+      <div className="side-menu-card planning-card">
+        <label className="planning-label" htmlFor="planning-code-input">Planungscode</label>
+        <div className="planning-code-row">
+          <input
+            id="planning-code-input"
+            className="planning-input"
+            type="text"
+            placeholder="z.B. mgw150823"
+            autoComplete="off"
+            value={planningCode}
+            onChange={(e) => setPlanningCode(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLoad()}
+          />
+          <button
+            className="side-menu-btn side-menu-btn-primary"
+            type="button"
+            onClick={handleLoad}
+            disabled={isLoading}
+          >
+            {isLoading ? '…' : 'Laden'}
+          </button>
+        </div>
+        <p className="planning-hint">
+          Sobald der Chat eine Planung erstellt hat, wird der Code hier automatisch erkannt.
+        </p>
+        <p
+          className={`planning-status${status.type === 'error' ? ' is-error' : status.type === 'success' ? ' is-success' : ''}`}
+          aria-live="polite"
+        >
+          {status.message}
+        </p>
       </div>
 
-      {status && (
-        <p className={`planning-status ${status.type}`}>{status.message}</p>
-      )}
-
-      {planData && (
-        <div className="planning-form">
-          <div className="planning-field">
-            <label>Form</label>
-            <select value={selectedShape} onChange={(e) => setSelectedShape(e.target.value as ShapeVariant)}>
+      {loadedPayload && (
+        <div className="side-menu-card planning-editor" aria-live="polite">
+          <strong className="planning-editor-title">
+            Geladene Planung: {loadedPayload.terrassencode || planningCode}
+          </strong>
+          <div className="planning-form-grid">
+            <label className="planning-label" htmlFor="planning-form">Form</label>
+            <select
+              id="planning-form"
+              className="planning-input"
+              value={selectedForm}
+              onChange={(e) => handleFormChange(e.target.value as ShapeVariant)}
+            >
               {(Object.keys(SHAPE_LABELS) as ShapeVariant[]).map((shape) => (
                 <option key={shape} value={shape}>{SHAPE_LABELS[shape]}</option>
               ))}
             </select>
-          </div>
-          <div className="planning-field">
-            <label>Dielen</label>
-            <select value={selectedDielen} onChange={(e) => setSelectedDielen(e.target.value)}>
-              {DIELEN_PRODUCTS.map((product) => (
-                <option key={product.id} value={product.id}>{product.name}</option>
+
+            {fields.length > 0 && (
+              <div id="planning-dimensions" className="planning-dimensions-block">
+                {fields.map((field) => (
+                  <React.Fragment key={field.key}>
+                    <label className="planning-label" htmlFor={`planning-dim-${field.key}`}>
+                      {field.label}
+                    </label>
+                    <input
+                      id={`planning-dim-${field.key}`}
+                      className="planning-input"
+                      type="number"
+                      min="0.1"
+                      step="0.01"
+                      value={dimensionValues[field.key] ?? ''}
+                      onChange={(e) => handleDimensionChange(field.key, e.target.value)}
+                    />
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
+
+            <label className="planning-label" htmlFor="planning-dielen-id">Diele</label>
+            <select
+              id="planning-dielen-id"
+              className="planning-input"
+              value={selectedDielenId}
+              onChange={(e) => handleDielenChange(Number(e.target.value))}
+            >
+              {Object.entries(DIELEN_VARIANTS)
+                .sort((a, b) => Number(a[0]) - Number(b[0]))
+                .map(([id, variant]) => (
+                  <option key={id} value={id}>
+                    {variant.name} {variant.masse}
+                  </option>
+                ))}
+            </select>
+
+            <label className="planning-label" htmlFor="planning-dielen-farbe-id">Dielenfarbe</label>
+            <select
+              id="planning-dielen-farbe-id"
+              className="planning-input"
+              value={availableColors.includes(selectedFarbeId) ? selectedFarbeId : availableColors[0]}
+              onChange={(e) => setSelectedFarbeId(Number(e.target.value))}
+            >
+              {availableColors.map((colorId) => (
+                <option key={colorId} value={colorId}>
+                  {DIELEN_COLORS[colorId] ?? `Farbe ${colorId}`}
+                </option>
+              ))}
+            </select>
+
+            <label className="planning-label" htmlFor="planning-profil">Profil</label>
+            <select
+              id="planning-profil"
+              className="planning-input"
+              value={selectedProfil}
+              onChange={(e) => setSelectedProfil(e.target.value)}
+            >
+              {PROFIL_OPTIONS.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+
+            <label className="planning-label" htmlFor="planning-uk">UK</label>
+            <select
+              id="planning-uk"
+              className="planning-input"
+              value={selectedUK}
+              onChange={(e) => setSelectedUK(e.target.value)}
+            >
+              {UK_OPTIONS.map((u) => (
+                <option key={u.value} value={u.value}>{u.label}</option>
               ))}
             </select>
           </div>
-          <div className="planning-field">
-            <label>Farbe</label>
-            <select value={selectedColor} onChange={(e) => setSelectedColor(e.target.value)}>
-              {COLORS.map((color) => (
-                <option key={color} value={color}>{color}</option>
-              ))}
-            </select>
-          </div>
-          <div className="planning-field">
-            <label>Profil</label>
-            <select value={selectedProfil} onChange={(e) => setSelectedProfil(e.target.value)}>
-              {PROFIL_OPTIONS.map((profil) => (
-                <option key={profil} value={profil}>{profil}</option>
-              ))}
-            </select>
-          </div>
-          <div className="planning-field">
-            <label>Unterkonstruktion</label>
-            <select value={selectedUK} onChange={(e) => setSelectedUK(e.target.value)}>
-              {UK_OPTIONS.map((uk) => (
-                <option key={uk} value={uk}>{uk}</option>
-              ))}
-            </select>
-          </div>
-          <div className="planning-actions">
-            <button className="planning-save-btn" onClick={handleSave} disabled={isSaving}>
+
+          <div className="planning-actions-row">
+            <button
+              className="side-menu-btn"
+              type="button"
+              onClick={handleLoad}
+              disabled={isLoading}
+            >
+              Neu laden
+            </button>
+            <button
+              className="side-menu-btn side-menu-btn-primary"
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving || isLoading}
+            >
               {isSaving ? 'Wird gespeichert…' : 'Speichern'}
             </button>
           </div>

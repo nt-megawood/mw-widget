@@ -6,20 +6,15 @@ interface BrandPopupProps {
 
 export const BrandPopup: React.FC<BrandPopupProps> = ({ onClose }) => {
   return (
-    <div className="brand-popup-overlay" onClick={onClose}>
-      <div className="brand-popup" onClick={(e) => e.stopPropagation()}>
-        <button className="brand-popup-close" onClick={onClose}>&times;</button>
-        <h3>Über diesen Assistenten</h3>
-        <p>
-          Dieser KI-Assistent wird von megawood® bereitgestellt und von{' '}
-          <a href="https://www.neuetechnologie.de" target="_blank" rel="noopener noreferrer">
-            Neue Technologie GmbH
-          </a>{' '}
-          entwickelt.
-        </p>
-        <p className="brand-disclaimer">
-          KI-Assistenten können Fehler machen. Bitte überprüfe wichtige Informationen.
-        </p>
+    <div className="brand-popup" onClick={onClose} role="button" tabIndex={0}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}>
+      <p>
+        Ich bin ein KI-gestützter Assistent und helfe dir bei Fragen rund um megawood&#174;. Meine
+        Antworten werden automatisch generiert &ndash; ich bin daher möglicherweise nicht immer
+        100&nbsp;% korrekt. Bitte überprüfe wichtige Informationen.
+      </p>
+      <div className="brand-popup-footer">
+        <img src="/woody.jpg" alt="Woody" /> megawood KI
       </div>
     </div>
   );

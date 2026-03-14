@@ -39,14 +39,15 @@ export type Position = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
 export type ShapeVariant = 'rechteck' | 'lform' | 'uform' | 'oform';
 
 export interface TerracePlanData {
-  terrasse?: {
-    grundform?: string;
-    [key: string]: unknown;
-  };
-  dielen?: {
-    art?: string;
-    [key: string]: unknown;
-  };
+  terrassencode?: string;
+  form?: string;
+  groesse?: string;
+  dielenId?: string | number;
+  dielenFarbeId?: string | number;
+  profil?: string;
+  uk?: string;
+  language?: string;
+  _tempSave?: string;
   [key: string]: unknown;
 }
 

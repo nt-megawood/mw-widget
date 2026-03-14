@@ -4,12 +4,17 @@ import { BotMessage } from './Message/BotMessage';
 import { UserMessage } from './Message/UserMessage';
 import { ThinkingIndicator } from './Message/ThinkingIndicator';
 
+export interface QuickReply {
+  label: string;
+  message: string;
+}
+
 interface ChatBodyProps {
   messages: Message[];
   isThinking: boolean;
   thinkingText: string;
   initialGreeting: React.ReactNode;
-  quickReplies: string[];
+  quickReplies: QuickReply[];
   onQuickReply: (text: string) => void;
 }
 
@@ -33,8 +38,8 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
       {messages.length === 0 && quickReplies.length > 0 && (
         <div className="button-group">
           {quickReplies.map((reply, i) => (
-            <button key={i} className="quick-reply-btn" onClick={() => onQuickReply(reply)}>
-              {reply}
+            <button key={i} className="chat-btn" onClick={() => onQuickReply(reply.message)}>
+              {reply.label}
             </button>
           ))}
         </div>

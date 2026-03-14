@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatHeader } from '../ChatHeader';
 import { ChatBody } from '../ChatBody';
+import type { QuickReply } from '../ChatBody';
 import { ChatFooter } from '../ChatFooter';
 import { ChatTeaser } from '../ChatTeaser';
 import { ChatToggle } from '../ChatToggle';
@@ -17,29 +18,48 @@ interface ChatWidgetProps {
   children?: React.ReactNode;
 }
 
-const CLASSIC_QUICK_REPLIES = [
-  'Wie kannst du mir helfen?',
-  'Informationen zu den megawood® Dielen',
-  'Händlersuche',
+const CLASSIC_QUICK_REPLIES: QuickReply[] = [
+  { label: 'Wie kannst du mir helfen?', message: 'Was kannst du alles für mich tun?' },
+  { label: 'Informationen zu den megawood® Dielen', message: 'Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.' },
+  { label: 'Händlersuche', message: 'Ich suche einen Händler in meiner Nähe.' },
 ];
 
-const LANDSCAPE_QUICK_REPLIES = [
-  'Wie kannst du mir helfen?',
-  'Informationen zu den megawood® Dielen',
-  'Händlersuche',
-  'Neue Planung erstellen',
-  'Vorhandene Planung nutzen',
+const LANDSCAPE_QUICK_REPLIES: QuickReply[] = [
+  { label: 'Wie kannst du mir helfen?', message: 'Was kannst du alles für mich tun?' },
+  { label: 'Informationen zu den megawood® Dielen', message: 'Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.' },
+  { label: 'Händlersuche', message: 'Ich suche einen Händler in meiner Nähe.' },
+  { label: 'Neue Planung erstellen', message: 'Ich möchte eine neue Planung erstellen.' },
+  { label: 'Vorhandene Planung nutzen', message: 'Ich brauche Hilfe bei meiner aktuellen Planung.' },
 ];
 
-const INITIAL_GREETING = (
-  <div className="message-wrapper bot initial-greeting">
-    <div className="bubble bot-bubble">
-      <p><strong>Willkommen bei megawood®! 👋</strong></p>
-      <p>Ich bin Woody, die megawood® KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
-      <p>Womit kann ich dir heute helfen?</p>
+function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
+  const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  return (
+    <div className="message-wrapper bot initial">
+      <div className="bot-icon"><img src="/woody.jpg" alt="Woody" /></div>
+      <div className="bot-bubble-col">
+        <div className="bubble">
+          <p>Willkommen bei megawood&#174;! &#128075;</p>
+          {mode === 'landscape' ? (
+            <>
+              <p>Ich bin <b>Handwerker Woody</b>, dein persönlicher KI-Assistent! Du kannst mir alle Fragen zu unseren Produkten stellen oder eine Planung mit mir erstellen.</p>
+              <p>Lass uns gleich mit der Planung beginnen!</p>
+            </>
+          ) : (
+            <>
+              <p>Ich bin <b>Woody</b>, die megawood&#174; KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
+              <p>Womit kann ich dir heute helfen?</p>
+            </>
+          )}
+        </div>
+        <div className="bot-meta">
+          <span className="meta-time">{time}</span>
+          <span className="meta-brand">Erstellt von megawood KI</span>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -103,6 +123,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, childr
   const handleSend = (text: string) => sendMessage(text);
 
   const quickReplies = config.mode === 'landscape' ? LANDSCAPE_QUICK_REPLIES : CLASSIC_QUICK_REPLIES;
+  const posClass = `pos-${config.position}`;
+  const initialGreeting = <InitialGreeting mode={config.mode} />;
 
   return (
     <>
@@ -110,13 +132,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, childr
         <ChatTeaser
           title={config.teaser.title}
           text={config.teaser.text}
+          position={config.position}
           onClose={dismissTeaser}
           onOpen={handleOpen}
         />
       )}
-      {!isOpen && <ChatToggle onClick={handleOpen} />}
+      {!isOpen && <ChatToggle onClick={handleOpen} position={config.position} />}
       {isOpen && (
-        <div className={`chat-container ${config.mode === 'landscape' ? 'landscape-widget' : ''} ${config.position}`}>
+        <div className={`chat-container ${config.mode === 'landscape' ? 'landscape-widget' : ''} ${posClass}`}>
           {config.mode === 'landscape' ? (
             <div className="chat-layout">
               <div className="chat-main">
@@ -125,11 +148,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, childr
                   messages={messages}
                   isThinking={isThinking}
                   thinkingText={thinkingText}
-                  initialGreeting={INITIAL_GREETING}
+                  initialGreeting={initialGreeting}
                   quickReplies={quickReplies}
                   onQuickReply={handleSend}
                 />
-                <ChatFooter onSend={handleSend} disabled={isThinking} />
+                <ChatFooter onSend={handleSend} disabled={isThinking} conversationId={conversationId} />
               </div>
               {children}
             </div>
@@ -140,11 +163,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, childr
                 messages={messages}
                 isThinking={isThinking}
                 thinkingText={thinkingText}
-                initialGreeting={INITIAL_GREETING}
+                initialGreeting={initialGreeting}
                 quickReplies={quickReplies}
                 onQuickReply={handleSend}
               />
-              <ChatFooter onSend={handleSend} disabled={isThinking} />
+              <ChatFooter onSend={handleSend} disabled={isThinking} conversationId={conversationId} />
             </>
           )}
         </div>

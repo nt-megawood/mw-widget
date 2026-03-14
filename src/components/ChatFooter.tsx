@@ -3,9 +3,10 @@ import React, { useRef, useCallback } from 'react';
 interface ChatFooterProps {
   onSend: (text: string) => void;
   disabled?: boolean;
+  conversationId?: string | null;
 }
 
-export const ChatFooter: React.FC<ChatFooterProps> = ({ onSend, disabled }) => {
+export const ChatFooter: React.FC<ChatFooterProps> = ({ onSend, disabled, conversationId }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSend = useCallback(() => {
@@ -32,21 +33,26 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ onSend, disabled }) => {
 
   return (
     <div className="chat-footer">
-      <textarea
-        ref={textareaRef}
-        className="chat-input"
-        placeholder="Nachricht eingeben…"
-        rows={1}
-        onKeyDown={handleKeyDown}
-        onChange={handleInput}
-        disabled={disabled}
-        aria-label="Nachricht eingeben"
-      />
-      <button className="send-btn" onClick={handleSend} disabled={disabled} aria-label="Senden">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-        </svg>
-      </button>
+      <div className="chat-footer-input-row">
+        <textarea
+          ref={textareaRef}
+          rows={1}
+          placeholder="Stelle deine Frage..."
+          onKeyDown={handleKeyDown}
+          onChange={handleInput}
+          disabled={disabled}
+          aria-label="Nachricht eingeben"
+        />
+        <button className="send-btn" onClick={handleSend} disabled={disabled} aria-label="Senden">
+          ➤
+        </button>
+      </div>
+      <div className="footer-tools">
+        <span className="branding">KI-Unterstützung kann Fehler machen.</span>
+        <span className="conversation-id">
+          {conversationId ? `Kontext-ID: ${conversationId}` : 'Kontext-ID: –'}
+        </span>
+      </div>
     </div>
   );
 };

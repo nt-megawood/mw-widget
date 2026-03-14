@@ -6,16 +6,9 @@ interface UserMessageProps {
 }
 
 export const UserMessage: React.FC<UserMessageProps> = ({ message }) => {
-  const formattedTime = message.timestamp.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-
   return (
     <div className="message-wrapper user">
-      <div className="message-content">
-        <div className="bubble user-bubble">{message.text}</div>
-        <div className="user-meta">
-          <span className="meta-time">{formattedTime}</span>
-        </div>
-      </div>
+      <div className="bubble user">{message.text}</div>
     </div>
   );
 };
