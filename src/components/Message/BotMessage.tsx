@@ -82,10 +82,10 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message }) => {
         <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
         {message.sources && message.sources.length > 0 && (
           <div className="bot-sources">
-            <span className="sources-label">Quellen:</span>
-            {message.sources.map((source, i) => (
-              <a key={i} href={source.url} target="_blank" rel="noopener noreferrer">
-                {source.title}
+            <span className="sources-label">Quellen</span>
+            {message.sources.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                {url}
               </a>
             ))}
           </div>

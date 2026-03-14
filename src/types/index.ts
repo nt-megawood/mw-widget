@@ -7,10 +7,7 @@ export interface Message {
   sessionId?: string;
 }
 
-export interface Source {
-  title: string;
-  url: string;
-}
+export type Source = string;
 
 export interface ApiResponse {
   answer: string;

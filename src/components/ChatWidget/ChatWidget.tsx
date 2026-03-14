@@ -15,6 +15,7 @@ import type { WidgetConfig, ConversationHistoryItem } from '../../types';
 interface ChatWidgetProps {
   config: WidgetConfig;
   widgetId: string;
+  onPlanningCodeDetected?: (code: string) => void;
   children?: React.ReactNode;
 }
 
@@ -61,11 +62,11 @@ function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
   );
 }
 
-export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, children }) => {
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlanningCodeDetected, children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { conversationId, saveConversationId, clearConversation } = useConversation(widgetId);
   const { messages, isThinking, thinkingText, sendMessage, addBotMessage, clearMessages, restoreMessages } =
-    useChat(conversationId, saveConversationId);
+    useChat({ conversationId, onConversationIdChange: saveConversationId, onPlanningCodeDetected });
   const { isVisible: isTeaserVisible, dismiss: dismissTeaser } = useTeaser(
     config.teaser.show,
     isOpen

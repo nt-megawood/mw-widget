@@ -7,7 +7,7 @@ import '../styles/classic.css';
 function getTeaserConfig(): TeaserConfig {
   const params = new URLSearchParams(window.location.search);
   return {
-    show: params.get('teaser') === 'true',
+    show: params.get('teaser') === '1' || params.get('teaser') === 'true',
     title: params.get('teaser_title') || 'Willkommen bei megawood® 👋',
     text: params.get('teaser_text') || 'Ich bin Woody, dein persönlicher KI-Assistent für alles rund um megawood® Terrassendielen.',
   };

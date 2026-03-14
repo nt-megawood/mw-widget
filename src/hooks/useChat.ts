@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Message } from '../types';
 import { generateUUID } from '../utils/uuid';
 import { sendMessage as apiSendMessage } from '../services/api';
@@ -11,7 +11,28 @@ const THINKING_MESSAGES = [
   'Ich analysiere deine Frage…',
 ];
 
-export function useChat(conversationId: string | null, onConversationIdChange: (id: string) => void) {
+/** Extract a terrace planning code (e.g. mgw148964) from a bot response. */
+export function extractPlanningCode(text: string): string | null {
+  const source = String(text || '');
+  const labeled = source.match(
+    /(?:planungscode|terrassencode|code)\s*(?:ist|:)?\s*[:–-]?\s*([a-z0-9_]{6,})/i
+  );
+  if (labeled?.[1]) return labeled[1].trim();
+  const fallback = source.match(/\b(mgw[a-z0-9]{4,}|_temp[a-z0-9]{4,})\b/i);
+  return fallback?.[1] ? fallback[1].trim() : null;
+}
+
+interface UseChatOptions {
+  conversationId: string | null;
+  onConversationIdChange: (id: string) => void;
+  onPlanningCodeDetected?: (code: string) => void;
+}
+
+export function useChat({
+  conversationId,
+  onConversationIdChange,
+  onPlanningCodeDetected,
+}: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingText, setThinkingText] = useState(THINKING_MESSAGES[0]);
@@ -46,7 +67,7 @@ export function useChat(conversationId: string | null, onConversationIdChange: (
     return message;
   }, []);
 
-  const addBotMessage = useCallback((text: string, sources?: Array<{ title: string; url: string }>) => {
+  const addBotMessage = useCallback((text: string, sources?: string[]) => {
     const message: Message = {
       id: generateUUID(),
       role: 'bot',
@@ -58,6 +79,11 @@ export function useChat(conversationId: string | null, onConversationIdChange: (
     setMessages((prev) => [...prev, message]);
     return message;
   }, []);
+
+  const onPlanningCodeDetectedRef = useRef(onPlanningCodeDetected);
+  useEffect(() => {
+    onPlanningCodeDetectedRef.current = onPlanningCodeDetected;
+  }, [onPlanningCodeDetected]);
 
   const sendMessage = useCallback(async (text: string) => {
     addUserMessage(text);
@@ -71,6 +97,8 @@ export function useChat(conversationId: string | null, onConversationIdChange: (
         onConversationIdChange(response.conversation_id);
       }
       addBotMessage(response.answer, response.sources);
+      const code = extractPlanningCode(response.answer);
+      if (code) onPlanningCodeDetectedRef.current?.(code);
     } catch (error) {
       if (currentSessionId !== sessionIdRef.current) return;
       stopThinking();

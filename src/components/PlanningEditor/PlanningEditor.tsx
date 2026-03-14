@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { loadTerracePlanData, saveTerracePlanData } from '../../services/api';
 import type { TerracePlanData } from '../../types';
 import {
@@ -36,7 +36,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
     setStatus({ type, message });
 
   const getAvailableColors = (dielenId: number) =>
-    DIELEN_VARIANTS[dielenId]?.colors ?? DIELEN_VARIANTS[5].colors;
+    DIELEN_VARIANTS[dielenId]?.colors ?? DIELEN_VARIANTS[DEFAULT_DIELEN_ID].colors;
 
   const handleDielenChange = (newDielenId: number) => {
     setSelectedDielenId(newDielenId);
@@ -54,8 +54,8 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
     setSelectedForm(newForm);
   };
 
-  const handleLoad = useCallback(async () => {
-    const code = planningCode.trim();
+  const handleLoad = useCallback(async (codeOverride?: string) => {
+    const code = (codeOverride ?? planningCode).trim();
     if (!code) {
       setStatusMsg('Bitte zuerst einen Planungscode eingeben.', 'error');
       return;
@@ -86,6 +86,17 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       setIsLoading(false);
     }
   }, [planningCode]);
+
+  // When a planning code is detected in the chat, automatically update the input
+  // and trigger a load — but only for new codes that differ from the current one.
+  const lastDetectedCodeRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!detectedCode) return;
+    if (detectedCode === lastDetectedCodeRef.current) return;
+    lastDetectedCodeRef.current = detectedCode;
+    setPlanningCode(detectedCode);
+    handleLoad(detectedCode);
+  }, [detectedCode, handleLoad]);
 
   const buildPayload = (): TerracePlanData => {
     if (!loadedPayload) throw new Error('Es sind noch keine Planungsdaten geladen.');
@@ -152,7 +163,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
           <button
             className="side-menu-btn side-menu-btn-primary"
             type="button"
-            onClick={handleLoad}
+            onClick={() => handleLoad()}
             disabled={isLoading}
           >
             {isLoading ? '…' : 'Laden'}
@@ -267,7 +278,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
             <button
               className="side-menu-btn"
               type="button"
-              onClick={handleLoad}
+              onClick={() => handleLoad()}
               disabled={isLoading}
             >
               Neu laden

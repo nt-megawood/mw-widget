@@ -1,7 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ChatWidget } from '../components/ChatWidget';
-import { PlanningEditor } from '../components/PlanningEditor';
+import { LandscapeApp } from './LandscapeApp';
 import type { WidgetConfig, TeaserConfig, Position } from '../types';
 import '../styles/classic.css';
 import '../styles/landscape.css';
@@ -13,7 +12,7 @@ import '../styles/landscape.css';
 function getTeaserConfig(): TeaserConfig {
   const params = new URLSearchParams(window.location.search);
   return {
-    show: params.get('teaser') === 'true',
+    show: params.get('teaser') === '1' || params.get('teaser') === 'true',
     title: params.get('teaser_title') || 'Willkommen bei megawood® 👋',
     text: params.get('teaser_text') || 'Ich bin Woody, dein persönlicher KI-Assistent für alles rund um megawood® Terrassendielen.',
   };
@@ -35,9 +34,7 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <ChatWidget config={config} widgetId="landscape">
-        <PlanningEditor />
-      </ChatWidget>
+      <LandscapeApp config={config} />
     </React.StrictMode>
   );
 }
