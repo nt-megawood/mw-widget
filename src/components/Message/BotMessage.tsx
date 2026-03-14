@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Message } from '../../types';
 import { renderMarkdown } from '../../utils/markdown';
 import { speakText } from '../../utils/speech';
+import { BrandPopup } from '../BrandPopup';
 
 interface BotMessageProps {
   message: Message;
@@ -10,6 +11,7 @@ interface BotMessageProps {
 export const BotMessage: React.FC<BotMessageProps> = ({ message }) => {
   const [thumbState, setThumbState] = useState<'up' | 'down' | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showBrandPopup, setShowBrandPopup] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -61,9 +63,16 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message }) => {
             {copied ? '✓' : '📋'}
           </button>
           <button className="meta-btn speak-btn" onClick={handleSpeak} title="Vorlesen" aria-label="Vorlesen">🔊</button>
+          <button
+            className="meta-btn meta-brand"
+            onClick={() => setShowBrandPopup(true)}
+            title="Über diesen Assistenten"
+            aria-label="Über diesen Assistenten"
+          >NT</button>
           <span className="meta-time">{formattedTime}</span>
         </div>
       </div>
+      {showBrandPopup && <BrandPopup onClose={() => setShowBrandPopup(false)} />}
     </div>
   );
 };

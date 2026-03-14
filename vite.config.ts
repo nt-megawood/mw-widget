@@ -1,14 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import { fileURLToPath, URL } from 'url';
+
+const root = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
       input: {
-        classic: resolve(__dirname, 'index.html'),
-        landscape: resolve(__dirname, 'index-landscape.html'),
+        classic: `${root}index.html`,
+        landscape: `${root}index-landscape.html`,
       },
     },
     outDir: 'dist',

@@ -2,7 +2,6 @@
   "name": "mw-widget",
   "version": "2.0.0",
   "description": "megawood® AI Chatbot Widget - React TypeScript",
-  "main": "api.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -22,6 +21,7 @@
   },
   "homepage": "https://github.com/nt-megawood/mw-widget#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.57.0",
@@ -31,6 +31,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "vite": "^8.0.0"

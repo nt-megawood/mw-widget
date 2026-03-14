@@ -15,7 +15,7 @@ function getConversationUrl(): string {
   return getApiUrl().replace(/\/chat$/, '/conversation');
 }
 
-function buildAuthHeaders(includeJsonContentType = false): HeadersInit {
+function buildAuthHeaders(includeJsonContentType = false): Record<string, string> {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${AUTH_TOKEN}`,
   };

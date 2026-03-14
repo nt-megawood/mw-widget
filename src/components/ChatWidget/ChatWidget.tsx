@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatHeader } from '../ChatHeader';
 import { ChatBody } from '../ChatBody';
 import { ChatFooter } from '../ChatFooter';
 import { ChatTeaser } from '../ChatTeaser';
 import { ChatToggle } from '../ChatToggle';
-import { BrandPopup } from '../BrandPopup';
 import { useChat } from '../../hooks/useChat';
 import { useConversation } from '../../hooks/useConversation';
 import { useTeaser } from '../../hooks/useTeaser';
@@ -44,7 +43,6 @@ const INITIAL_GREETING = (
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showBrandPopup, setShowBrandPopup] = useState(false);
   const { conversationId, saveConversationId, clearConversation } = useConversation(widgetId);
   const { messages, isThinking, thinkingText, sendMessage, addBotMessage, clearMessages, restoreMessages } =
     useChat(conversationId, saveConversationId);
@@ -151,7 +149,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, childr
           )}
         </div>
       )}
-      {showBrandPopup && <BrandPopup onClose={() => setShowBrandPopup(false)} />}
     </>
   );
 };

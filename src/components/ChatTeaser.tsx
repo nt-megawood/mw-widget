@@ -1,5 +1,4 @@
 import React from 'react';
-import woodyImg from '../../public/woody.jpg';
 
 interface ChatTeaserProps {
   title: string;
@@ -12,7 +11,7 @@ export const ChatTeaser: React.FC<ChatTeaserProps> = ({ title, text, onClose, on
   return (
     <div className="chat-teaser">
       <button className="teaser-close" onClick={onClose} aria-label="Schließen">&times;</button>
-      <img src={woodyImg} alt="Woody" className="teaser-avatar" onClick={onOpen} style={{ cursor: 'pointer' }} />
+      <img src="/woody.jpg" alt="Woody" className="teaser-avatar" onClick={onOpen} style={{ cursor: 'pointer' }} />
       <span className="teaser-title">{title}</span>
       <p className="teaser-text">{text}</p>
     </div>

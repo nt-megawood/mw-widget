@@ -13,7 +13,9 @@ interface UsePresenceOptions {
 export function usePresence({ conversationId, historyCount, onNewMessages }: UsePresenceOptions) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const historyCountRef = useRef(historyCount);
-  historyCountRef.current = historyCount;
+  useEffect(() => {
+    historyCountRef.current = historyCount;
+  }, [historyCount]);
 
   const checkPresence = useCallback(async () => {
     if (!conversationId) return;
