@@ -368,6 +368,14 @@
   margin-bottom: 4px;
 }
 
+.bubble-image {
+  display: block;
+  margin-top: 10px;
+  max-width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 /* small icon bubble for bot messages */
 .bot-icon {
   width: 32px;

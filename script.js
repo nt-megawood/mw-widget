@@ -49,14 +49,16 @@ const originalChatBodyHTML = chatBody ? chatBody.innerHTML : '';
 // set time on initial greeting
 const initTimeEl = document.getElementById('initial-time');
 if (initTimeEl) initTimeEl.textContent = currentTime();
-
 // chat session counter to disregard out-of-band responses
 let chatSessionId = 0;
 
 // active conversation ID (null until the first message is sent)
 let conversationId = null;
 let conversationIdCounter = 0;
+let knownHistoryCount = 0;
 const CONVERSATION_ID_STORAGE_KEY = 'mw-chatbot-conversation-id';
+const PRESENCE_INTERVAL_MS = 60 * 1000;
+let presenceIntervalId = null;
 
 function setConversationIdDisplay(id) {
   const el = document.getElementById('conversation-id');
@@ -65,7 +67,9 @@ function setConversationIdDisplay(id) {
 }
 
 function setConversationId(id) {
+  const changed = conversationId !== id;
   conversationId = id;
+  if (changed) knownHistoryCount = 0;
   setConversationIdDisplay(id);
   try {
     if (id) {
@@ -76,6 +80,7 @@ function setConversationId(id) {
   } catch {
     // ignore localStorage errors (e.g. in private mode)
   }
+  restartPresencePolling();
 }
 
 // restore stored conversation from previous session, if any
@@ -142,7 +147,8 @@ function removeInitialGreeting() {
   if (btnGroup) btnGroup.remove();
 }
 
-function appendUserMessage(text) {
+function appendUserMessage(text, options = {}) {
+  const { trackHistory = true } = options;
   const wrapper = document.createElement('div');
   wrapper.className = 'message-wrapper user';
   const bubble = document.createElement('div');
@@ -150,6 +156,7 @@ function appendUserMessage(text) {
   bubble.textContent = text;
   wrapper.appendChild(bubble);
   document.querySelector('.chat-body').appendChild(wrapper);
+  if (trackHistory) knownHistoryCount += 1;
   scrollToBottom();
 }
 
@@ -647,6 +654,7 @@ if (refreshIcon) {
     if (conversationId) {
       deleteConversation(conversationId);
       setConversationId(null);
+      knownHistoryCount = 0;
       chatBody.innerHTML = originalChatBodyHTML;
       // reset timestamp if present
       const initTimeEl2 = document.getElementById('initial-time');
@@ -781,7 +789,9 @@ function makeBotMeta(plainText) {
  * @param {string} answer   - plain-text / markdown answer from the API
  * @param {string[]} sources - optional array of source URLs
  */
-function addBotMessage(answer, sources) {
+function addBotMessage(answer, sources, imageUrl, options = {}) {
+  const { trackHistory = true } = options;
+  const safeAnswer = typeof answer === 'string' ? answer : '';
   const wrapper = document.createElement('div');
   wrapper.className = 'message-wrapper bot';
 
@@ -791,7 +801,18 @@ function addBotMessage(answer, sources) {
 
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
-  bubble.innerHTML = renderMarkdown(answer);
+  if (safeAnswer) {
+    bubble.innerHTML = renderMarkdown(safeAnswer);
+  }
+
+  if (imageUrl) {
+    const img = document.createElement('img');
+    img.className = 'bubble-image';
+    img.src = imageUrl;
+    img.alt = 'Support Bild';
+    img.loading = 'lazy';
+    bubble.appendChild(img);
+  }
 
   // sources block
   let sourcesEl = null;
@@ -806,12 +827,76 @@ function addBotMessage(answer, sources) {
   right.className = 'bot-bubble-col';
   right.appendChild(bubble);
   if (sourcesEl) right.appendChild(sourcesEl);
-  right.appendChild(makeBotMeta(answer));
+  right.appendChild(makeBotMeta(safeAnswer || 'Bild vom Support'));
 
   wrapper.appendChild(icon);
   wrapper.appendChild(right);
   document.querySelector('.chat-body').appendChild(wrapper);
+  if (trackHistory) knownHistoryCount += 1;
   scrollToBottom();
+}
+
+function renderHistoryTurn(turn, options = {}) {
+  if (!turn || !turn.role) return false;
+  const { trackHistory = false } = options;
+  const text = typeof turn.text === 'string' ? turn.text : '';
+  const imageUrl = typeof turn.image_url === 'string' ? turn.image_url : '';
+
+  if (turn.role === 'user') {
+    if (!text) return false;
+    appendUserMessage(text, { trackHistory });
+    return true;
+  }
+
+  if (turn.role === 'model' || turn.role === 'assistant' || turn.role === 'admin') {
+    if (!text && !imageUrl) return false;
+    addBotMessage(text, [], imageUrl, { trackHistory });
+    return true;
+  }
+
+  return false;
+}
+
+function isPresenceEligible() {
+  return !document.hidden && document.hasFocus();
+}
+
+async function sendPresenceHeartbeat() {
+  if (!conversationId || !isPresenceEligible()) return;
+  try {
+    const status = await sendPresenceStatus(conversationId, knownHistoryCount);
+    if (Array.isArray(status.new_messages) && status.new_messages.length) {
+      removeInitialGreeting();
+      status.new_messages.forEach((turn) => {
+        renderHistoryTurn(turn, { trackHistory: false });
+      });
+    }
+    if (typeof status.history_count === 'number') {
+      knownHistoryCount = Math.max(0, status.history_count);
+    }
+  } catch (err) {
+    if (err && err.message && err.message.includes('404')) {
+      setConversationId(null);
+      knownHistoryCount = 0;
+    }
+    console.warn('Presence-Status konnte nicht aktualisiert werden:', err);
+  }
+}
+
+function clearPresencePolling() {
+  if (presenceIntervalId) {
+    clearInterval(presenceIntervalId);
+    presenceIntervalId = null;
+  }
+}
+
+function restartPresencePolling() {
+  clearPresencePolling();
+  if (!conversationId) return;
+  sendPresenceHeartbeat();
+  presenceIntervalId = setInterval(() => {
+    sendPresenceHeartbeat();
+  }, PRESENCE_INTERVAL_MS);
 }
 
 // send button behavior: echo user message and optionally respond
@@ -827,14 +912,7 @@ function sendUserMessage(text) {
   }
   const mySession = chatSessionId;
   const myConversationId = conversationId;
-  const wrapper = document.createElement('div');
-  wrapper.className = 'message-wrapper user';
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble user';
-  bubble.textContent = text;
-  wrapper.appendChild(bubble);
-  document.querySelector('.chat-body').appendChild(wrapper);
-  scrollToBottom();
+  appendUserMessage(text);
 
   // Also recognize planning codes when users type them themselves.
   syncPlanningCodeFromAnswer(text);
@@ -856,7 +934,12 @@ function sendUserMessage(text) {
     })
     .catch(err => {
       removeIndicator();
-      addBotMessage('Es tut mir leid, ich konnte keine Verbindung zum Server herstellen. Bitte versuche es später erneut.');
+      addBotMessage(
+        'Es tut mir leid, ich konnte keine Verbindung zum Server herstellen. Bitte versuche es später erneut.',
+        [],
+        '',
+        { trackHistory: false }
+      );
       console.error(err);
     });
 }
@@ -904,25 +987,34 @@ async function restoreConversationFromStorage() {
     removeInitialGreeting();
 
     data.history.forEach((turn) => {
-      if (!turn || !turn.role) return;
-      const text = typeof turn.text === 'string' ? turn.text : '';
-      if (turn.role === 'user') {
-        appendUserMessage(text);
-      } else if (turn.role === 'model' || turn.role === 'assistant') {
-        addBotMessage(text, []);
-      }
+      renderHistoryTurn(turn, { trackHistory: false });
     });
+    knownHistoryCount = data.history.length;
     scrollToBottom();
   } catch (err) {
     // If the stored conversation no longer exists on the backend, clear local state.
     if (err && err.message && err.message.includes('404')) {
       setConversationId(null);
+      knownHistoryCount = 0;
     }
     console.warn('Kontext konnte nicht geladen werden:', err);
   }
 }
 
 restoreConversationFromStorage();
+restartPresencePolling();
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) sendPresenceHeartbeat();
+});
+
+window.addEventListener('focus', () => {
+  sendPresenceHeartbeat();
+});
+
+window.addEventListener('beforeunload', () => {
+  clearPresencePolling();
+});
 
 if (sendBtn && input) {
   sendBtn.addEventListener('click', () => {
