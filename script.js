@@ -56,7 +56,36 @@ let chatSessionId = 0;
 // active conversation ID (null until the first message is sent)
 let conversationId = null;
 let conversationIdCounter = 0;
+const CONVERSATION_ID_STORAGE_KEY = 'mw-chatbot-conversation-id';
 
+function setConversationIdDisplay(id) {
+  const el = document.getElementById('conversation-id');
+  if (!el) return;
+  el.textContent = id ? `Kontext-ID: ${id}` : 'Kontext-ID: –';
+}
+
+function setConversationId(id) {
+  conversationId = id;
+  setConversationIdDisplay(id);
+  try {
+    if (id) {
+      localStorage.setItem(CONVERSATION_ID_STORAGE_KEY, id);
+    } else {
+      localStorage.removeItem(CONVERSATION_ID_STORAGE_KEY);
+    }
+  } catch {
+    // ignore localStorage errors (e.g. in private mode)
+  }
+}
+
+// restore stored conversation from previous session, if any
+try {
+  const stored = localStorage.getItem(CONVERSATION_ID_STORAGE_KEY);
+  if (stored) {
+    conversationId = stored;
+    setConversationIdDisplay(conversationId);
+  }
+} catch {}
 // Generate a random UUID for conversation tracking
 function generateConversationId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -111,6 +140,17 @@ function removeInitialGreeting() {
   if (initMsg) initMsg.remove();
   const btnGroup = chatBody && chatBody.querySelector('.button-group');
   if (btnGroup) btnGroup.remove();
+}
+
+function appendUserMessage(text) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message-wrapper user';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble user';
+  bubble.textContent = text;
+  wrapper.appendChild(bubble);
+  document.querySelector('.chat-body').appendChild(wrapper);
+  scrollToBottom();
 }
 
 // --- Landscape planning editor ---
@@ -590,16 +630,12 @@ toggle.addEventListener('click', () => {
   toggle.classList.add('hidden');
   hideTeaser();
 });
-// add a close icon handler
+// add a close icon handler (keep conversation context when hiding)
 const closeIcon = document.querySelector('.header-icons span:last-child');
 if (closeIcon) {
   closeIcon.addEventListener('click', () => {
-    if (conversationId) {
-      deleteConversation(conversationId);
-      conversationId = null;
-    }
-    // bump session id: ignore any inflight responses from the old conversation
-    chatSessionId += 1;
+    // Keep conversationId and chat history intact when closing the widget.
+    // This allows users to reopen the chat and continue where they left off.
     chat.classList.add('closed');
     toggle.classList.remove('hidden');
   });
@@ -610,11 +646,7 @@ if (refreshIcon) {
   refreshIcon.addEventListener('click', () => {
     if (conversationId) {
       deleteConversation(conversationId);
-      conversationId = null;
-    }
-    const chatBody = document.querySelector('.chat-body');
-    if (chatBody) {
-      // restore original markup
+      setConversationId(null);
       chatBody.innerHTML = originalChatBodyHTML;
       // reset timestamp if present
       const initTimeEl2 = document.getElementById('initial-time');
@@ -791,7 +823,7 @@ function sendUserMessage(text) {
   removeInitialGreeting();
   // Generate a conversation ID on the very first message of a session
   if (!conversationId) {
-    conversationId = generateConversationId();
+    setConversationId(generateConversationId());
   }
   const mySession = chatSessionId;
   const myConversationId = conversationId;
@@ -814,7 +846,9 @@ function sendUserMessage(text) {
     .then(({ answer, sources, conversation_id }) => {
       if (mySession !== chatSessionId) return; // outdated response
       // Keep conversation ID in sync with whatever the backend returns
-      if (conversation_id) conversationId = conversation_id;
+      if (conversation_id) {
+        setConversationId(conversation_id);
+      }
       removeIndicator();
       syncPlanningCodeFromAnswer(answer);
       removeInitialGreeting();
@@ -859,6 +893,36 @@ document.addEventListener('click', (e) => {
 });
 
 initPlanningEditor();
+
+async function restoreConversationFromStorage() {
+  if (!conversationId) return;
+  try {
+    const data = await getConversation(conversationId);
+    if (!data || !Array.isArray(data.history) || !data.history.length) return;
+
+    // Replace the initial greeting + button group with restored chat history
+    removeInitialGreeting();
+
+    data.history.forEach((turn) => {
+      if (!turn || !turn.role) return;
+      const text = typeof turn.text === 'string' ? turn.text : '';
+      if (turn.role === 'user') {
+        appendUserMessage(text);
+      } else if (turn.role === 'model' || turn.role === 'assistant') {
+        addBotMessage(text, []);
+      }
+    });
+    scrollToBottom();
+  } catch (err) {
+    // If the stored conversation no longer exists on the backend, clear local state.
+    if (err && err.message && err.message.includes('404')) {
+      setConversationId(null);
+    }
+    console.warn('Kontext konnte nicht geladen werden:', err);
+  }
+}
+
+restoreConversationFromStorage();
 
 if (sendBtn && input) {
   sendBtn.addEventListener('click', () => {

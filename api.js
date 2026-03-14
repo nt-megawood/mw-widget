@@ -1,9 +1,9 @@
 const API_URL = window.CHATBOT_API_URL || 'https://mw-chatbot-backend.vercel.app/chat';
-// Derive the conversation base URL by stripping the trailing '/chat' segment.
-// Falls back gracefully to a sibling '/conversation' path if the URL doesn't end with '/chat'.
-const CONVERSATION_URL = API_URL.endsWith('/chat')
-  ? API_URL.slice(0, -5) + '/conversation'
-  : API_URL + '/conversation';
+// Derive the conversation base URL by replacing known chat endpoints.
+// This ensures '/terrassenplaner/chat' -> '/conversation' (not '/terrassenplaner/conversation').
+const CONVERSATION_URL = API_URL
+  .replace(/\/terrassenplaner\/chat$/, '/conversation')
+  .replace(/\/chat$/, '/conversation');
 const TERRACE_LOAD_URL = 'https://betaplaner.megawood.com/api/terrassedaten/ladeDaten';
 const TERRACE_SAVE_URL = 'https://betaplaner.megawood.com/api/terrassedaten/speichereDaten';
 
@@ -28,6 +28,28 @@ async function sendMessage(message, conversationId) {
 
   if (!response.ok) {
     throw new Error(`API-Fehler: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetches the stored conversation history from the backend.
+ * @param {string} conversationId
+ * @returns {Promise<{ conversation_id: string, history: Array<{role:string,text:string}> }>} 
+ */
+async function getConversation(conversationId) {
+  if (!conversationId) throw new Error('Konversations-ID fehlt');
+  const response = await fetch(`${CONVERSATION_URL}/${encodeURIComponent(conversationId)}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer 42vombj8mp9an8jv5evp3vfup8izma7oh9yxma4tp9b6anemudxb2ei3bw2koiqyx7umnp55w3rodpp79k6izp27wchm2u2vjvviwwvqxqgb2j859c4dk2g4s6k7wpct'
+    }
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Kontext konnte nicht geladen werden: ${response.status} ${response.statusText} - ${body}`);
   }
 
   return response.json();
