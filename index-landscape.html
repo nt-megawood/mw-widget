@@ -1,100 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chatbot Landscape</title>
-  <link rel="stylesheet" href="styling.css">
-  <link rel="stylesheet" href="styling-landscape.css">
-  <style>html,body{background:transparent!important;margin:0;padding:0}</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>megawood® Chat Widget (Landscape)</title>
 </head>
 <body>
-
-<div id="chat-teaser" class="chat-teaser hidden">
-  <button class="teaser-close">&times;</button>
-  <div class="teaser-header">
-    <img src="woody.jpg" alt="Woody" class="teaser-avatar">
-    <span class="teaser-title" id="teaser-title">Willkommen bei megawood® 👋</span>
-  </div>
-  <p class="teaser-text" id="teaser-text">Ich bin Handwerker Woody, dein persönlicher KI-Assistent. Du kannst mich jederzeit über den Button auf der linken Seite erreichen!</p>
-</div>
-
-<div id="chat-toggle" class="chat-toggle">
-  <img src="woody.jpg" alt="Woody" class="toggle-img">
-</div>
-
-<div class="chat-container landscape-widget closed">
-  <div class="chat-layout">
-    <div class="chat-main">
-      <div class="chat-header">
-        <img src="https://assets.planungswelten.de/wp-content/uploads/2022/03/08172642/megawood_logo.png" alt="megawood" class="logo-img">
-        <div class="header-icons">
-          <span>&#8634;</span> <span>&times;</span>
-        </div>
-      </div>
-
-      <div class="chat-body">
-        <div class="message-wrapper bot initial">
-          <div class="bot-icon"><img src="woody.jpg" alt="Woody"></div>
-          <div class="bot-bubble-col">
-            <div class="bubble">
-              <p>Willkommen bei megawood&#174;! &#128075;</p>
-              <p>Ich bin <b>Handwerker Woody</b>, dein persönlicher KI-Assistent! Du kannst mir alle Fragen zu unseren Produkten stellen oder eine Planung mit mir erstellen.</p>
-              <p>Lass uns gleich mit der Planung beginnen!</p>
-            </div>
-            <div class="bot-meta">
-              <span class="meta-time" id="initial-time"></span>
-              <span class="meta-brand">Erstellt von megawood KI</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button class="chat-btn" data-message="Was kannst du alles für mich tun?">Wie kannst du mir helfen?</button>
-          <button class="chat-btn" data-message="Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.">Informationen zu den megawood&#174; Dielen</button>
-          <button class="chat-btn" data-message="Ich suche einen Händler in meiner Nähe.">Händlersuche</button>
-          <button class="chat-btn" data-message="Ich möchte eine neue Planung erstellen.">Neue Planung erstellen</button>
-          <button class="chat-btn" data-message="Ich brauche Hilfe bei meiner aktuellen Planung.">Vorhandene Planung nutzen</button>
-        </div>
-      </div>
-
-      <div class="chat-footer">
-        <div class="chat-footer-input-row">
-          <textarea id="chat-input" rows="1" placeholder="Stelle deine Frage..."></textarea>
-          <button class="send-btn">➤</button>
-        </div>
-        <div class="footer-tools">
-          <span class="branding">KI-Unterstützung kann Fehler machen.</span>
-          <span class="conversation-id" id="conversation-id">Kontext-ID: –</span>
-        </div>
-      </div>
-    </div>
-
-    <aside class="chat-side-menu" aria-label="Planung bearbeiten">
-      <h3>Planung bearbeiten</h3>
-      <div class="side-menu-card planning-card">
-        <label class="planning-label" for="planning-code-input">Planungscode</label>
-        <div class="planning-code-row">
-          <input id="planning-code-input" class="planning-input" type="text" placeholder="z.B. mgw150823" autocomplete="off">
-          <button id="planning-load-btn" class="side-menu-btn side-menu-btn-primary" type="button">Laden</button>
-        </div>
-        <p class="planning-hint">Sobald der Chat eine Planung erstellt hat, wird der Code hier automatisch erkannt.</p>
-        <p id="planning-status" class="planning-status" aria-live="polite"></p>
-      </div>
-
-      <div id="planning-editor" class="side-menu-card planning-editor hidden" aria-live="polite"></div>
-    </aside>
-  </div>
-</div>
-
-<div id="brand-popup" class="brand-popup hidden">
-  <p>Ich bin ein KI-gestützter Assistent und helfe dir bei Fragen rund um megawood&#174;. Meine Antworten werden automatisch generiert &ndash; ich bin daher möglicherweise nicht immer 100&nbsp;% korrekt. Bitte überprüfe wichtige Informationen.</p>
-  <div class="brand-popup-footer"><img src="woody.jpg" alt="Woody"> megawood KI</div>
-</div>
-
-<script>window.CHATBOT_API_URL = 'https://mw-chatbot-backend.vercel.app/terrassenplaner/chat';</script>
-<script src="api.js"></script>
-<script src="script.js"></script>
-
+  <div id="root"></div>
+  <script type="module" src="/src/landscape/main.tsx"></script>
 </body>
 </html>
