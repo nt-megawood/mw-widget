@@ -12,6 +12,8 @@ import { usePresence } from '../../hooks/usePresence';
 import { getConversation, deleteConversation } from '../../services/api';
 import type { WidgetConfig, ConversationHistoryItem } from '../../types';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 interface ChatWidgetProps {
   config: WidgetConfig;
   widgetId: string;
@@ -37,7 +39,7 @@ function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
   const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
   return (
     <div className="message-wrapper bot initial">
-      <div className="bot-icon"><img src="/woody.jpg" alt="Woody" /></div>
+      <div className="bot-icon"><img src={`${BASE_URL}woody.jpg`} alt="Woody" /></div>
       <div className="bot-bubble-col">
         <div className="bubble">
           <p>Willkommen bei megawood&#174;! &#128075;</p>
