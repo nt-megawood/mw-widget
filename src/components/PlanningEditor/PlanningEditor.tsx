@@ -96,7 +96,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
     lastDetectedCodeRef.current = detectedCode;
     setPlanningCode(detectedCode);
     handleLoad(detectedCode);
-  }, [detectedCode, handleLoad]);
+  }, [detectedCode]);
 
   const buildPayload = (): TerracePlanData => {
     if (!loadedPayload) throw new Error('Es sind noch keine Planungsdaten geladen.');
