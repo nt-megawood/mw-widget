@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Message } from '../../types';
 import { renderMarkdown } from '../../utils/markdown';
-import { speakText } from '../../utils/speech';
+import { speakText, stopSpeaking } from '../../utils/speech';
 import { BrandPopup } from '../BrandPopup';
 
 interface BotMessageProps {
@@ -60,8 +60,15 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message }) => {
   };
 
   const handleSpeak = () => {
-    setIsSpeaking((prev) => !prev);
-    speakText(message.text);
+    setIsSpeaking((prev) => {
+      const next = !prev;
+      if (next) {
+        speakText(message.text);
+      } else {
+        stopSpeaking();
+      }
+      return next;
+    });
   };
 
   const handleThumb = (direction: 'up' | 'down') => {
