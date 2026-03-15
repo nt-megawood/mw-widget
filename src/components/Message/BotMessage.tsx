@@ -4,6 +4,8 @@ import { renderMarkdown } from '../../utils/markdown';
 import { speakText, stopSpeaking } from '../../utils/speech';
 import { BrandPopup } from '../BrandPopup';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 interface BotMessageProps {
   message: Message;
 }
@@ -83,7 +85,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message }) => {
   return (
     <div className="message-wrapper bot">
       <div className="bot-icon">
-        <img src="/woody.jpg" alt="Woody" />
+        <img src={`${BASE_URL}woody.jpg`} alt="Woody" />
       </div>
       <div className="bot-bubble-col">
         <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />

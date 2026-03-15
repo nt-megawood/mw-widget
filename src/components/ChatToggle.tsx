@@ -1,5 +1,7 @@
 import React from 'react';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 interface ChatToggleProps {
   onClick: () => void;
   position?: string;
@@ -15,7 +17,7 @@ export const ChatToggle: React.FC<ChatToggleProps> = ({ onClick, position = 'bot
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
-      <img src="/woody.jpg" alt="Woody" className="toggle-img" />
+      <img src={`${BASE_URL}woody.jpg`} alt="Woody" className="toggle-img" />
     </div>
   );
 };

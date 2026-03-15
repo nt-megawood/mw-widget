@@ -1,5 +1,7 @@
 import React from 'react';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 interface ThinkingIndicatorProps {
   text: string;
 }
@@ -8,7 +10,7 @@ export const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ text }) =>
   return (
     <div className="message-wrapper bot thinking-wrapper">
       <div className="bot-icon">
-        <img src="/woody.jpg" alt="Woody" />
+        <img src={`${BASE_URL}woody.jpg`} alt="Woody" />
       </div>
       <div className="thinking-indicator">
         <span className="thinking-text">{text}</span>

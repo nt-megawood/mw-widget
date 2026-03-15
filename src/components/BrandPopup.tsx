@@ -1,5 +1,7 @@
 import React from 'react';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 interface BrandPopupProps {
   onClose: () => void;
 }
@@ -21,7 +23,7 @@ export const BrandPopup: React.FC<BrandPopupProps> = ({ onClose }) => {
         100&nbsp;% korrekt. Bitte überprüfe wichtige Informationen.
       </p>
       <div className="brand-popup-footer">
-        <img src="/woody.jpg" alt="Woody" /> megawood KI
+        <img src={`${BASE_URL}woody.jpg`} alt="Woody" /> megawood KI
       </div>
     </div>
   );
