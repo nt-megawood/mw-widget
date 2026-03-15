@@ -32,7 +32,7 @@ const LANDSCAPE_QUICK_REPLIES: QuickReply[] = [
   { label: 'Informationen zu den megawood® Dielen', message: 'Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.' },
   { label: 'Händlersuche', message: 'Ich suche einen Händler in meiner Nähe.' },
   { label: 'Neue Planung erstellen', message: 'Ich möchte eine neue Planung erstellen.' },
-  { label: 'Vorhandene Planung nutzen', message: 'Ich brauche Hilfe bei meiner aktuellen Planung.' },
+  { label: 'Vorhandene Planung nutzen', message: '', action: 'request_planning_code_input' },
 ];
 
 function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
@@ -67,7 +67,18 @@ function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlanningCodeDetected, children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { conversationId, saveConversationId, clearConversation } = useConversation(widgetId);
-  const { messages, isThinking, thinkingText, sendMessage, addBotMessage, clearMessages, restoreMessages } =
+  const {
+    messages,
+    activeQuickReplies,
+    activeInputRequest,
+    isThinking,
+    thinkingText,
+    sendMessage,
+    handleQuickReply,
+    addBotMessage,
+    clearMessages,
+    restoreMessages,
+  } =
     useChat({ conversationId, onConversationIdChange: saveConversationId, onPlanningCodeDetected });
   const { isVisible: isTeaserVisible, dismiss: dismissTeaser } = useTeaser(
     config.teaser.show,
@@ -153,7 +164,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   thinkingText={thinkingText}
                   initialGreeting={initialGreeting}
                   quickReplies={quickReplies}
-                  onQuickReply={handleSend}
+                  contextualQuickReplies={activeQuickReplies}
+                  inputRequest={activeInputRequest}
+                  onQuickReply={handleQuickReply}
+                  onSubmitInputRequest={handleSend}
                 />
                 <ChatFooter onSend={handleSend} disabled={isThinking} conversationId={conversationId} />
               </div>
@@ -168,7 +182,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 thinkingText={thinkingText}
                 initialGreeting={initialGreeting}
                 quickReplies={quickReplies}
-                onQuickReply={handleSend}
+                contextualQuickReplies={activeQuickReplies}
+                inputRequest={activeInputRequest}
+                onQuickReply={handleQuickReply}
+                onSubmitInputRequest={handleSend}
               />
               <ChatFooter onSend={handleSend} disabled={isThinking} conversationId={conversationId} />
             </>

@@ -10,27 +10,27 @@ export interface PlanningFormField {
 export const PLANNING_FORM_FIELDS: Record<ShapeVariant, PlanningFormField[]> = {
   rechteck: [
     { key: 'rechteck_mass_1', label: 'Breite (m)' },
-    { key: 'rechteck_mass_2', label: 'Laenge (m)' },
+    { key: 'rechteck_mass_2', label: 'Länge (m)' },
   ],
   lform: [
     { key: 'l_width_1', label: 'L Breite 1 (m)' },
-    { key: 'l_length_1', label: 'L Laenge 1 (m)' },
+    { key: 'l_length_1', label: 'L Länge 1 (m)' },
     { key: 'l_width_2', label: 'L Breite 2 (m)' },
-    { key: 'l_length_2', label: 'L Laenge 2 (m)' },
+    { key: 'l_length_2', label: 'L Länge 2 (m)' },
   ],
   uform: [
     { key: 'u_width_1', label: 'U Breite 1 (m)' },
-    { key: 'u_length_1', label: 'U Laenge 1 (m)' },
+    { key: 'u_length_1', label: 'U Länge 1 (m)' },
     { key: 'u_width_2', label: 'U Breite 2 (m)' },
-    { key: 'u_length_2', label: 'U Laenge 2 (m)' },
+    { key: 'u_length_2', label: 'U Länge 2 (m)' },
     { key: 'u_width_3', label: 'U Breite 3 (m)' },
-    { key: 'u_length_3', label: 'U Laenge 3 (m)' },
+    { key: 'u_length_3', label: 'U Länge 3 (m)' },
   ],
   oform: [
-    { key: 'o_length_1', label: 'O Laenge 1 (m)' },
-    { key: 'o_length_2', label: 'O Laenge 2 (m)' },
-    { key: 'o_length_3', label: 'O Laenge 3 (m)' },
-    { key: 'o_length_4', label: 'O Laenge 4 (m)' },
+    { key: 'o_length_1', label: 'O Länge 1 (m)' },
+    { key: 'o_length_2', label: 'O Länge 2 (m)' },
+    { key: 'o_length_3', label: 'O Länge 3 (m)' },
+    { key: 'o_length_4', label: 'O Länge 4 (m)' },
     { key: 'o_width_1', label: 'O Breite 1 (m)' },
     { key: 'o_width_2', label: 'O Breite 2 (m)' },
   ],
@@ -80,14 +80,14 @@ export const DIELEN_COLORS: Record<number, string> = {
   24: 'Varia Grau',
   25: 'Varia Braun',
   26: 'Varia Schokoschwarz',
-  27: 'Fokus gruen',
+  27: 'Fokus grün',
   28: 'Fokus braun',
   29: 'Fokus grau',
   30: 'Fokus Schokoschwarz',
   31: 'Malui grau',
   32: 'Mentha Nigra',
   33: 'Anise',
-  34: 'Gruenschwarz',
+  34: 'Grünschwarz',
   35: 'Sandbraun',
   36: 'Amber Tan',
   37: 'Amber Chocolate',
@@ -102,15 +102,15 @@ export const SHAPE_LABELS: Record<ShapeVariant, string> = {
 };
 
 export const PROFIL_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: 'bronze', label: 'bronze' },
-  { value: 'silver', label: 'silver' },
-  { value: 'anthracite', label: 'anthracite' },
+  { value: 'bronze', label: 'Bronze' },
+  { value: 'silver', label: 'Silber' },
+  { value: 'anthracite', label: 'Anthrazit' },
 ];
 
 export const UK_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: 'standard', label: 'standard' },
-  { value: 'variofix1', label: 'variofix1' },
-  { value: 'variofix2', label: 'variofix2' },
+  { value: 'standard', label: 'Betonrandstein' },
+  { value: 'variofix1', label: 'VARIO FIX I' },
+  { value: 'variofix2', label: 'VARIO FIX II' },
 ];
 
 export function normalizePlanningForm(rawForm: unknown): ShapeVariant {

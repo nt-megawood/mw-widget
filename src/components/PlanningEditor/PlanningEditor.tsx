@@ -1,5 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { loadTerracePlanData, saveTerracePlanData } from '../../services/api';
+import {
+  loadTerracePlanData,
+  saveTerracePlanData,
+  buildBauplanPdfUrl,
+  buildMateriallistePdfUrl,
+} from '../../services/api';
 import type { TerracePlanData } from '../../types';
 import {
   DIELEN_VARIANTS, DIELEN_COLORS, PLANNING_FORM_FIELDS, SHAPE_LABELS, PROFIL_OPTIONS, UK_OPTIONS,
@@ -139,6 +144,26 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDownloadBauplan = () => {
+    const code = (planningCode || loadedPayload?.terrassencode || '').trim();
+    if (!code) {
+      setStatusMsg('Bitte zuerst einen gültigen Planungscode laden.', 'error');
+      return;
+    }
+    const url = buildBauplanPdfUrl(code);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleDownloadMaterialliste = () => {
+    const code = (planningCode || loadedPayload?.terrassencode || '').trim();
+    if (!code) {
+      setStatusMsg('Bitte zuerst einen gültigen Planungscode laden.', 'error');
+      return;
+    }
+    const url = buildMateriallistePdfUrl(code);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const fields = PLANNING_FORM_FIELDS[selectedForm] || [];
@@ -282,6 +307,22 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
               disabled={isLoading}
             >
               Neu laden
+            </button>
+            <button
+              className="side-menu-btn"
+              type="button"
+              onClick={handleDownloadBauplan}
+              disabled={isLoading}
+            >
+              Bauplan PDF
+            </button>
+            <button
+              className="side-menu-btn"
+              type="button"
+              onClick={handleDownloadMaterialliste}
+              disabled={isLoading}
+            >
+              Materialliste PDF
             </button>
             <button
               className="side-menu-btn side-menu-btn-primary"

@@ -10,6 +10,8 @@ const AUTH_TOKEN =
   '42vombj8mp9an8jv5evp3vfup8izma7oh9yxma4tp9b6anemudxb2ei3bw2koiqyx7umnp55w3rodpp79k6izp27wchm2u2vjvviwwvqxqgb2j859c4dk2g4s6k7wpct';
 const TERRACE_LOAD_URL = 'https://betaplaner.megawood.com/api/terrassedaten/ladeDaten';
 const TERRACE_SAVE_URL = 'https://betaplaner.megawood.com/api/terrassedaten/speichereDaten';
+const TERRACE_BAUPLAN_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/bauplan/pdf';
+const TERRACE_MATERIALLISTE_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/materialliste/pdf';
 
 function getApiUrl(): string {
   return (window as unknown as Record<string, string>).CHATBOT_API_URL || DEFAULT_API_URL;
@@ -119,4 +121,20 @@ export async function saveTerracePlanData(payload: TerracePlanData): Promise<{ t
     throw new Error('Die Planer-API hat keinen Planungscode zurückgegeben.');
   }
   return result;
+}
+
+export function buildBauplanPdfUrl(planningCode: string): string {
+  const cleanedCode = String(planningCode || '').trim();
+  if (!cleanedCode) {
+    throw new Error('Bitte einen gültigen Planungscode angeben.');
+  }
+  return `${TERRACE_BAUPLAN_PDF_URL_BASE}/${encodeURIComponent(cleanedCode)}`;
+}
+
+export function buildMateriallistePdfUrl(planningCode: string): string {
+  const cleanedCode = String(planningCode || '').trim();
+  if (!cleanedCode) {
+    throw new Error('Bitte einen gültigen Planungscode angeben.');
+  }
+  return `${TERRACE_MATERIALLISTE_PDF_URL_BASE}/${encodeURIComponent(cleanedCode)}`;
 }
