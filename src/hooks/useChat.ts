@@ -85,12 +85,18 @@ export function useChat({
     onPlanningCodeDetectedRef.current = onPlanningCodeDetected;
   }, [onPlanningCodeDetected]);
 
+  const conversationIdRef = useRef(conversationId);
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
+
   const sendMessage = useCallback(async (text: string) => {
     addUserMessage(text);
     startThinking();
     const currentSessionId = sessionIdRef.current;
+    const currentConversationId = conversationIdRef.current;
     try {
-      const response = await apiSendMessage(text, conversationId);
+      const response = await apiSendMessage(text, currentConversationId);
       if (currentSessionId !== sessionIdRef.current) return;
       stopThinking();
       if (response.conversation_id) {
@@ -105,7 +111,7 @@ export function useChat({
       addBotMessage('Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut.');
       console.error('Chat error:', error);
     }
-  }, [conversationId, onConversationIdChange, addUserMessage, addBotMessage, startThinking, stopThinking]);
+  }, [onConversationIdChange, addUserMessage, addBotMessage, startThinking, stopThinking]);
 
   const clearMessages = useCallback(() => {
     sessionIdRef.current = generateUUID();
