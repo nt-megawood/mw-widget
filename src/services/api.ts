@@ -1,6 +1,14 @@
 // API service for communicating with the megawood chatbot backend
 
-import type { ApiResponse, PresenceResponse, ConversationResponse, TerracePlanData } from '../types';
+import type {
+  ApiResponse,
+  PresenceResponse,
+  ConversationResponse,
+  TerracePlanData,
+  EntryContext,
+  PageContext,
+  DealerFlowContext,
+} from '../types';
 
 const DEFAULT_API_URL = 'https://mw-chatbot-backend.vercel.app/chat';
 // The token is embedded as a fallback so the widget works without a .env file.
@@ -46,9 +54,35 @@ function appendFormValue(formData: FormData, key: string, value: unknown): void 
   formData.append(key, String(value));
 }
 
-export async function sendMessage(message: string, conversationId: string | null): Promise<ApiResponse> {
+function toApiEntryContext(entryContext: EntryContext | null | undefined): Record<string, string> | undefined {
+  if (!entryContext || !entryContext.goal || !entryContext.audiencePath) {
+    return undefined;
+  }
+  return {
+    goal: entryContext.goal,
+    audience_path: entryContext.audiencePath,
+  };
+}
+
+export async function sendMessage(
+  message: string,
+  conversationId: string | null,
+  entryContext?: EntryContext | null,
+  pageContext?: PageContext,
+  dealerFlowContext?: DealerFlowContext | null,
+): Promise<ApiResponse> {
   const body: Record<string, unknown> = { message };
   if (conversationId) body.conversation_id = conversationId;
+  const apiEntryContext = toApiEntryContext(entryContext);
+  if (apiEntryContext) body.entry_context = apiEntryContext;
+  if (pageContext) body.page_context = pageContext;
+  if (dealerFlowContext) {
+    body.dealer_flow_context = dealerFlowContext;
+    body.context = {
+      dealer_flow: dealerFlowContext,
+      page_context: pageContext,
+    };
+  }
   const response = await fetch(getApiUrl(), {
     method: 'POST',
     headers: buildAuthHeaders(true),

@@ -180,6 +180,14 @@
   justify-content: flex-start;
 }
 
+.chat-container.landscape-widget .entry-goal-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chat-container.landscape-widget .entry-flow {
+  max-width: 100%;
+}
+
 @media (max-width: 980px) {
   .chat-container.landscape-widget {
     width: 96vw;
@@ -193,5 +201,9 @@
   .chat-container.landscape-widget .planning-code-row,
   .chat-container.landscape-widget .planning-actions-row {
     flex-direction: column;
+  }
+
+  .chat-container.landscape-widget .entry-goal-grid {
+    grid-template-columns: 1fr;
   }
 }

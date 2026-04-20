@@ -4,9 +4,15 @@ interface ChatFooterProps {
   onSend: (text: string) => void;
   disabled?: boolean;
   conversationId?: string | null;
+  placeholder?: string;
 }
 
-export const ChatFooter: React.FC<ChatFooterProps> = ({ onSend, disabled, conversationId }) => {
+export const ChatFooter: React.FC<ChatFooterProps> = ({
+  onSend,
+  disabled,
+  conversationId,
+  placeholder = 'Stelle deine Frage...',
+}) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSend = useCallback(() => {
@@ -37,7 +43,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ onSend, disabled, conver
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder="Stelle deine Frage..."
+          placeholder={placeholder}
           onKeyDown={handleKeyDown}
           onChange={handleInput}
           disabled={disabled}

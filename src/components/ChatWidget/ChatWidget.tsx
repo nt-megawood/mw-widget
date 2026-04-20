@@ -11,6 +11,7 @@ import { useTeaser } from '../../hooks/useTeaser';
 import { usePresence } from '../../hooks/usePresence';
 import { getConversation, deleteConversation } from '../../services/api';
 import type { WidgetConfig, ConversationHistoryItem } from '../../types';
+import { getDefaultPromptPack, getPromptPack } from '../../config/promptPacks';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -20,20 +21,6 @@ interface ChatWidgetProps {
   onPlanningCodeDetected?: (code: string) => void;
   children?: React.ReactNode;
 }
-
-const CLASSIC_QUICK_REPLIES: QuickReply[] = [
-  { label: 'Wie kannst du mir helfen?', message: 'Was kannst du alles für mich tun?' },
-  { label: 'Informationen zu den megawood® Dielen', message: 'Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.' },
-  { label: 'Händlersuche', message: 'Ich suche einen Händler in meiner Nähe.' },
-];
-
-const LANDSCAPE_QUICK_REPLIES: QuickReply[] = [
-  { label: 'Wie kannst du mir helfen?', message: 'Was kannst du alles für mich tun?' },
-  { label: 'Informationen zu den megawood® Dielen', message: 'Erzähl mir mehr über die megawood® Dielen und ihre Eigenschaften.' },
-  { label: 'Händlersuche', message: 'Ich suche einen Händler in meiner Nähe.' },
-  { label: 'Neue Planung erstellen', message: 'Ich möchte eine neue Planung erstellen.' },
-  { label: 'Vorhandene Planung nutzen', message: '', action: 'request_planning_code_input' },
-];
 
 function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
   const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
@@ -71,15 +58,27 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     messages,
     activeQuickReplies,
     activeInputRequest,
+    entryContext,
+    isEntryComplete,
     isThinking,
     thinkingText,
+    setEntryGoal,
+    setAudiencePath,
+    startEntryFlow,
     sendMessage,
     handleQuickReply,
     addBotMessage,
     clearMessages,
     restoreMessages,
   } =
-    useChat({ conversationId, onConversationIdChange: saveConversationId, onPlanningCodeDetected });
+    useChat({
+      widgetId,
+      conversationId,
+      onConversationIdChange: saveConversationId,
+      onPlanningCodeDetected,
+      pageContext: config.pageContext,
+      widgetVariant: config.mode,
+    });
   const { isVisible: isTeaserVisible, dismiss: dismissTeaser } = useTeaser(
     config.teaser.show,
     isOpen
@@ -135,8 +134,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   };
 
   const handleSend = (text: string) => sendMessage(text);
+  const inputLockedByEntryFlow = messages.length === 0 && !isEntryComplete;
 
-  const quickReplies = config.mode === 'landscape' ? LANDSCAPE_QUICK_REPLIES : CLASSIC_QUICK_REPLIES;
+  const quickReplies: QuickReply[] = isEntryComplete && entryContext.audiencePath
+    ? getPromptPack(config.pageContext, entryContext.audiencePath)
+    : getDefaultPromptPack(config.pageContext);
   const posClass = `pos-${config.position}`;
   const initialGreeting = <InitialGreeting mode={config.mode} />;
 
@@ -166,10 +168,20 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   quickReplies={quickReplies}
                   contextualQuickReplies={activeQuickReplies}
                   inputRequest={activeInputRequest}
+                  entryContext={entryContext}
+                  isEntryComplete={isEntryComplete}
+                  onGoalSelect={setEntryGoal}
+                  onAudienceSelect={setAudiencePath}
+                  onStartEntryFlow={startEntryFlow}
                   onQuickReply={handleQuickReply}
                   onSubmitInputRequest={handleSend}
                 />
-                <ChatFooter onSend={handleSend} disabled={isThinking} conversationId={conversationId} />
+                <ChatFooter
+                  onSend={handleSend}
+                  disabled={isThinking || inputLockedByEntryFlow}
+                  conversationId={conversationId}
+                  placeholder={inputLockedByEntryFlow ? 'Bitte zuerst Ziel und Zielgruppe auswählen.' : 'Stelle deine Frage...'}
+                />
               </div>
               {children}
             </div>
@@ -184,10 +196,20 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 quickReplies={quickReplies}
                 contextualQuickReplies={activeQuickReplies}
                 inputRequest={activeInputRequest}
+                entryContext={entryContext}
+                isEntryComplete={isEntryComplete}
+                onGoalSelect={setEntryGoal}
+                onAudienceSelect={setAudiencePath}
+                onStartEntryFlow={startEntryFlow}
                 onQuickReply={handleQuickReply}
                 onSubmitInputRequest={handleSend}
               />
-              <ChatFooter onSend={handleSend} disabled={isThinking} conversationId={conversationId} />
+              <ChatFooter
+                onSend={handleSend}
+                disabled={isThinking || inputLockedByEntryFlow}
+                conversationId={conversationId}
+                placeholder={inputLockedByEntryFlow ? 'Bitte zuerst Ziel und Zielgruppe auswählen.' : 'Stelle deine Frage...'}
+              />
             </>
           )}
         </div>

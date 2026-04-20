@@ -14,6 +14,9 @@ import type { ShapeVariant } from './planningData';
 
 const DEFAULT_DIELEN_ID = 5;
 const DEFAULT_FARBE_ID = 37;
+const PLANNER_CHECKPOINT_EVENT = 'mw:planner-checkpoint';
+
+type PlannerCheckpoint = 'planner_saved' | 'pdf_export_clicked';
 
 interface DimensionValues {
   [key: string]: string;
@@ -22,6 +25,14 @@ interface DimensionValues {
 interface PlanningEditorProps {
   onPlanningCodeDetected?: (code: string) => void;
   detectedCode?: string;
+}
+
+function dispatchPlannerCheckpoint(checkpoint: PlannerCheckpoint): void {
+  try {
+    window.dispatchEvent(new CustomEvent(PLANNER_CHECKPOINT_EVENT, { detail: { checkpoint } }));
+  } catch {
+    // No-op by design: checkpoint hooks must never block planner actions.
+  }
 }
 
 export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) => {
@@ -136,6 +147,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       const nextCode = result.terrassencode || String(payload.terrassencode || '');
       if (nextCode) setPlanningCode(nextCode);
       setStatusMsg(`Planung gespeichert. Aktueller Code: ${nextCode}`, 'success');
+      dispatchPlannerCheckpoint('planner_saved');
       // reload to reflect server state
       const reloaded = await loadTerracePlanData(nextCode);
       setLoadedPayload(reloaded);
@@ -153,6 +165,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       return;
     }
     const url = buildBauplanPdfUrl(code);
+    dispatchPlannerCheckpoint('pdf_export_clicked');
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -163,6 +176,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       return;
     }
     const url = buildMateriallistePdfUrl(code);
+    dispatchPlannerCheckpoint('pdf_export_clicked');
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 

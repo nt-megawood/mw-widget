@@ -27,7 +27,8 @@ Classic Widget:
 
 ```html
 <script src="https://nt-megawood.github.io/mw-widget/embed.js"
-  data-chatbot-url="https://nt-megawood.github.io/mw-widget/index.html">
+  data-chatbot-url="https://nt-megawood.github.io/mw-widget/index.html"
+  data-page-context="start">
 </script>
 ```
 
@@ -36,6 +37,7 @@ Landscape Widget:
 ```html
 <script src="https://nt-megawood.github.io/mw-widget/embed.js"
   data-chatbot-url="https://nt-megawood.github.io/mw-widget/index-landscape.html"
+  data-page-context="planner"
   data-width="980"
   data-height="620">
 </script>
@@ -111,6 +113,26 @@ Show a welcome popup after 10 seconds when the chat is still closed:
 | `data-teaser` | | `false` | Show teaser popup (`true`/`false`) |
 | `data-teaser-title` | | — | Teaser heading text |
 | `data-teaser-text` | | — | Teaser body text |
+| `data-page-context` | | `start` / `planner` | Prompt context (`start`, `product_detail`, `planner`) |
+
+### Page Context Prompt Packs
+
+The widget selects initial quick-start prompts from a centralized prompt-pack config:
+
+- `src/config/promptPacks.ts`
+- `src/config/pageContext.ts`
+
+Selection dimensions:
+
+- `page_context`: `start` | `product_detail` | `planner`
+- `audience_path` (from entry flow): `privatkunde` | `gewerblich`
+
+To add a new context-specific pack:
+
+1. Add the new prompt set for both audience paths in `src/config/promptPacks.ts`.
+2. Extend `PageContext` in `src/types/index.ts`.
+3. Add normalization aliases in `src/config/pageContext.ts`.
+4. Pass the new context via `data-page-context` in the embed script.
 
 ### Multiple Widgets on One Page
 

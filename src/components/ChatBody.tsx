@@ -1,14 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { useMemo, useState } from 'react';
-import type { InputRequest, Message, QuickReplyOption } from '../types';
+import type { AudiencePath, EntryContext, EntryGoal, InputRequest, Message, QuickReplyAction, QuickReplyOption } from '../types';
 import { BotMessage } from './Message/BotMessage';
 import { UserMessage } from './Message/UserMessage';
 import { ThinkingIndicator } from './Message/ThinkingIndicator';
+import { EntryFlow } from './EntryFlow/EntryFlow';
 
 export interface QuickReply {
   label: string;
   message: string;
-  action?: 'send_message' | 'request_planning_code_input';
+  action?: QuickReplyAction;
 }
 
 interface ChatBodyProps {
@@ -19,6 +20,11 @@ interface ChatBodyProps {
   quickReplies: QuickReply[];
   contextualQuickReplies?: QuickReplyOption[];
   inputRequest?: InputRequest | null;
+  entryContext: EntryContext;
+  isEntryComplete: boolean;
+  onGoalSelect: (goal: EntryGoal) => void;
+  onAudienceSelect: (audiencePath: AudiencePath) => void;
+  onStartEntryFlow: () => void;
   onQuickReply: (reply: QuickReplyOption) => void;
   onSubmitInputRequest: (payloadText: string) => void;
 }
@@ -200,6 +206,11 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   quickReplies,
   contextualQuickReplies = [],
   inputRequest,
+  entryContext,
+  isEntryComplete,
+  onGoalSelect,
+  onAudienceSelect,
+  onStartEntryFlow,
   onQuickReply,
   onSubmitInputRequest,
 }) => {
@@ -212,7 +223,15 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   return (
     <div className="chat-body">
       {initialGreeting}
-      {messages.length === 0 && quickReplies.length > 0 && (
+      {messages.length === 0 && !isEntryComplete && (
+        <EntryFlow
+          entryContext={entryContext}
+          onGoalSelect={onGoalSelect}
+          onAudienceSelect={onAudienceSelect}
+          onStart={onStartEntryFlow}
+        />
+      )}
+      {messages.length === 0 && isEntryComplete && quickReplies.length > 0 && (
         <div className="button-group">
           {quickReplies.map((reply, i) => (
             <button

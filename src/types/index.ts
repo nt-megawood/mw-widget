@@ -9,6 +9,21 @@ export interface Message {
   sessionId?: string;
 }
 
+export type EntryGoal =
+  | 'produktberatung'
+  | 'terrassenplanung'
+  | 'vorhandene_planung'
+  | 'händler_finden';
+
+export type AudiencePath = 'privatkunde' | 'gewerblich';
+
+export type PageContext = 'start' | 'product_detail' | 'planner';
+
+export interface EntryContext {
+  goal: EntryGoal | null;
+  audiencePath: AudiencePath | null;
+}
+
 export type Source = string;
 
 export interface ApiResponse {
@@ -19,10 +34,32 @@ export interface ApiResponse {
   conversation_id: string;
 }
 
+export type QuickReplyAction =
+  | 'send_message'
+  | 'open_url'
+  | 'request_location_input'
+  | 'request_planning_code_input'
+  | 'start_dealer_flow'
+  | 'open_dealer_results';
+
+export type DealerFlowStatus =
+  | 'started'
+  | 'location_requested'
+  | 'location_submitted'
+  | 'results_shown'
+  | 'click_completed_intent';
+
+export interface DealerFlowContext {
+  status: DealerFlowStatus;
+  city?: string;
+  postal_code?: string;
+  results_url?: string;
+}
+
 export interface QuickReplyOption {
   label: string;
   message: string;
-  action?: 'send_message' | 'open_url' | 'request_location_input' | 'request_planning_code_input';
+  action?: QuickReplyAction;
   url?: string;
 }
 
@@ -80,6 +117,7 @@ export interface TeaserConfig {
 export interface WidgetConfig {
   mode: 'classic' | 'landscape';
   position: Position;
+  pageContext: PageContext;
   teaser: TeaserConfig;
   apiUrl?: string;
 }

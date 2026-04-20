@@ -12,6 +12,7 @@
   const teaserEnabled = (script && script.getAttribute('data-teaser')) === 'true';
   const teaserTitle   = (script && script.getAttribute('data-teaser-title')) || '';
   const teaserText    = (script && script.getAttribute('data-teaser-text'))  || '';
+  const pageContext   = (script && script.getAttribute('data-page-context')) || '';
 
   const isLandscapeWidget = /index-landscape\.html/i.test(widgetUrl);
   const defaultWidth = isLandscapeWidget ? 980 : 480;
@@ -32,6 +33,7 @@
   params.push('position=' + encodeURIComponent(position));
   if (teaserTitle) params.push('teaser-title=' + encodeURIComponent(teaserTitle));
   if (teaserText) params.push('teaser-text=' + encodeURIComponent(teaserText));
+  if (pageContext) params.push('page_context=' + encodeURIComponent(pageContext));
   
   finalUrl = widgetUrl + sep + params.join('&');
 
