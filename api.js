@@ -1,4 +1,4 @@
-const API_URL = window.CHATBOT_API_URL || 'https://mw-chatbot-backend.vercel.app/chat';
+const API_URL = window.CHATBOT_API_URL || 'http://localhost:8000/chat';
 // Derive the conversation base URL by replacing known chat endpoints.
 // This ensures '/terrassenplaner/chat' -> '/conversation' (not '/terrassenplaner/conversation').
 const CONVERSATION_URL = API_URL

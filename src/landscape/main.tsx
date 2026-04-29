@@ -8,7 +8,7 @@ import '../styles/landscape.css';
 
 // Override API URL for terrace planner endpoint
 (window as unknown as Record<string, string>).CHATBOT_API_URL =
-  'https://mw-chatbot-backend.vercel.app/terrassenplaner/chat';
+  'http://localhost:8000/terrassenplaner/chat';
 
 function getTeaserConfig(): TeaserConfig {
   const params = new URLSearchParams(window.location.search);

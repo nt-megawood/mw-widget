@@ -10,7 +10,7 @@ import type {
   DealerFlowContext,
 } from '../types';
 
-const DEFAULT_API_URL = 'https://mw-chatbot-backend.vercel.app/chat';
+const DEFAULT_API_URL = 'http://localhost:8000/chat';
 // The token is embedded as a fallback so the widget works without a .env file.
 // Override by setting VITE_AUTH_TOKEN in your environment.
 const AUTH_TOKEN =
@@ -21,6 +21,10 @@ const TERRACE_SAVE_URL = 'https://betaplaner.megawood.com/api/terrassedaten/spei
 const TERRACE_BAUPLAN_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/bauplan/pdf';
 const TERRACE_MATERIALLISTE_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/materialliste/pdf';
 
+export function getAuthToken(): string {
+  return AUTH_TOKEN;
+}
+
 function getApiUrl(): string {
   return (window as unknown as Record<string, string>).CHATBOT_API_URL || DEFAULT_API_URL;
 }
@@ -29,6 +33,32 @@ function getConversationUrl(): string {
   return getApiUrl()
     .replace(/\/terrassenplaner\/chat$/, '/conversation')
     .replace(/\/chat$/, '/conversation');
+}
+
+export function getLiveWebSocketUrl(): string {
+  const globalLiveUrl = (window as unknown as Record<string, string>).CHATBOT_LIVE_WS_URL;
+  if (globalLiveUrl) {
+    const configuredUrl = new URL(globalLiveUrl);
+    if (!configuredUrl.searchParams.get('token')) {
+      configuredUrl.searchParams.set('token', AUTH_TOKEN);
+    }
+    return configuredUrl.toString();
+  }
+
+  const apiUrl = getApiUrl();
+  const liveHttpUrl = apiUrl
+    .replace(/\/terrassenplaner\/chat$/, '/live')
+    .replace(/\/chat$/, '/live');
+
+  const wsBase = liveHttpUrl
+    .replace(/^https:\/\//i, 'wss://')
+    .replace(/^http:\/\//i, 'ws://');
+
+  const url = new URL(wsBase);
+  if (!url.searchParams.get('token')) {
+    url.searchParams.set('token', AUTH_TOKEN);
+  }
+  return url.toString();
 }
 
 function buildAuthHeaders(includeJsonContentType = false): Record<string, string> {

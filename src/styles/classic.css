@@ -600,6 +600,30 @@
   font-size: 16px;
 }
 
+.chat-footer .live-btn {
+  flex-shrink: 0;
+  border: 1px solid var(--primary-red);
+  background: #fff;
+  color: var(--primary-red);
+  height: 38px;
+  border-radius: 20px;
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chat-footer .live-btn.active {
+  background: var(--primary-red);
+  color: #fff;
+}
+
+.chat-footer .live-btn:disabled,
+.chat-footer .send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .chat-footer input::placeholder {
   color: #aaa;
 }
@@ -613,6 +637,12 @@
   color: #999;
 }
 .footer-tools .branding {
+  text-align: center;
+}
+.footer-tools .live-status {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #7b7b7b;
   text-align: center;
 }
 .footer-tools .conversation-id {
