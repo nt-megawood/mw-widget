@@ -91,10 +91,18 @@
   top: auto; bottom: 100px; left: auto; right: 20px; transform: translateY(0);
 }
 .chat-teaser.pos-middle-left {
-  top: 50%; bottom: auto; left: 20px; right: auto; transform: translateY(-50%);
+  top: 50%;
+  bottom: auto;
+  left: 102px;
+  right: auto;
+  transform: translateY(-50%);
 }
 .chat-teaser.pos-middle-right {
-  top: 50%; bottom: auto; left: auto; right: 20px; transform: translateY(-50%);
+  top: 50%;
+  bottom: auto;
+  left: auto;
+  right: 102px;
+  transform: translateY(-50%);
 }
 
 .chat-teaser.hidden {
