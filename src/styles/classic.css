@@ -256,7 +256,8 @@
 
 .thumb-btn,
 .copy-btn,
-.speak-btn {
+.speak-btn,
+.info-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -269,10 +270,25 @@
 }
 .thumb-btn:hover,
 .copy-btn:hover,
-.speak-btn:hover { color: var(--primary-red); }
+.speak-btn:hover,
+.info-btn:hover { color: var(--primary-red); }
 
 .thumb-btn.active { color: var(--primary-red); }
 .speak-btn.active { color: var(--primary-red); }
+
+.info-btn {
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
 
 .meta-time {
   font-size: 11px;
@@ -643,12 +659,6 @@
   margin-top: 2px;
   font-size: 11px;
   color: #7b7b7b;
-  text-align: center;
-}
-.footer-tools .conversation-id {
-  margin-top: 2px;
-  font-size: 11px;
-  color: #999;
   text-align: center;
 }
 

@@ -3,7 +3,6 @@ import React, { useRef, useCallback } from 'react';
 interface ChatFooterProps {
   onSend: (text: string) => void;
   disabled?: boolean;
-  conversationId?: string | null;
   placeholder?: string;
   showLiveButton?: boolean;
   isLiveMode?: boolean;
@@ -14,7 +13,6 @@ interface ChatFooterProps {
 export const ChatFooter: React.FC<ChatFooterProps> = ({
   onSend,
   disabled,
-  conversationId,
   placeholder = 'Stelle deine Frage...',
   showLiveButton = false,
   isLiveMode = false,
@@ -78,9 +76,6 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
         {showLiveButton && liveStatusText && (
           <span className="live-status" role="status" aria-live="polite">{liveStatusText}</span>
         )}
-        <span className="conversation-id">
-          {conversationId ? `Kontext-ID: ${conversationId}` : 'Kontext-ID: –'}
-        </span>
       </div>
     </div>
   );

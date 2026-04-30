@@ -8,6 +8,7 @@ const BASE_URL = import.meta.env.BASE_URL;
 
 interface BotMessageProps {
   message: Message;
+  conversationId?: string | null;
 }
 
 const IconThumbUp = () => (
@@ -45,7 +46,7 @@ const IconSpeak = () => (
   </svg>
 );
 
-export const BotMessage: React.FC<BotMessageProps> = ({ message }) => {
+export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId }) => {
   const [thumbState, setThumbState] = useState<'up' | 'down' | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -131,6 +132,14 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message }) => {
             aria-label="Vorlesen"
           >
             <IconSpeak />
+          </button>
+          <button
+            className="info-btn"
+            title={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
+            aria-label={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
+            type="button"
+          >
+            i
           </button>
           <span
             className="meta-brand"
