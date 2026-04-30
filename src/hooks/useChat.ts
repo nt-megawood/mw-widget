@@ -237,6 +237,10 @@ function buildFallbackQuickReplies(answer: string, fromApi?: QuickReplyOption[])
   const lower = String(answer || '').toLowerCase();
   const existingCode = extractPlanningCode(answer);
 
+  if (lower.includes('muster') || lower.includes('kostenfreies exemplar') || lower.includes('kostenfreies muster')) {
+    return [buildMusterBestellenReply()];
+  }
+
   const asksForPlanningCode =
     lower.includes('planungscode')
     && (lower.includes('nenne') || lower.includes('gib') || lower.includes('hast') || lower.includes('angeben'));
@@ -473,6 +477,14 @@ function buildStartDealerFlowReply(): QuickReplyOption {
     label: 'Passenden Händler finden',
     message: '',
     action: 'start_dealer_flow',
+  };
+}
+
+function buildMusterBestellenReply(): QuickReplyOption {
+  return {
+    label: 'Kostenfreies Muster bestellen',
+    message: '',
+    action: 'request_muster_bestellen_input',
   };
 }
 
@@ -793,6 +805,17 @@ export function useChat({
         type: 'planning_code_input',
         title: 'Bitte gib deinen Planungscode ein, damit ich deine bestehende Planung laden kann.',
         fields: [{ key: 'planning_code', label: 'Planungscode' }],
+      });
+      setActiveQuickReplies([]);
+      return;
+    }
+
+    if (reply.action === 'request_muster_bestellen_input') {
+      addBotMessage('Gerne. Ich öffne dir die Musterbestellung. Du kannst mehrere Dielen hinzufügen und die Lieferadresse direkt im Formular angeben.');
+      setActiveInputRequest({
+        type: 'muster_bestellen_input',
+        title: 'Kostenfreies Muster bestellen',
+        fields: [],
       });
       setActiveQuickReplies([]);
       return;

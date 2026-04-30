@@ -4,7 +4,7 @@
   --bg-light: #fafafa;
   --bg-white: #ffffff;
   --text-dark: #333;
-  --shadow-light: rgba(0,0,0,0.1);
+  --shadow-light: rgba(0, 0, 0, 0.1);
 }
 
 .chat-container {
@@ -27,28 +27,67 @@
 
 /* Position Varianten */
 .chat-container.pos-top-left {
-  top: 20px; bottom: auto; left: 20px; right: auto; transform: translateY(0);
+  top: 20px;
+  bottom: auto;
+  left: 20px;
+  right: auto;
+  transform: translateY(0);
 }
+
 .chat-container.pos-top-center {
-  top: 20px; bottom: auto; left: 50%; right: auto; transform: translateX(-50%);
+  top: 20px;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
 }
+
 .chat-container.pos-top-right {
-  top: 20px; bottom: auto; left: auto; right: 20px; transform: translateY(0);
+  top: 20px;
+  bottom: auto;
+  left: auto;
+  right: 20px;
+  transform: translateY(0);
 }
+
 .chat-container.pos-bottom-left {
-  top: auto; bottom: 20px; left: 20px; right: auto; transform: translateY(0);
+  top: auto;
+  bottom: 20px;
+  left: 20px;
+  right: auto;
+  transform: translateY(0);
 }
+
 .chat-container.pos-bottom-center {
-  top: auto; bottom: 20px; left: 50%; right: auto; transform: translateX(-50%);
+  top: auto;
+  bottom: 20px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
 }
+
 .chat-container.pos-bottom-right {
-  top: auto; bottom: 20px; left: auto; right: 20px; transform: translateY(0);
+  top: auto;
+  bottom: 20px;
+  left: auto;
+  right: 20px;
+  transform: translateY(0);
 }
+
 .chat-container.pos-middle-left {
-  top: 50%; bottom: auto; left: 20px; right: auto; transform: translateY(-50%);
+  top: 50%;
+  bottom: auto;
+  left: 20px;
+  right: auto;
+  transform: translateY(-50%);
 }
+
 .chat-container.pos-middle-right {
-  top: 50%; bottom: auto; left: auto; right: 20px; transform: translateY(-50%);
+  top: 50%;
+  bottom: auto;
+  left: auto;
+  right: 20px;
+  transform: translateY(-50%);
 }
 
 .chat-container.closed {
@@ -64,7 +103,7 @@
   width: 260px;
   background: var(--bg-white);
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   padding: 14px 16px 12px;
   z-index: 1101;
   transition: opacity 0.25s, transform 0.25s;
@@ -73,23 +112,53 @@
 
 /* Teaser Position Varianten */
 .chat-teaser.pos-top-left {
-  top: 100px; bottom: auto; left: 20px; right: auto; transform: translateY(0);
+  top: 100px;
+  bottom: auto;
+  left: 20px;
+  right: auto;
+  transform: translateY(0);
 }
+
 .chat-teaser.pos-top-center {
-  top: 100px; bottom: auto; left: 50%; right: auto; transform: translateX(-50%);
+  top: 100px;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
 }
+
 .chat-teaser.pos-top-right {
-  top: 100px; bottom: auto; left: auto; right: 20px; transform: translateY(0);
+  top: 100px;
+  bottom: auto;
+  left: auto;
+  right: 20px;
+  transform: translateY(0);
 }
+
 .chat-teaser.pos-bottom-left {
-  top: auto; bottom: 100px; left: 20px; right: auto; transform: translateY(0);
+  top: auto;
+  bottom: 100px;
+  left: 20px;
+  right: auto;
+  transform: translateY(0);
 }
+
 .chat-teaser.pos-bottom-center {
-  top: auto; bottom: 100px; left: 50%; right: auto; transform: translateX(-50%);
+  top: auto;
+  bottom: 100px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
 }
+
 .chat-teaser.pos-bottom-right {
-  top: auto; bottom: 100px; left: auto; right: 20px; transform: translateY(0);
+  top: auto;
+  bottom: 100px;
+  left: auto;
+  right: 20px;
+  transform: translateY(0);
 }
+
 .chat-teaser.pos-middle-left {
   top: 50%;
   bottom: auto;
@@ -97,6 +166,7 @@
   right: auto;
   transform: translateY(-50%);
 }
+
 .chat-teaser.pos-middle-right {
   top: 50%;
   bottom: auto;
@@ -124,7 +194,9 @@
   padding: 0;
 }
 
-.teaser-close:hover { color: #333; }
+.teaser-close:hover {
+  color: #333;
+}
 
 .teaser-header {
   display: flex;
@@ -185,14 +257,65 @@
 }
 
 /* Toggle Position Varianten */
-.chat-toggle.pos-top-left     { top: 30px;  left: 30px;               bottom: auto; right: auto; }
-.chat-toggle.pos-top-center   { top: 30px;  left: 50%; right: auto;   bottom: auto; transform: translateX(-50%); }
-.chat-toggle.pos-top-right    { top: 30px;  right: 30px;              bottom: auto; left: auto; }
-.chat-toggle.pos-bottom-left  { bottom: 30px; left: 30px;             top: auto;    right: auto; }
-.chat-toggle.pos-bottom-center{ bottom: 30px; left: 50%; right: auto; top: auto;    transform: translateX(-50%); }
-.chat-toggle.pos-bottom-right  { bottom: 30px; right: 30px;            top: auto;    left: auto; }
-.chat-toggle.pos-middle-left   { top: 50%; left: 30px;   bottom: auto; right: auto;  transform: translateY(-50%); }
-.chat-toggle.pos-middle-right  { top: 50%; right: 30px;  bottom: auto; left: auto;   transform: translateY(-50%); }
+.chat-toggle.pos-top-left {
+  top: 30px;
+  left: 30px;
+  bottom: auto;
+  right: auto;
+}
+
+.chat-toggle.pos-top-center {
+  top: 30px;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translateX(-50%);
+}
+
+.chat-toggle.pos-top-right {
+  top: 30px;
+  right: 30px;
+  bottom: auto;
+  left: auto;
+}
+
+.chat-toggle.pos-bottom-left {
+  bottom: 30px;
+  left: 30px;
+  top: auto;
+  right: auto;
+}
+
+.chat-toggle.pos-bottom-center {
+  bottom: 30px;
+  left: 50%;
+  right: auto;
+  top: auto;
+  transform: translateX(-50%);
+}
+
+.chat-toggle.pos-bottom-right {
+  bottom: 30px;
+  right: 30px;
+  top: auto;
+  left: auto;
+}
+
+.chat-toggle.pos-middle-left {
+  top: 50%;
+  left: 30px;
+  bottom: auto;
+  right: auto;
+  transform: translateY(-50%);
+}
+
+.chat-toggle.pos-middle-right {
+  top: 50%;
+  right: 30px;
+  bottom: auto;
+  left: auto;
+  transform: translateY(-50%);
+}
 
 /* Header */
 .chat-header {
@@ -203,7 +326,8 @@
   background: var(--bg-white);
   /* subtle bottom shadow instead of border */
   box-shadow: 0 1px 2px var(--shadow-light);
-  border-bottom: 1px solid #ddd; /* light grey separator under header */
+  border-bottom: 1px solid #ddd;
+  /* light grey separator under header */
 }
 
 .logo-img {
@@ -276,13 +400,21 @@
   user-select: none;
   transition: color 0.15s;
 }
+
 .thumb-btn:hover,
 .copy-btn:hover,
 .speak-btn:hover,
-.info-btn:hover { color: var(--primary-red); }
+.info-btn:hover {
+  color: var(--primary-red);
+}
 
-.thumb-btn.active { color: var(--primary-red); }
-.speak-btn.active { color: var(--primary-red); }
+.thumb-btn.active {
+  color: var(--primary-red);
+}
+
+.speak-btn.active {
+  color: var(--primary-red);
+}
 
 .info-btn {
   font-size: 11px;
@@ -309,6 +441,7 @@
   cursor: pointer;
   user-select: none;
 }
+
 .meta-brand:hover {
   color: #999;
   text-decoration: underline;
@@ -319,7 +452,7 @@
   position: fixed;
   background: var(--bg-white);
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   padding: 14px 16px 12px;
   font-size: 13px;
   font-family: inherit;
@@ -329,6 +462,7 @@
   z-index: 2000;
   transition: opacity 0.2s, transform 0.2s;
 }
+
 .brand-popup-close {
   position: absolute;
   top: 8px;
@@ -341,16 +475,22 @@
   color: #999;
   padding: 0;
 }
-.brand-popup-close:hover { color: #555; }
+
+.brand-popup-close:hover {
+  color: #555;
+}
+
 .brand-popup p {
   margin: 0;
   padding-right: 14px;
 }
+
 .brand-popup.hidden {
   opacity: 0;
   pointer-events: none;
   transform: translateY(4px);
 }
+
 .brand-popup-footer {
   margin-top: 10px;
   font-size: 11px;
@@ -362,6 +502,7 @@
   justify-content: flex-end;
   gap: 5px;
 }
+
 .brand-popup-footer img {
   width: 16px;
   height: 16px;
@@ -391,7 +532,8 @@
 }
 
 .avatar {
-  display: none; /* no longer used */
+  display: none;
+  /* no longer used */
 }
 
 .bubble {
@@ -460,7 +602,7 @@
   background: #fff;
 }
 
-.entry-flow-section + .entry-flow-section {
+.entry-flow-section+.entry-flow-section {
   margin-top: 14px;
 }
 
@@ -561,9 +703,11 @@
   min-width: 130px;
   text-align: center;
 }
+
 .chat-btn:hover {
   background: var(--primary-red-dark);
 }
+
 .chat-btn.whatsapp {
   background: #25D366;
 }
@@ -651,6 +795,7 @@
 .chat-footer input::placeholder {
   color: #aaa;
 }
+
 .footer-tools {
   display: flex;
   flex-direction: column;
@@ -660,9 +805,11 @@
   font-size: 12px;
   color: #999;
 }
+
 .footer-tools .branding {
   text-align: center;
 }
+
 .footer-tools .live-status {
   margin-top: 2px;
   font-size: 11px;
@@ -705,10 +852,23 @@
 }
 
 /* Rendered markdown inside bot bubbles */
-.bubble p { margin: 0 0 8px; }
-.bubble p:last-child { margin-bottom: 0; }
-.bubble ul { margin: 4px 0 8px 0; padding-left: 18px; }
-.bubble li { margin-bottom: 4px; line-height: 1.4; }
+.bubble p {
+  margin: 0 0 8px;
+}
+
+.bubble p:last-child {
+  margin-bottom: 0;
+}
+
+.bubble ul {
+  margin: 4px 0 8px 0;
+  padding-left: 18px;
+}
+
+.bubble li {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
 
 .bubble a {
   color: var(--primary-red);
@@ -757,6 +917,44 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+
+.muster-order-address-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.muster-order-position-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.muster-order-position-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr) 90px auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.muster-order-card .dimension-input-field input {
+  width: 100%;
+}
+
+.muster-order-card .dimension-submit-btn,
+.muster-position-add-btn {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.muster-position-remove-btn {
+  min-width: 0;
+  padding: 8px 12px;
+  white-space: nowrap;
 }
 
 .dealer-input-grid {
@@ -824,11 +1022,28 @@
   animation: thinking-dot 1.5s infinite ease-in-out;
 }
 
-.thinking-dots span:nth-child(1) { animation-delay: 0s; }
-.thinking-dots span:nth-child(2) { animation-delay: 0.25s; }
-.thinking-dots span:nth-child(3) { animation-delay: 0.5s; }
+.thinking-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.thinking-dots span:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+.thinking-dots span:nth-child(3) {
+  animation-delay: 0.5s;
+}
 
 @keyframes thinking-dot {
-  0%, 100% { opacity: 0.2; transform: translateY(0); }
-  50%       { opacity: 1;   transform: translateY(-3px); }
+
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }

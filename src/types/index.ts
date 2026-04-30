@@ -39,6 +39,7 @@ export type QuickReplyAction =
   | 'open_url'
   | 'request_location_input'
   | 'request_planning_code_input'
+  | 'request_muster_bestellen_input'
   | 'start_dealer_flow'
   | 'open_dealer_results';
 
@@ -69,7 +70,7 @@ export interface InputRequestField {
 }
 
 export interface InputRequest {
-  type: 'dimension_input' | 'dealer_location_input' | 'planning_code_input';
+  type: 'dimension_input' | 'dealer_location_input' | 'planning_code_input' | 'muster_bestellen_input';
   form?: ShapeVariant;
   title?: string;
   fields: InputRequestField[];

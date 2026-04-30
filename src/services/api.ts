@@ -12,7 +12,7 @@ import type {
 import { getAuthData } from '../hooks/useAuth';
 import { isB2BUser } from '../hooks/useAuth';
 
-const DEFAULT_API_URL = 'http://localhost:8000/chat';
+const DEFAULT_API_URL = 'https://mw-chatbot-backend.vercel.app/chat';
 // The token is embedded as a fallback so the widget works without a .env file.
 // Override by setting VITE_AUTH_TOKEN in your environment.
 const AUTH_TOKEN =
@@ -123,6 +123,12 @@ export async function sendMessage(
       user_id: auth.user.id,
       user_name: auth.user.name,
       email: auth.user.email,
+      first_name: auth.user.name?.split(' ')[0] || null,
+      last_name: auth.user.name?.split(' ').slice(1).join(' ') || null,
+      street: auth.user.profile?.address1 || null,
+      house_number: auth.user.profile?.address2 || null,
+      city: auth.user.profile?.city || null,
+      country: auth.user.profile?.country || null,
       company: auth.user.profile?.company || null,
       postal_code: auth.user.profile?.postal_code || null,
       is_b2b: isB2BUser(auth) || false,

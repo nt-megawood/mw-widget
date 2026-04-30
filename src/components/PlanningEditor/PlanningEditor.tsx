@@ -209,7 +209,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
           </button>
         </div>
         <p className="planning-hint">
-          Sobald der Chat eine Planung erstellt hat, wird der Code hier automatisch erkannt.
+          Sobald Woody eine Planung erstellt hat, wird der Code hier automatisch erkannt.
         </p>
         <p
           className={`planning-status${status.type === 'error' ? ' is-error' : status.type === 'success' ? ' is-success' : ''}`}
