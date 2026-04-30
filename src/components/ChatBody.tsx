@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useMemo, useState } from 'react';
-import type { AudiencePath, EntryContext, EntryGoal, InputRequest, Message, QuickReplyAction, QuickReplyOption } from '../types';
+import type { EntryContext, EntryGoal, InputRequest, Message, QuickReplyAction, QuickReplyOption } from '../types';
 import { BotMessage } from './Message/BotMessage';
 import { UserMessage } from './Message/UserMessage';
 import { ThinkingIndicator } from './Message/ThinkingIndicator';
@@ -23,7 +23,6 @@ interface ChatBodyProps {
   entryContext: EntryContext;
   isEntryComplete: boolean;
   onGoalSelect: (goal: EntryGoal) => void;
-  onAudienceSelect: (audiencePath: AudiencePath) => void;
   onStartEntryFlow: () => void;
   onQuickReply: (reply: QuickReplyOption) => void;
   onSubmitInputRequest: (payloadText: string) => void;
@@ -209,7 +208,6 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   entryContext,
   isEntryComplete,
   onGoalSelect,
-  onAudienceSelect,
   onStartEntryFlow,
   onQuickReply,
   onSubmitInputRequest,
@@ -227,7 +225,6 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
         <EntryFlow
           entryContext={entryContext}
           onGoalSelect={onGoalSelect}
-          onAudienceSelect={onAudienceSelect}
           onStart={onStartEntryFlow}
         />
       )}

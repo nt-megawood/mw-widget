@@ -13,6 +13,7 @@ import { getConversation, deleteConversation, getLiveWebSocketUrl } from '../../
 import type { WidgetConfig, ConversationHistoryItem } from '../../types';
 import { getDefaultPromptPack, getPromptPack } from '../../config/promptPacks';
 import { speakText } from '../../utils/speech';
+import { getAuthData } from '../../hooks/useAuth';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -105,12 +106,15 @@ interface MinimalSpeechRecognition {
 
 function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
   const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  const auth = getAuthData();
+  const userName = auth?.user?.name ? ` Hallo ${auth.user.name}!` : '';
+
   return (
     <div className="message-wrapper bot initial">
       <div className="bot-icon"><img src={`${BASE_URL}woody.jpg`} alt="Woody" /></div>
       <div className="bot-bubble-col">
         <div className="bubble">
-          <p>Willkommen bei megawood&#174;! &#128075;</p>
+          <p>{userName} Willkommen bei megawood&#174;! &#128075;</p>
           {mode === 'landscape' ? (
             <>
               <p>Ich bin <b>Handwerker Woody</b>, dein persönlicher KI-Assistent! Du kannst mir alle Fragen zu unseren Produkten stellen oder eine Planung mit mir erstellen.</p>
@@ -147,7 +151,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     isThinking,
     thinkingText,
     setEntryGoal,
-    setAudiencePath,
     startEntryFlow,
     sendMessage,
     handleQuickReply,
@@ -467,7 +470,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           }
           const channelData = event.inputBuffer.getChannelData(0);
           const pcm16 = downsampleTo16k(channelData, inputCtx.sampleRate);
-          liveSocketRef.current.send(pcm16.buffer);
+          liveSocketRef.current.send(pcm16.buffer as ArrayBuffer);
         };
 
         sourceNode.connect(processor);
@@ -614,7 +617,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   entryContext={entryContext}
                   isEntryComplete={isEntryComplete}
                   onGoalSelect={setEntryGoal}
-                  onAudienceSelect={setAudiencePath}
                   onStartEntryFlow={startEntryFlow}
                   onQuickReply={handleQuickReply}
                   onSubmitInputRequest={handleSend}
@@ -642,7 +644,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 entryContext={entryContext}
                 isEntryComplete={isEntryComplete}
                 onGoalSelect={setEntryGoal}
-                onAudienceSelect={setAudiencePath}
                 onStartEntryFlow={startEntryFlow}
                 onQuickReply={handleQuickReply}
                 onSubmitInputRequest={handleSend}

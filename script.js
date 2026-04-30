@@ -935,7 +935,7 @@ function sendUserMessage(text) {
     .catch(err => {
       removeIndicator();
       addBotMessage(
-        'Es tut mir leid, ich konnte keine Verbindung zum Server herstellen. Bitte versuche es später erneut.',
+        'Es tut mir leid, ich konnte keine Verbindung zum Server herstellen. Bitte versuche es später erneut, oder kontaktiere unseren Support.',
         [],
         '',
         { trackHistory: false }

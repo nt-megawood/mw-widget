@@ -9,6 +9,8 @@ import type {
   PageContext,
   DealerFlowContext,
 } from '../types';
+import { getAuthData } from '../hooks/useAuth';
+import { isB2BUser } from '../hooks/useAuth';
 
 const DEFAULT_API_URL = 'http://localhost:8000/chat';
 // The token is embedded as a fallback so the widget works without a .env file.
@@ -113,6 +115,20 @@ export async function sendMessage(
       page_context: pageContext,
     };
   }
+
+  // Include user context from localStorage if available
+  const auth = getAuthData();
+  if (auth?.user) {
+    body.user_context = {
+      user_id: auth.user.id,
+      user_name: auth.user.name,
+      email: auth.user.email,
+      company: auth.user.profile?.company || null,
+      postal_code: auth.user.profile?.postal_code || null,
+      is_b2b: isB2BUser(auth) || false,
+    };
+  }
+
   const response = await fetch(getApiUrl(), {
     method: 'POST',
     headers: buildAuthHeaders(true),
@@ -202,3 +218,5 @@ export function buildMateriallistePdfUrl(planningCode: string): string {
   }
   return `${TERRACE_MATERIALLISTE_PDF_URL_BASE}/${encodeURIComponent(cleanedCode)}`;
 }
+
+  //is_b2b: isB2BUser(auth) || false

@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type {
-  AudiencePath,
   DealerFlowContext,
   EntryContext,
   EntryGoal,
@@ -12,6 +11,7 @@ import type {
 import { generateUUID } from '../utils/uuid';
 import { sendMessage as apiSendMessage } from '../services/api';
 import { dispatchDealerConversionEvent } from '../services/analytics';
+import { getAudiencePath, useAuth } from './useAuth';
 
 const EMPTY_ENTRY_CONTEXT: EntryContext = {
   goal: null,
@@ -534,6 +534,7 @@ export function useChat({
   const [dealerCtaCheckpoints, setDealerCtaCheckpoints] = useState<DealerCtaCheckpointState>(
     INITIAL_DEALER_CTA_CHECKPOINTS,
   );
+  const auth = useAuth();
   const sessionIdRef = useRef(generateUUID());
   const thinkingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const emittedDealerEventsRef = useRef<Set<string>>(new Set());
@@ -543,6 +544,20 @@ export function useChat({
   useEffect(() => {
     saveEntryContext(widgetId, entryContext);
   }, [widgetId, entryContext]);
+
+  // Auto-set audience path from auth state: logged in => gewerblich, otherwise privatkunde.
+  useEffect(() => {
+    const audiencePath = getAudiencePath(auth) ?? 'privatkunde';
+    setEntryContext((prev) => {
+      if (prev.audiencePath === audiencePath) {
+        return prev;
+      }
+      return {
+        ...prev,
+        audiencePath,
+      };
+    });
+  }, [auth]);
 
   useEffect(() => {
     const handlePlannerCheckpoint = (event: Event) => {
@@ -565,10 +580,6 @@ export function useChat({
 
   const setEntryGoal = useCallback((goal: EntryGoal) => {
     setEntryContext((prev) => ({ ...prev, goal }));
-  }, []);
-
-  const setAudiencePath = useCallback((audiencePath: AudiencePath) => {
-    setEntryContext((prev) => ({ ...prev, audiencePath }));
   }, []);
 
   const buildEntryStartMessage = useCallback((): string | null => {
@@ -741,7 +752,7 @@ export function useChat({
     } catch (error) {
       if (currentSessionId !== sessionIdRef.current) return;
       stopThinking();
-      addBotMessage('Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut.');
+      addBotMessage('Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut, oder kontaktiere unseren Support.');
       console.error('Chat error:', error);
     }
   }, [
@@ -878,7 +889,6 @@ export function useChat({
     isThinking,
     thinkingText,
     setEntryGoal,
-    setAudiencePath,
     startEntryFlow,
     sendMessage,
     handleQuickReply,
