@@ -21,6 +21,7 @@ interface ChatBodyProps {
   inputRequest?: InputRequest | null;
   onQuickReply: (reply: QuickReplyOption) => void;
   onSubmitInputRequest: (payloadText: string) => void;
+  conversationId?: string | null;
 }
 
 function FormSketch({ form }: { form?: InputRequest['form'] }) {
@@ -202,6 +203,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   inputRequest,
   onQuickReply,
   onSubmitInputRequest,
+  conversationId,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -231,7 +233,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
       )}
       {messages.map((message) =>
         message.role === 'bot' ? (
-          <BotMessage key={message.id} message={message} />
+          <BotMessage key={message.id} message={message} conversationId={conversationId} />
         ) : (
           <UserMessage key={message.id} message={message} />
         )

@@ -612,11 +612,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   inputRequest={activeInputRequest}
                   onQuickReply={handleQuickReply}
                   onSubmitInputRequest={handleSend}
+                  conversationId={conversationId}
                 />
                 <ChatFooter
                   onSend={handleSend}
                   disabled={isThinking}
-                  conversationId={conversationId}
                   placeholder={'Stelle deine Frage...'}
                 />
               </div>
@@ -635,11 +635,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 inputRequest={activeInputRequest}
                 onQuickReply={handleQuickReply}
                 onSubmitInputRequest={handleSend}
+                conversationId={conversationId}
               />
               <ChatFooter
                 onSend={handleSend}
                 disabled={isThinking || isLiveMode || isLiveConnecting}
-                conversationId={conversationId}
                 placeholder={
                   isLiveMode
                     ? 'Live-Modus aktiv. Sprich mit dem Chatbot.'
