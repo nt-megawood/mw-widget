@@ -117,7 +117,7 @@ function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
           <p>{userName} Willkommen bei megawood&#174;! &#128075;</p>
           {mode === 'landscape' ? (
             <>
-              <p>Ich bin <b>Handwerker Woody</b>, dein persönlicher KI-Assistent! Du kannst mir alle Fragen zu unseren Produkten stellen oder eine Planung mit mir erstellen.</p>
+              <p>Ich bin <b>Handwerker Woody</b>, dein persönlicher KI-Assistent! Du kannst mich alles zu unseren Produkten fragen, oder wir können eine Planung zusammen erstellen.</p>
               <p>Lass uns gleich mit der Planung beginnen!</p>
             </>
           ) : (
