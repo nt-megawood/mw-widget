@@ -1,10 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { useMemo, useState } from 'react';
-import type { EntryContext, EntryGoal, InputRequest, Message, QuickReplyAction, QuickReplyOption } from '../types';
+import type { InputRequest, Message, QuickReplyAction, QuickReplyOption } from '../types';
 import { BotMessage } from './Message/BotMessage';
 import { UserMessage } from './Message/UserMessage';
 import { ThinkingIndicator } from './Message/ThinkingIndicator';
-import { EntryFlow } from './EntryFlow/EntryFlow';
 
 export interface QuickReply {
   label: string;
@@ -20,10 +19,6 @@ interface ChatBodyProps {
   quickReplies: QuickReply[];
   contextualQuickReplies?: QuickReplyOption[];
   inputRequest?: InputRequest | null;
-  entryContext: EntryContext;
-  isEntryComplete: boolean;
-  onGoalSelect: (goal: EntryGoal) => void;
-  onStartEntryFlow: () => void;
   onQuickReply: (reply: QuickReplyOption) => void;
   onSubmitInputRequest: (payloadText: string) => void;
 }
@@ -205,10 +200,6 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   quickReplies,
   contextualQuickReplies = [],
   inputRequest,
-  entryContext,
-  isEntryComplete,
-  onGoalSelect,
-  onStartEntryFlow,
   onQuickReply,
   onSubmitInputRequest,
 }) => {
@@ -221,14 +212,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   return (
     <div className="chat-body">
       {initialGreeting}
-      {messages.length === 0 && !isEntryComplete && (
-        <EntryFlow
-          entryContext={entryContext}
-          onGoalSelect={onGoalSelect}
-          onStart={onStartEntryFlow}
-        />
-      )}
-      {messages.length === 0 && isEntryComplete && quickReplies.length > 0 && (
+      {messages.length === 0 && quickReplies.length > 0 && (
         <div className="button-group">
           {quickReplies.map((reply, i) => (
             <button

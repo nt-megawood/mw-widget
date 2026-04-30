@@ -150,8 +150,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     isEntryComplete,
     isThinking,
     thinkingText,
-    setEntryGoal,
-    startEntryFlow,
     sendMessage,
     handleQuickReply,
     addBotMessage,
@@ -580,8 +578,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   };
 
   const handleSend = (text: string) => sendMessage(text);
-  const inputLockedByEntryFlow = messages.length === 0 && !isEntryComplete;
-
   const quickReplies: QuickReply[] = isEntryComplete && entryContext.audiencePath
     ? getPromptPack(config.pageContext, entryContext.audiencePath)
     : getDefaultPromptPack(config.pageContext);
@@ -614,18 +610,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   quickReplies={quickReplies}
                   contextualQuickReplies={activeQuickReplies}
                   inputRequest={activeInputRequest}
-                  entryContext={entryContext}
-                  isEntryComplete={isEntryComplete}
-                  onGoalSelect={setEntryGoal}
-                  onStartEntryFlow={startEntryFlow}
                   onQuickReply={handleQuickReply}
                   onSubmitInputRequest={handleSend}
                 />
                 <ChatFooter
                   onSend={handleSend}
-                  disabled={isThinking || inputLockedByEntryFlow}
+                  disabled={isThinking}
                   conversationId={conversationId}
-                  placeholder={inputLockedByEntryFlow ? 'Bitte zuerst Ziel und Zielgruppe auswählen.' : 'Stelle deine Frage...'}
+                  placeholder={'Stelle deine Frage...'}
                 />
               </div>
               {children}
@@ -641,23 +633,17 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 quickReplies={quickReplies}
                 contextualQuickReplies={activeQuickReplies}
                 inputRequest={activeInputRequest}
-                entryContext={entryContext}
-                isEntryComplete={isEntryComplete}
-                onGoalSelect={setEntryGoal}
-                onStartEntryFlow={startEntryFlow}
                 onQuickReply={handleQuickReply}
                 onSubmitInputRequest={handleSend}
               />
               <ChatFooter
                 onSend={handleSend}
-                disabled={isThinking || inputLockedByEntryFlow || isLiveMode || isLiveConnecting}
+                disabled={isThinking || isLiveMode || isLiveConnecting}
                 conversationId={conversationId}
                 placeholder={
-                  inputLockedByEntryFlow
-                    ? 'Bitte zuerst Ziel und Zielgruppe auswählen.'
-                    : isLiveMode
-                      ? 'Live-Modus aktiv. Sprich mit dem Chatbot.'
-                      : 'Stelle deine Frage...'
+                  isLiveMode
+                    ? 'Live-Modus aktiv. Sprich mit dem Chatbot.'
+                    : 'Stelle deine Frage...'
                 }
                 showLiveButton
                 isLiveMode={isLiveMode}
