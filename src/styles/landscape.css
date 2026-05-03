@@ -61,6 +61,66 @@
   flex-direction: column;
 }
 
+.chat-container.landscape-widget .planning-history-card {
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-container.landscape-widget .planning-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.chat-container.landscape-widget .planning-history-item {
+  width: 100%;
+  border: 1px solid #e1e1e1;
+  border-radius: 10px;
+  background: #fff;
+  color: #333;
+  padding: 10px 11px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.chat-container.landscape-widget .planning-history-item:hover {
+  border-color: #b4032f;
+  box-shadow: 0 0 0 1px rgba(180, 3, 47, 0.08);
+}
+
+.chat-container.landscape-widget .planning-history-item.is-active {
+  border-color: #b4032f;
+  background: #fff5f7;
+}
+
+.chat-container.landscape-widget .planning-history-item:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.chat-container.landscape-widget .planning-history-code {
+  font-weight: 700;
+  color: #7a1a31;
+}
+
+.chat-container.landscape-widget .planning-history-meta,
+.chat-container.landscape-widget .planning-history-date,
+.chat-container.landscape-widget .planning-history-empty {
+  font-size: 11px;
+  color: #666;
+}
+
+.chat-container.landscape-widget .planning-history-empty {
+  margin: 0;
+}
+
 .chat-container.landscape-widget .planning-label {
   font-size: 12px;
   font-weight: 600;
@@ -214,6 +274,10 @@
   width: 100%;
 }
 
+.chat-container.landscape-widget .muster-order-card .dimension-input-field select {
+  width: 100%;
+}
+
 .chat-container.landscape-widget .muster-order-card .dimension-submit-btn,
 .chat-container.landscape-widget .muster-position-add-btn {
   width: 100%;
@@ -224,6 +288,15 @@
   min-width: 0;
   padding: 8px 12px;
   white-space: nowrap;
+}
+
+.chat-container.landscape-widget .header-login-btn {
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+.chat-container.landscape-widget .login-modal {
+  width: min(92vw, 440px);
 }
 
 @media (max-width: 980px) {

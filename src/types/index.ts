@@ -87,6 +87,15 @@ export interface ConversationHistoryItem {
   text: string;
 }
 
+export interface TerraceHistoryItem {
+  terrassencode: string;
+  zuletztaktualisiert?: string;
+  form?: string;
+  koordinaten?: string;
+  diele?: string;
+  farbe?: string;
+}
+
 export interface ConversationResponse {
   conversation_id: string;
   history: ConversationHistoryItem[];

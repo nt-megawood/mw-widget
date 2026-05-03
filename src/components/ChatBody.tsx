@@ -5,6 +5,7 @@ import { BotMessage } from './Message/BotMessage';
 import { UserMessage } from './Message/UserMessage';
 import { ThinkingIndicator } from './Message/ThinkingIndicator';
 import { useAuth } from '../hooks/useAuth';
+import { DIELEN_COLORS, DIELEN_VARIANTS } from './PlanningEditor/planningData';
 
 export interface QuickReply {
   label: string;
@@ -220,11 +221,147 @@ interface MusterBestellungState {
   positionen: MusterBestellungPosition[];
 }
 
-const DEFAULT_MUSTER_POSITION: MusterBestellungPosition = {
-  diele: '',
-  farbe: '',
-  menge: '1',
-};
+interface MusterOption {
+  value: string;
+  label: string;
+  colors: string[];
+}
+
+const MUSTER_DIELEN_OPTIONS: MusterOption[] = Object.entries(DIELEN_VARIANTS).map(([, variant]) => {
+  const label = `${variant.name} ${variant.masse}`.trim();
+  const colors = variant.colors
+    .map((colorId) => DIELEN_COLORS[colorId])
+    .filter((color): color is string => Boolean(color));
+
+  return {
+    value: label,
+    label,
+    colors,
+  };
+});
+
+function getDefaultMusterPosition(): MusterBestellungPosition {
+  const firstOption = MUSTER_DIELEN_OPTIONS[0];
+  return {
+    diele: firstOption?.value || '',
+    farbe: firstOption?.colors[0] || '',
+    menge: '1',
+  };
+}
+
+function getMusterColorOptions(dieleValue: string): string[] {
+  const selectedOption = MUSTER_DIELEN_OPTIONS.find((option) => option.value === dieleValue);
+  return selectedOption?.colors || MUSTER_DIELEN_OPTIONS.flatMap((option) => option.colors);
+}
+
+interface MusterBestellungPayloadPosition {
+  diele: string;
+  farbe: string;
+  menge: number;
+}
+
+interface MusterBestellungPayload {
+  anrede: string;
+  vorname: string;
+  nachname: string;
+  strasse: string;
+  hausnummer: string;
+  plz: string;
+  stadt: string;
+  land: string;
+  positionen: MusterBestellungPayloadPosition[];
+}
+
+function normalizeMusterBestellungPosition(position: MusterBestellungPosition): MusterBestellungPayloadPosition | null {
+  const diele = position.diele.trim();
+  const farbe = position.farbe.trim();
+  const menge = Number.parseInt(position.menge || '1', 10);
+  if (!diele && !farbe) {
+    return null;
+  }
+  if (!Number.isFinite(menge) || menge < 1) {
+    return null;
+  }
+  return {
+    diele,
+    farbe,
+    menge,
+  };
+}
+
+function buildMusterBestellungPayload(state: MusterBestellungState): MusterBestellungPayload | null {
+  const payload = {
+    anrede: state.anrede.trim(),
+    vorname: state.vorname.trim(),
+    nachname: state.nachname.trim(),
+    strasse: state.strasse.trim(),
+    hausnummer: state.hausnummer.trim(),
+    plz: state.plz.trim(),
+    stadt: state.stadt.trim(),
+    land: state.land.trim() || 'DE',
+    positionen: state.positionen
+      .map(normalizeMusterBestellungPosition)
+      .filter((item): item is MusterBestellungPayloadPosition => Boolean(item)),
+  };
+
+  if (!payload.vorname || !payload.nachname || !payload.strasse || !payload.hausnummer || !payload.plz || !payload.stadt) {
+    return null;
+  }
+
+  if (payload.positionen.length === 0) {
+    return null;
+  }
+
+  return payload;
+}
+
+function MusterBestellungReviewCard({
+  payload,
+  onBack,
+  onConfirm,
+}: {
+  payload: MusterBestellungPayload;
+  onBack: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="dimension-input-card muster-order-card" aria-label="Musterbestellung prüfen">
+      <strong>Bitte prüfe deine Angaben</strong>
+      <p className="muster-order-review-text">
+        Kontrolliere die Lieferadresse und die ausgewählten Musterpositionen. Erst danach wird die Bestellung abgeschickt.
+      </p>
+      <div className="muster-order-review-section">
+        <h4>Lieferadresse</h4>
+        <dl className="muster-order-review-list">
+          <div><dt>Anrede</dt><dd>{payload.anrede || '-'}</dd></div>
+          <div><dt>Vorname</dt><dd>{payload.vorname}</dd></div>
+          <div><dt>Nachname</dt><dd>{payload.nachname}</dd></div>
+          <div><dt>Straße</dt><dd>{payload.strasse}</dd></div>
+          <div><dt>Hausnummer</dt><dd>{payload.hausnummer}</dd></div>
+          <div><dt>PLZ</dt><dd>{payload.plz}</dd></div>
+          <div><dt>Stadt</dt><dd>{payload.stadt}</dd></div>
+          <div><dt>Land</dt><dd>{payload.land}</dd></div>
+        </dl>
+      </div>
+      <div className="muster-order-review-section">
+        <h4>Positionen</h4>
+        <div className="muster-order-review-items">
+          {payload.positionen.map((position, index) => (
+            <div key={`review-position-${index}`} className="muster-order-review-item">
+              <span>{position.diele || 'Unbenannte Diele'}</span>
+              <span>{position.farbe || 'Farbe offen'}</span>
+              <span>Menge: {position.menge}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="button-group muster-order-review-actions">
+        <button className="chat-btn" type="button" onClick={onBack}>Zurück zum Formular</button>
+        <button className="chat-btn dimension-submit-btn" type="button" onClick={onConfirm}>Musterbestellung absenden</button>
+      </div>
+    </div>
+  );
+}
 
 function MusterBestellungInputCard({ request, onSubmit }: { request: InputRequest; onSubmit: (payloadText: string) => void }) {
   const auth = useAuth();
@@ -238,21 +375,23 @@ function MusterBestellungInputCard({ request, onSubmit }: { request: InputReques
     plz: auth?.user?.profile?.postal_code || '',
     stadt: auth?.user?.profile?.city || '',
     land: auth?.user?.profile?.country || 'DE',
-    positionen: [{ ...DEFAULT_MUSTER_POSITION }],
+    positionen: [getDefaultMusterPosition()],
   }));
+  const [reviewPayload, setReviewPayload] = useState<MusterBestellungPayload | null>(null);
 
   useEffect(() => {
-    if (!auth?.user) return;
-    const nextName = splitName(auth.user.name || '');
+    const user = auth?.user;
+    if (!user) return;
+    const nextName = splitName(user.name || '');
     setState((prev) => ({
       ...prev,
       vorname: prev.vorname || nextName.vorname,
       nachname: prev.nachname || nextName.nachname,
-      strasse: prev.strasse || auth.user.profile?.address1 || '',
-      hausnummer: prev.hausnummer || auth.user.profile?.address2 || '',
-      plz: prev.plz || auth.user.profile?.postal_code || '',
-      stadt: prev.stadt || auth.user.profile?.city || '',
-      land: prev.land || auth.user.profile?.country || 'DE',
+      strasse: prev.strasse || user.profile?.address1 || '',
+      hausnummer: prev.hausnummer || user.profile?.address2 || '',
+      plz: prev.plz || user.profile?.postal_code || '',
+      stadt: prev.stadt || user.profile?.city || '',
+      land: prev.land || user.profile?.country || 'DE',
     }));
   }, [auth]);
 
@@ -263,14 +402,28 @@ function MusterBestellungInputCard({ request, onSubmit }: { request: InputReques
   const updatePosition = (index: number, key: keyof MusterBestellungPosition, value: string) => {
     setState((prev) => ({
       ...prev,
-      positionen: prev.positionen.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: value } : item)),
+      positionen: prev.positionen.map((item, itemIndex) => {
+        if (itemIndex !== index) {
+          return item;
+        }
+
+        if (key === 'diele') {
+          const nextColorOptions = getMusterColorOptions(value);
+          const nextColor = nextColorOptions.includes(item.farbe)
+            ? item.farbe
+            : nextColorOptions[0] || '';
+          return { ...item, diele: value, farbe: nextColor };
+        }
+
+        return { ...item, [key]: value };
+      }),
     }));
   };
 
   const addPosition = () => {
     setState((prev) => ({
       ...prev,
-      positionen: [...prev.positionen, { ...DEFAULT_MUSTER_POSITION }],
+      positionen: [...prev.positionen, getDefaultMusterPosition()],
     }));
   };
 
@@ -282,42 +435,36 @@ function MusterBestellungInputCard({ request, onSubmit }: { request: InputReques
   };
 
   const handleSubmit = () => {
-    const payload = {
-      anrede: state.anrede.trim(),
-      vorname: state.vorname.trim(),
-      nachname: state.nachname.trim(),
-      strasse: state.strasse.trim(),
-      hausnummer: state.hausnummer.trim(),
-      plz: state.plz.trim(),
-      stadt: state.stadt.trim(),
-      land: state.land.trim() || 'DE',
-      positionen: state.positionen
-        .map((item) => ({
-          diele: item.diele.trim(),
-          farbe: item.farbe.trim(),
-          menge: Number(item.menge || '1') || 1,
-        }))
-        .filter((item) => item.diele || item.farbe),
-    };
-
-    if (!payload.vorname || !payload.nachname || !payload.strasse || !payload.hausnummer || !payload.plz || !payload.stadt) {
+    const payload = buildMusterBestellungPayload(state);
+    if (!payload) {
       return;
     }
 
-    if (payload.positionen.length === 0) {
-      return;
-    }
-
-    onSubmit(`MUSTER_BESTELLUNG_JSON: ${JSON.stringify(payload)}`);
-    setState((prev) => ({
-      ...prev,
-      positionen: [{ ...DEFAULT_MUSTER_POSITION }],
-    }));
+    setReviewPayload(payload);
   };
+
+  const handleConfirm = () => {
+    if (!reviewPayload) {
+      return;
+    }
+    onSubmit(`MUSTER_BESTELLUNG_JSON: ${JSON.stringify(reviewPayload)}`);
+    setReviewPayload(null);
+  };
+
+  const handleBackToForm = () => {
+    setReviewPayload(null);
+  };
+
+  if (reviewPayload) {
+    return <MusterBestellungReviewCard payload={reviewPayload} onBack={handleBackToForm} onConfirm={handleConfirm} />;
+  }
 
   return (
     <div className="dimension-input-card muster-order-card" aria-label="Musterbestellung">
       <strong>{request.title || 'Kostenfreies Muster bestellen'}</strong>
+      <p className="muster-order-review-text">
+        Trage deine Daten ein und prüfe sie im nächsten Schritt noch einmal, bevor die Musterbestellung gesendet wird.
+      </p>
       <div className="muster-order-address-grid">
         <label className="dimension-input-field">
           <span>Anrede</span>
@@ -358,11 +505,19 @@ function MusterBestellungInputCard({ request, onSubmit }: { request: InputReques
           <div key={`position-${index}`} className="muster-order-position-row">
             <label className="dimension-input-field">
               <span>Diele</span>
-              <input value={position.diele} onChange={(e) => updatePosition(index, 'diele', e.target.value)} placeholder="z. B. PREMIUM 21x145" />
+              <select value={position.diele} onChange={(e) => updatePosition(index, 'diele', e.target.value)}>
+                {MUSTER_DIELEN_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
             </label>
             <label className="dimension-input-field">
               <span>Farbe</span>
-              <input value={position.farbe} onChange={(e) => updatePosition(index, 'farbe', e.target.value)} placeholder="z. B. Naturbraun" />
+              <select value={position.farbe} onChange={(e) => updatePosition(index, 'farbe', e.target.value)}>
+                {getMusterColorOptions(position.diele).map((color) => (
+                  <option key={color} value={color}>{color}</option>
+                ))}
+              </select>
             </label>
             <label className="dimension-input-field">
               <span>Menge</span>

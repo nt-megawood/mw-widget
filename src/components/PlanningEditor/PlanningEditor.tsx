@@ -4,8 +4,12 @@ import {
   saveTerracePlanData,
   buildBauplanPdfUrl,
   buildMateriallistePdfUrl,
+  getCustomerTerraceHistory,
+  getRecentTerraceHistoryFromStorage,
+  saveRecentTerraceCode,
 } from '../../services/api';
-import type { TerracePlanData } from '../../types';
+import type { TerraceHistoryItem, TerracePlanData } from '../../types';
+import { useAuth } from '../../hooks/useAuth';
 import {
   DIELEN_VARIANTS, DIELEN_COLORS, PLANNING_FORM_FIELDS, SHAPE_LABELS, PROFIL_OPTIONS, UK_OPTIONS,
   normalizePlanningForm, parseGroesseValue, toPositiveNumber,
@@ -36,6 +40,7 @@ function dispatchPlannerCheckpoint(checkpoint: PlannerCheckpoint): void {
 }
 
 export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) => {
+  const auth = useAuth();
   const [planningCode, setPlanningCode] = useState(detectedCode || '');
   const [loadedPayload, setLoadedPayload] = useState<TerracePlanData | null>(null);
   const [selectedForm, setSelectedForm] = useState<ShapeVariant>('rechteck');
@@ -46,6 +51,9 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
   const [selectedUK, setSelectedUK] = useState('standard');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState('');
+  const [historyItems, setHistoryItems] = useState<TerraceHistoryItem[]>([]);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | ''; message: string }>({ type: '', message: '' });
 
   const setStatusMsg = (message: string, type: 'success' | 'error' | '' = '') =>
@@ -80,6 +88,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
     setStatusMsg('Planungsdaten werden geladen ...');
     try {
       const payload = await loadTerracePlanData(code);
+      saveRecentTerraceCode(code);
       setLoadedPayload(payload);
       const form = normalizePlanningForm(payload.form);
       const groesse = parseGroesseValue(payload.groesse);
@@ -96,12 +105,63 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       setSelectedUK(String(payload.uk || 'standard'));
       if (payload.terrassencode) setPlanningCode(payload.terrassencode);
       setStatusMsg('Planungsdaten erfolgreich geladen.', 'success');
+      void loadHistory();
     } catch (err) {
       setStatusMsg((err as Error).message || 'Planung konnte nicht geladen werden.', 'error');
     } finally {
       setIsLoading(false);
     }
   }, [planningCode]);
+
+  const mergeHistoryItems = useCallback((items: TerraceHistoryItem[]) => {
+    const merged = new Map<string, TerraceHistoryItem>();
+    items.forEach((item) => {
+      const code = String(item.terrassencode || '').trim();
+      if (!code) return;
+      const current = merged.get(code);
+      if (!current) {
+        merged.set(code, item);
+        return;
+      }
+
+      const currentTime = Date.parse(String(current.zuletztaktualisiert || ''));
+      const nextTime = Date.parse(String(item.zuletztaktualisiert || ''));
+      if (!Number.isFinite(currentTime) || (Number.isFinite(nextTime) && nextTime >= currentTime)) {
+        merged.set(code, item);
+      }
+    });
+
+    return Array.from(merged.values()).sort((a, b) => {
+      const aTime = Date.parse(String(a.zuletztaktualisiert || ''));
+      const bTime = Date.parse(String(b.zuletztaktualisiert || ''));
+      return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+    });
+  }, []);
+
+  const loadHistory = useCallback(async () => {
+    setIsHistoryLoading(true);
+    setHistoryError('');
+    try {
+      const requests: Promise<TerraceHistoryItem[]>[] = [];
+      if (auth?.user?.id) {
+        requests.push(getCustomerTerraceHistory(auth.user.id));
+      }
+      requests.push(getRecentTerraceHistoryFromStorage());
+
+      const settled = await Promise.allSettled(requests);
+      const collected = settled.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+      setHistoryItems(mergeHistoryItems(collected));
+
+      const hasFailure = settled.some((result) => result.status === 'rejected');
+      if (hasFailure && collected.length === 0) {
+        setHistoryError('Vorherige Planungen konnten nicht geladen werden.');
+      }
+    } catch {
+      setHistoryError('Vorherige Planungen konnten nicht geladen werden.');
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  }, [auth?.user?.id, mergeHistoryItems]);
 
   // When a planning code is detected in the chat, automatically update the input
   // and trigger a load — but only for new codes that differ from the current one.
@@ -113,6 +173,31 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
     setPlanningCode(detectedCode);
     handleLoad(detectedCode);
   }, [detectedCode]);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
+
+  const handleOpenHistoryItem = useCallback((item: TerraceHistoryItem) => {
+    const code = String(item.terrassencode || '').trim();
+    if (!code) return;
+    setPlanningCode(code);
+    saveRecentTerraceCode(code);
+    void handleLoad(code);
+  }, [handleLoad]);
+
+  const formatHistoryDate = (value?: string) => {
+    if (!value) return '';
+    const parsed = new Date(String(value).replace(' ', 'T'));
+    if (Number.isNaN(parsed.getTime())) return String(value);
+    return parsed.toLocaleString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
   const buildPayload = (): TerracePlanData => {
     if (!loadedPayload) throw new Error('Es sind noch keine Planungsdaten geladen.');
@@ -147,10 +232,14 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       const nextCode = result.terrassencode || String(payload.terrassencode || '');
       if (nextCode) setPlanningCode(nextCode);
       setStatusMsg(`Planung gespeichert. Aktueller Code: ${nextCode}`, 'success');
+      if (nextCode) {
+        saveRecentTerraceCode(nextCode);
+      }
       dispatchPlannerCheckpoint('planner_saved');
       // reload to reflect server state
       const reloaded = await loadTerracePlanData(nextCode);
       setLoadedPayload(reloaded);
+      void loadHistory();
     } catch (err) {
       setStatusMsg((err as Error).message || 'Speichern fehlgeschlagen.', 'error');
     } finally {
@@ -186,6 +275,39 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
   return (
     <aside className="chat-side-menu" aria-label="Planung bearbeiten">
       <h3>Planung bearbeiten</h3>
+      <div className="side-menu-card planning-history-card">
+        <strong>Vorherige Planungen</strong>
+        <p>Wähle eine frühere Planung direkt aus, um sofort in die Bearbeitung zu springen.</p>
+        {isHistoryLoading && <p className="planning-history-empty">Planungen werden geladen …</p>}
+        {!isHistoryLoading && historyError && <p className="planning-status is-error">{historyError}</p>}
+        {!isHistoryLoading && !historyError && historyItems.length === 0 && (
+          <p className="planning-history-empty">Noch keine gespeicherten Planungen gefunden.</p>
+        )}
+        {historyItems.length > 0 && (
+          <div className="planning-history-list">
+            {historyItems.map((item) => {
+              const code = String(item.terrassencode || '').trim();
+              const activeCode = (planningCode || loadedPayload?.terrassencode || '').trim();
+              return (
+                <button
+                  key={code}
+                  className={`planning-history-item${activeCode === code ? ' is-active' : ''}`}
+                  type="button"
+                  onClick={() => handleOpenHistoryItem(item)}
+                  disabled={isLoading || isSaving}
+                >
+                  <span className="planning-history-code">{code}</span>
+                  <span className="planning-history-meta">{item.form || 'Unbekannte Form'}</span>
+                  <span className="planning-history-meta">
+                    {item.diele ? `${item.diele}${item.farbe ? ` · ${item.farbe}` : ''}` : 'Diele unbekannt'}
+                  </span>
+                  <span className="planning-history-date">{formatHistoryDate(item.zuletztaktualisiert)}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
       <div className="side-menu-card planning-card">
         <label className="planning-label" htmlFor="planning-code-input">Planungscode</label>
         <div className="planning-code-row">

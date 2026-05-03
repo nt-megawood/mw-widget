@@ -3,9 +3,10 @@ import React from 'react';
 interface ChatHeaderProps {
   onRefresh: () => void;
   onClose: () => void;
+  onLoginClick: () => void;
 }
 
-export const ChatHeader: React.FC<ChatHeaderProps> = ({ onRefresh, onClose }) => {
+export const ChatHeader: React.FC<ChatHeaderProps> = ({ onRefresh, onClose, onLoginClick }) => {
   return (
     <div className="chat-header">
       <img
@@ -13,25 +14,34 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onRefresh, onClose }) =>
         alt="megawood"
         className="logo-img"
       />
-      <div className="header-icons">
-        <span
-          onClick={onRefresh}
-          title="Gespräch neu starten"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && onRefresh()}
+      <div className="header-actions">
+        <button
+          className="header-login-btn"
+          onClick={onLoginClick}
+          title="Einloggen"
+          aria-label="Einloggen"
+          type="button"
         >
-          &#8634;
-        </span>
-        <span
-          onClick={onClose}
-          title="Chat schließen"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && onClose()}
-        >
-          &times;
-        </span>
+          Login
+        </button>
+        <div className="header-icons">
+          <button
+            onClick={onRefresh}
+            title="Gespräch neu starten"
+            aria-label="Gespräch neu starten"
+            type="button"
+          >
+            &#8634;
+          </button>
+          <button
+            onClick={onClose}
+            title="Chat schließen"
+            aria-label="Chat schließen"
+            type="button"
+          >
+            &times;
+          </button>
+        </div>
       </div>
     </div>
   );

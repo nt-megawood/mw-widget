@@ -335,6 +335,37 @@
   object-fit: contain;
 }
 
+.header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border: 1.5px solid var(--primary-red);
+  border-radius: 999px;
+  background: var(--bg-white);
+  color: var(--primary-red);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.header-login-btn:hover {
+  background: var(--primary-red);
+  color: #fff;
+}
+
+.header-login-btn:active {
+  transform: translateY(1px);
+}
+
 .header-icons {
   display: inline-flex;
   align-items: center;
@@ -343,7 +374,7 @@
   overflow: hidden;
 }
 
-.header-icons span {
+.header-icons button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -359,13 +390,17 @@
   line-height: 1;
 }
 
-.header-icons span:first-child {
+.header-icons button:first-child {
   border-right: 1.5px solid var(--primary-red);
 }
 
-.header-icons span:hover {
+.header-icons button:hover {
   background: var(--primary-red);
   color: #fff;
+}
+
+.header-icons button {
+  border: none;
 }
 
 .bot-bubble-col {
@@ -508,6 +543,122 @@
   height: 16px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+/* Login modal */
+.login-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(11, 13, 16, 0.38);
+  backdrop-filter: blur(2px);
+  z-index: 5000;
+}
+
+.login-modal {
+  position: relative;
+  width: min(92vw, 420px);
+  background: var(--bg-white);
+  border-radius: 12px;
+  border: 1px solid rgba(180, 4, 47, 0.18);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+  padding: 18px 18px 16px;
+  color: var(--text-dark);
+}
+
+.login-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: none;
+  color: #999;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.login-modal-close:hover {
+  color: var(--primary-red);
+}
+
+.login-modal-header h3 {
+  margin: 0 24px 4px 0;
+  font-size: 18px;
+  color: var(--primary-red);
+}
+
+.login-modal-header p {
+  margin: 0 24px 14px 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #666;
+}
+
+.login-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #555;
+}
+
+.login-modal-field span {
+  font-weight: 600;
+}
+
+.login-modal-field input {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  padding: 11px 12px;
+  font: inherit;
+  color: var(--text-dark);
+  box-sizing: border-box;
+}
+
+.login-modal-field input:focus {
+  outline: 2px solid rgba(180, 4, 47, 0.18);
+  border-color: var(--primary-red);
+}
+
+.login-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.login-modal-primary,
+.login-modal-secondary {
+  min-width: 112px;
+}
+
+.login-modal-primary {
+  background: var(--primary-red);
+  color: #fff;
+}
+
+.login-modal-secondary {
+  background: #f3f3f3;
+  color: #555;
+  border-color: #ddd;
+}
+
+.login-modal-primary:hover,
+.login-modal-secondary:hover {
+  filter: brightness(0.98);
 }
 
 /* Chat Bubble & Avatar */
@@ -945,6 +1096,10 @@
   width: 100%;
 }
 
+.muster-order-card .dimension-input-field select {
+  width: 100%;
+}
+
 .muster-order-card .dimension-submit-btn,
 .muster-position-add-btn {
   width: 100%;
@@ -970,6 +1125,15 @@
 }
 
 .dimension-input-field input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d2d2d2;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.dimension-input-field select {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #d2d2d2;

@@ -5,6 +5,7 @@ import type { QuickReply } from '../ChatBody';
 import { ChatFooter } from '../ChatFooter';
 import { ChatTeaser } from '../ChatTeaser';
 import { ChatToggle } from '../ChatToggle';
+import { LoginModal } from '../LoginModal';
 import { useChat } from '../../hooks/useChat';
 import { useConversation } from '../../hooks/useConversation';
 import { useTeaser } from '../../hooks/useTeaser';
@@ -138,6 +139,7 @@ function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlanningCodeDetected, children }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [isLiveConnecting, setIsLiveConnecting] = useState(false);
   const [liveStatusText, setLiveStatusText] = useState<string | null>(null);
@@ -224,7 +226,18 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     dismissTeaser();
   };
 
-  const handleClose = () => setIsOpen(false);
+  const handleClose = () => {
+    setIsOpen(false);
+    setIsLoginOpen(false);
+  };
+
+  const handleOpenLogin = () => {
+    setIsLoginOpen(true);
+  };
+
+  const handleCloseLogin = () => {
+    setIsLoginOpen(false);
+  };
 
   const stopLiveMode = useCallback((silent = false) => {
     liveIntentionalStopRef.current = true;
@@ -601,7 +614,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           {config.mode === 'landscape' ? (
             <div className="chat-layout">
               <div className="chat-main">
-                <ChatHeader onRefresh={handleRefresh} onClose={handleClose} />
+                <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} />
                 <ChatBody
                   messages={messages}
                   isThinking={isThinking}
@@ -624,7 +637,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
             </div>
           ) : (
             <>
-              <ChatHeader onRefresh={handleRefresh} onClose={handleClose} />
+              <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} />
               <ChatBody
                 messages={messages}
                 isThinking={isThinking}
@@ -654,6 +667,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           )}
         </div>
       )}
+      {isOpen && isLoginOpen && <LoginModal onClose={handleCloseLogin} />}
     </>
   );
 };

@@ -4,6 +4,7 @@ import type {
   ApiResponse,
   PresenceResponse,
   ConversationResponse,
+  TerraceHistoryItem,
   TerracePlanData,
   EntryContext,
   PageContext,
@@ -22,6 +23,8 @@ const TERRACE_LOAD_URL = 'https://betaplaner.megawood.com/api/terrassedaten/lade
 const TERRACE_SAVE_URL = 'https://betaplaner.megawood.com/api/terrassedaten/speichereDaten';
 const TERRACE_BAUPLAN_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/bauplan/pdf';
 const TERRACE_MATERIALLISTE_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/materialliste/pdf';
+const TERRACE_HISTORY_URL_BASE = 'https://betaplaner.megawood.com/api/terrassehistorie';
+const RECENT_TERRACE_CODES_STORAGE_KEY = 'recentTerrassencodes';
 
 export function getAuthToken(): string {
   return AUTH_TOKEN;
@@ -84,6 +87,42 @@ function appendFormValue(formData: FormData, key: string, value: unknown): void 
     return;
   }
   formData.append(key, String(value));
+}
+
+function normalizeTerraceHistoryItem(item: unknown): TerraceHistoryItem | null {
+  if (!item || typeof item !== 'object') return null;
+  const record = item as Record<string, unknown>;
+  const terrassencode = String(record.terrassencode || '').trim();
+  if (!terrassencode) return null;
+  return {
+    terrassencode,
+    zuletztaktualisiert: record.zuletztaktualisiert ? String(record.zuletztaktualisiert) : undefined,
+    form: record.form ? String(record.form) : undefined,
+    koordinaten: record.koordinaten ? String(record.koordinaten) : undefined,
+    diele: record.diele ? String(record.diele) : undefined,
+    farbe: record.farbe ? String(record.farbe) : undefined,
+  };
+}
+
+function readRecentTerraceCodes(): string[] {
+  try {
+    const raw = window.localStorage.getItem(RECENT_TERRACE_CODES_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((code) => String(code || '').trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function writeRecentTerraceCodes(codes: string[]): void {
+  try {
+    const unique = Array.from(new Set(codes.map((code) => String(code || '').trim()).filter(Boolean))).slice(0, 10);
+    window.localStorage.setItem(RECENT_TERRACE_CODES_STORAGE_KEY, JSON.stringify(unique));
+  } catch {
+    // Ignore storage failures; recent history is a convenience feature only.
+  }
 }
 
 function toApiEntryContext(entryContext: EntryContext | null | undefined): Record<string, string> | undefined {
@@ -223,6 +262,50 @@ export function buildMateriallistePdfUrl(planningCode: string): string {
     throw new Error('Bitte einen gültigen Planungscode angeben.');
   }
   return `${TERRACE_MATERIALLISTE_PDF_URL_BASE}/${encodeURIComponent(cleanedCode)}`;
+}
+
+export function getRecentTerraceCodes(): string[] {
+  return readRecentTerraceCodes();
+}
+
+export function saveRecentTerraceCode(code: string): void {
+  const cleaned = String(code || '').trim();
+  if (!cleaned) return;
+  const next = [cleaned, ...readRecentTerraceCodes().filter((item) => item !== cleaned)];
+  writeRecentTerraceCodes(next);
+}
+
+export async function getCustomerTerraceHistory(userId: number | string): Promise<TerraceHistoryItem[]> {
+  const cleanedUserId = String(userId || '').trim();
+  if (!cleanedUserId) return [];
+  const response = await fetch(`${TERRACE_HISTORY_URL_BASE}/historie/${encodeURIComponent(cleanedUserId)}/megawood`, {
+    headers: buildAuthHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error(`Historie konnte nicht geladen werden (${response.status}).`);
+  }
+  const data = await response.json();
+  if (!Array.isArray(data)) return [];
+  return data.map(normalizeTerraceHistoryItem).filter((item): item is TerraceHistoryItem => Boolean(item));
+}
+
+export async function getRecentTerraceHistoryFromStorage(): Promise<TerraceHistoryItem[]> {
+  const codes = getRecentTerraceCodes();
+  if (codes.length === 0) return [];
+  const formData = new FormData();
+  codes.forEach((code) => {
+    formData.append('terrassenids[]', code);
+  });
+  const response = await fetch(`${TERRACE_HISTORY_URL_BASE}/datenkurzform`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error(`Kürzhistorie konnte nicht geladen werden (${response.status}).`);
+  }
+  const data = await response.json();
+  if (!Array.isArray(data)) return [];
+  return data.map(normalizeTerraceHistoryItem).filter((item): item is TerraceHistoryItem => Boolean(item));
 }
 
   //is_b2b: isB2BUser(auth) || false
