@@ -1,4 +1,5 @@
 import React from 'react';
+import { clearAuthData, useAuth } from '../hooks/useAuth';
 
 interface ChatHeaderProps {
   onRefresh: () => void;
@@ -7,6 +8,18 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({ onRefresh, onClose, onLoginClick }) => {
+  const authData = useAuth();
+  const isLoggedIn = Boolean(authData);
+
+  const handleAuthAction = () => {
+    if (isLoggedIn) {
+      clearAuthData();
+      return;
+    }
+
+    onLoginClick();
+  };
+
   return (
     <div className="chat-header">
       <img
@@ -17,12 +30,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onRefresh, onClose, onLo
       <div className="header-actions">
         <button
           className="header-login-btn"
-          onClick={onLoginClick}
-          title="Einloggen"
-          aria-label="Einloggen"
+          onClick={handleAuthAction}
+          title={isLoggedIn ? 'Ausloggen' : 'Einloggen'}
+          aria-label={isLoggedIn ? 'Ausloggen' : 'Einloggen'}
           type="button"
         >
-          Login
+          {isLoggedIn ? 'Logout' : 'Login'}
         </button>
         <div className="header-icons">
           <button
