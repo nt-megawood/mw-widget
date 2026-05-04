@@ -9,6 +9,8 @@ const BASE_URL = import.meta.env.BASE_URL;
 interface BotMessageProps {
   message: Message;
   conversationId?: string | null;
+  onRespin?: () => void;
+  disableRespin?: boolean;
 }
 
 const IconThumbUp = () => (
@@ -46,11 +48,12 @@ const IconSpeak = () => (
   </svg>
 );
 
-export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId }) => {
+export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId, onRespin, disableRespin = false }) => {
   const [thumbState, setThumbState] = useState<'up' | 'down' | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showBrandPopup, setShowBrandPopup] = useState(false);
+  const [showSources, setShowSources] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -89,17 +92,27 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId 
         <img src={`${BASE_URL}woody.png`} alt="Woody" />
       </div>
       <div className="bot-bubble-col">
-        <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
         {message.sources && message.sources.length > 0 && (
-          <div className="bot-sources">
-            <span className="sources-label">Quellen</span>
-            {message.sources.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                {url}
-              </a>
-            ))}
-          </div>
+          <details className="bot-sources" open={showSources}>
+            <summary
+              className="sources-summary"
+              onClick={(event) => {
+                event.preventDefault();
+                setShowSources((prev) => !prev);
+              }}
+            >
+              Willst du sehen, wie Woody das herausgefunden hat?
+            </summary>
+            <div className="sources-content">
+              {message.sources.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                  {url}
+                </a>
+              ))}
+            </div>
+          </details>
         )}
+        <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
         <div className="bot-meta">
           <button
             className={`thumb-btn thumb-up${thumbState === 'up' ? ' active' : ''}`}
@@ -132,6 +145,16 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId 
             aria-label="Vorlesen"
           >
             <IconSpeak />
+          </button>
+          <button
+            className="respin-btn"
+            onClick={onRespin}
+            title="Neu generieren"
+            aria-label="Neu generieren"
+            type="button"
+            disabled={disableRespin || !onRespin}
+          >
+            ⟳
           </button>
           <button
             className="info-btn"

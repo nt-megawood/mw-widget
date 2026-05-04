@@ -24,6 +24,8 @@ interface ChatBodyProps {
   onQuickReply: (reply: QuickReplyOption) => void;
   onSubmitInputRequest: (payloadText: string) => void;
   conversationId?: string | null;
+  onRespinLastAnswer?: () => void;
+  disableRespin?: boolean;
 }
 
 function FormSketch({ form }: { form?: InputRequest['form'] }) {
@@ -547,6 +549,8 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   onQuickReply,
   onSubmitInputRequest,
   conversationId,
+  onRespinLastAnswer,
+  disableRespin = false,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -576,7 +580,13 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
       )}
       {messages.map((message) =>
         message.role === 'bot' ? (
-          <BotMessage key={message.id} message={message} conversationId={conversationId} />
+          <BotMessage
+            key={message.id}
+            message={message}
+            conversationId={conversationId}
+            onRespin={onRespinLastAnswer}
+            disableRespin={disableRespin}
+          />
         ) : (
           <UserMessage key={message.id} message={message} />
         )

@@ -591,6 +591,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   };
 
   const handleSend = (text: string) => sendMessage(text);
+  const handleRespinLastAnswer = useCallback(() => {
+    const lastUserMessage = [...messages].reverse().find((message) => message.role === 'user');
+    if (!lastUserMessage || isThinking) return;
+    sendMessage(lastUserMessage.text);
+  }, [messages, isThinking, sendMessage]);
   const quickReplies: QuickReply[] = isEntryComplete && entryContext.audiencePath
     ? getPromptPack(config.pageContext, entryContext.audiencePath)
     : getDefaultPromptPack(config.pageContext);
@@ -626,6 +631,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   onQuickReply={handleQuickReply}
                   onSubmitInputRequest={handleSend}
                   conversationId={conversationId}
+                  onRespinLastAnswer={handleRespinLastAnswer}
+                  disableRespin={isThinking}
                 />
                 <ChatFooter
                   onSend={handleSend}
@@ -649,6 +656,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 onQuickReply={handleQuickReply}
                 onSubmitInputRequest={handleSend}
                 conversationId={conversationId}
+                onRespinLastAnswer={handleRespinLastAnswer}
+                disableRespin={isThinking}
               />
               <ChatFooter
                 onSend={handleSend}
