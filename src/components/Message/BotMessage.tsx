@@ -51,6 +51,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId 
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showBrandPopup, setShowBrandPopup] = useState(false);
+  const [showSources, setShowSources] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -91,14 +92,24 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId 
       <div className="bot-bubble-col">
         <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
         {message.sources && message.sources.length > 0 && (
-          <div className="bot-sources">
-            <span className="sources-label">Quellen</span>
-            {message.sources.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                {url}
-              </a>
-            ))}
-          </div>
+          <details className="bot-sources" open={showSources}>
+            <summary
+              className="sources-summary"
+              onClick={(event) => {
+                event.preventDefault();
+                setShowSources((prev) => !prev);
+              }}
+            >
+              Willst du sehen, wie Woody das herausgefunden hat?
+            </summary>
+            <div className="sources-content">
+              {message.sources.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                  {url}
+                </a>
+              ))}
+            </div>
+          </details>
         )}
         <div className="bot-meta">
           <button
