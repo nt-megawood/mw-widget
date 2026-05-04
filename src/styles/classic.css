@@ -996,8 +996,15 @@
   display: none;
 }
 
-.sources-summary::marker {
-  content: '';
+.sources-summary::before {
+  content: '▸';
+  color: #888;
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.bot-sources[open] .sources-summary::before {
+  transform: rotate(90deg);
 }
 
 .sources-content {
