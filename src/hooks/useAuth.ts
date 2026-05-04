@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 
+const AUTH_STORAGE_KEY = 'auth';
+const AUTH_CHANGE_EVENT = 'auth-changed';
+
 export interface AuthProfile {
   company?: string;
   address1?: string;
@@ -29,7 +32,7 @@ export interface AuthData {
  */
 export function getAuthData(): AuthData | null {
   try {
-    const authJson = localStorage.getItem('auth');
+    const authJson = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!authJson) return null;
     return JSON.parse(authJson) as AuthData;
   } catch {
@@ -41,18 +44,32 @@ export function getAuthData(): AuthData | null {
  * React hook to access auth data with reactivity.
  * Re-renders when localStorage changes (if storage event is fired).
  */
+
+
+export function clearAuthData(): void {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+}
+
 export function useAuth(): AuthData | null {
   const [authData, setAuthData] = useState<AuthData | null>(() => getAuthData());
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'auth') {
+      if (event.key === AUTH_STORAGE_KEY) {
         setAuthData(getAuthData());
       }
     };
 
+    const handleAuthChange = () => setAuthData(getAuthData());
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+    };
   }, []);
 
   return authData;
