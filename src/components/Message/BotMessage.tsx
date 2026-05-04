@@ -9,6 +9,8 @@ const BASE_URL = import.meta.env.BASE_URL;
 interface BotMessageProps {
   message: Message;
   conversationId?: string | null;
+  onRespin?: () => void;
+  disableRespin?: boolean;
 }
 
 const IconThumbUp = () => (
@@ -46,7 +48,7 @@ const IconSpeak = () => (
   </svg>
 );
 
-export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId }) => {
+export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId, onRespin, disableRespin = false }) => {
   const [thumbState, setThumbState] = useState<'up' | 'down' | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -90,7 +92,6 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId 
         <img src={`${BASE_URL}woody.png`} alt="Woody" />
       </div>
       <div className="bot-bubble-col">
-        <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
         {message.sources && message.sources.length > 0 && (
           <details className="bot-sources" open={showSources}>
             <summary
@@ -111,6 +112,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId 
             </div>
           </details>
         )}
+        <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
         <div className="bot-meta">
           <button
             className={`thumb-btn thumb-up${thumbState === 'up' ? ' active' : ''}`}
@@ -143,6 +145,16 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId 
             aria-label="Vorlesen"
           >
             <IconSpeak />
+          </button>
+          <button
+            className="respin-btn"
+            onClick={onRespin}
+            title="Neu generieren"
+            aria-label="Neu generieren"
+            type="button"
+            disabled={disableRespin || !onRespin}
+          >
+            ⟳
           </button>
           <button
             className="info-btn"

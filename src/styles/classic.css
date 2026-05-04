@@ -424,6 +424,7 @@
 .thumb-btn,
 .copy-btn,
 .speak-btn,
+.respin-btn,
 .info-btn {
   background: none;
   border: none;
@@ -439,6 +440,7 @@
 .thumb-btn:hover,
 .copy-btn:hover,
 .speak-btn:hover,
+.respin-btn:hover,
 .info-btn:hover {
   color: var(--primary-red);
 }
@@ -449,6 +451,11 @@
 
 .speak-btn.active {
   color: var(--primary-red);
+}
+
+.respin-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .info-btn {
@@ -1183,7 +1190,12 @@
   gap: 5px;
   font-size: 13px;
   font-style: italic;
-  color: #c0c0c0;
+  color: transparent;
+  background: linear-gradient(90deg, #9f9f9f 0%, #cfcfcf 45%, #9f9f9f 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: thinking-gradient 2.1s linear infinite;
   user-select: none;
 }
 
@@ -1230,5 +1242,14 @@
   50% {
     opacity: 1;
     transform: translateY(-3px);
+  }
+}
+
+@keyframes thinking-gradient {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -20% 0;
   }
 }
