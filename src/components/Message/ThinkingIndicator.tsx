@@ -15,7 +15,7 @@ export const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ text }) =>
       <div className="thinking-indicator">
         <span className="thinking-text">{text}</span>
         <span className="thinking-dots">
-          <span>.</span><span>.</span><span>.</span>
+          <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
         </span>
       </div>
     </div>
