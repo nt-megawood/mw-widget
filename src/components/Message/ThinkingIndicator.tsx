@@ -10,7 +10,7 @@ export const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ text }) =>
   return (
     <div className="message-wrapper bot thinking-wrapper">
       <div className="bot-icon">
-        <img src={`${BASE_URL}woody.jpg`} alt="Woody" />
+        <img src={`${BASE_URL}woody.png`} alt="Woody" />
       </div>
       <div className="thinking-indicator">
         <span className="thinking-text">{text}</span>

@@ -112,7 +112,7 @@ function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
 
   return (
     <div className="message-wrapper bot initial">
-      <div className="bot-icon"><img src={`${BASE_URL}woody.jpg`} alt="Woody" /></div>
+      <div className="bot-icon"><img src={`${BASE_URL}woody.png`} alt="Woody" /></div>
       <div className="bot-bubble-col">
         <div className="bubble">
           <p>{userName} Willkommen bei megawood&#174;! &#128075;</p>

@@ -685,7 +685,7 @@ function showThinkingIndicator() {
   const wrapper = document.createElement('div');
   wrapper.className = 'thinking-indicator';
   wrapper.innerHTML = `
-    <div class="bot-icon"><img src="woody.jpg" alt="Woody"></div>
+    <div class="bot-icon"><img src="woody.png" alt="Woody"></div>
     <div class="thinking-text">
       <span class="thinking-label">${messages[0]}</span>
       <span class="thinking-dots"><span></span><span></span><span></span></span>
@@ -797,7 +797,7 @@ function addBotMessage(answer, sources, imageUrl, options = {}) {
 
   const icon = document.createElement('div');
   icon.className = 'bot-icon';
-  icon.innerHTML = '<img src="woody.jpg" alt="Woody">';
+  icon.innerHTML = '<img src="woody.png" alt="Woody">';
 
   const bubble = document.createElement('div');
   bubble.className = 'bubble';

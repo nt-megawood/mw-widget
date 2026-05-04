@@ -86,7 +86,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId 
   return (
     <div className="message-wrapper bot">
       <div className="bot-icon">
-        <img src={`${BASE_URL}woody.jpg`} alt="Woody" />
+        <img src={`${BASE_URL}woody.png`} alt="Woody" />
       </div>
       <div className="bot-bubble-col">
         <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }} />
