@@ -12,11 +12,11 @@ import type {
 } from '../types';
 import { getAuthData } from '../hooks/useAuth';
 import { isB2BUser } from '../hooks/useAuth';
+import { getWidgetToken } from '../hooks/useWidgetToken';
 
 const DEFAULT_API_URL = 'https://mw-chatbot-backend.vercel.app/chat';
-// The token is embedded as a fallback so the widget works without a .env file.
-// Override by setting VITE_AUTH_TOKEN in your environment.
-const AUTH_TOKEN =
+// Fallback token for initial requests before dynamic token is fetched
+const FALLBACK_AUTH_TOKEN =
   import.meta.env.VITE_AUTH_TOKEN ||
   '42vombj8mp9an8jv5evp3vfup8izma7oh9yxma4tp9b6anemudxb2ei3bw2koiqyx7umnp55w3rodpp79k6izp27wchm2u2vjvviwwvqxqgb2j859c4dk2g4s6k7wpct';
 const TERRACE_LOAD_URL = 'https://betaplaner.megawood.com/api/terrassedaten/ladeDaten';
@@ -26,8 +26,22 @@ const TERRACE_MATERIALLISTE_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/
 const TERRACE_HISTORY_URL_BASE = 'https://betaplaner.megawood.com/api/terrassehistorie';
 const RECENT_TERRACE_CODES_STORAGE_KEY = 'recentTerrassencodes';
 
-export function getAuthToken(): string {
-  return AUTH_TOKEN;
+export async function getAuthToken(): Promise<string> {
+  try {
+    return await getWidgetToken();
+  } catch {
+    // Fall back to hardcoded token if dynamic token fetch fails
+    return FALLBACK_AUTH_TOKEN;
+  }
+}
+
+/**
+ * Get stored token synchronously (for non-async contexts)
+ * Returns fallback if not yet loaded
+ */
+export function getAuthTokenSync(): string {
+  const stored = localStorage.getItem('widget-bearer-token');
+  return stored || FALLBACK_AUTH_TOKEN;
 }
 
 function getApiUrl(): string {
@@ -45,7 +59,7 @@ export function getLiveWebSocketUrl(): string {
   if (globalLiveUrl) {
     const configuredUrl = new URL(globalLiveUrl);
     if (!configuredUrl.searchParams.get('token')) {
-      configuredUrl.searchParams.set('token', AUTH_TOKEN);
+      configuredUrl.searchParams.set('token', getAuthTokenSync());
     }
     return configuredUrl.toString();
   }
@@ -61,14 +75,14 @@ export function getLiveWebSocketUrl(): string {
 
   const url = new URL(wsBase);
   if (!url.searchParams.get('token')) {
-    url.searchParams.set('token', AUTH_TOKEN);
+    url.searchParams.set('token', getAuthTokenSync());
   }
   return url.toString();
 }
 
 function buildAuthHeaders(includeJsonContentType = false): Record<string, string> {
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${AUTH_TOKEN}`,
+    Authorization: `Bearer ${getAuthTokenSync()}`,
   };
   if (includeJsonContentType) {
     headers['Content-Type'] = 'application/json';
