@@ -40,6 +40,23 @@ const IconCopied = () => (
   </svg>
 );
 
+
+const IconRefresh = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 2v6h-6"/>
+    <path d="M3 22v-6h6"/>
+    <path d="M3.51 9a9 9 0 0 1 14.13-3.36L21 8"/>
+    <path d="M20.49 15a9 9 0 0 1-14.13 3.36L3 16"/>
+  </svg>
+);
+
+const IconInfo = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M12 16v-4"/>
+    <path d="M12 8h.01"/>
+  </svg>
+);
 const IconSpeak = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -154,7 +171,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId,
             type="button"
             disabled={disableRespin || !onRespin}
           >
-            ⟳
+            <IconRefresh />
           </button>
           <button
             className="info-btn"
@@ -162,7 +179,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId,
             aria-label={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
             type="button"
           >
-            i
+            <IconInfo />
           </button>
           <span
             className="meta-brand"
