@@ -110,7 +110,7 @@ interface MinimalSpeechRecognition {
 
 function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; language: WidgetLanguage }) {
   const copy = UI_COPY[language];
-  const time = new Date().toLocaleTimeString(language === 'de' ? 'de-DE' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+  //const time = new Date().toLocaleTimeString(language === 'de' ? 'de-DE' : 'en-US', { hour: '2-digit', minute: '2-digit' });
   const auth = getAuthData();
   const userName = auth?.user?.name ? ` Hallo ${auth.user.name}!` : '';
 
@@ -131,10 +131,6 @@ function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; la
               <p>{copy.greetingClassicLine2}</p>
             </>
           )}
-        </div>
-        <div className="bot-meta">
-          <span className="meta-time">{time}</span>
-          <span className="meta-brand">{copy.createdBy}</span>
         </div>
       </div>
     </div>
@@ -533,7 +529,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
         }
       };
 
-      ws.onerror = () => {
+      ws.onerror = (event: Event) => {
+        console.error('WebSocket error:', event);
+        console.error('WebSocket URL:', getLiveWebSocketUrl());
+        console.error('WebSocket ready state:', ws.readyState);
         if (!liveWsOpenedRef.current) {
           activateBrowserFallback();
           return;
@@ -542,7 +541,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
         stopLiveMode(true);
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event: CloseEvent) => {
+        console.log('WebSocket closed:', { code: event.code, reason: event.reason });
         if (liveWsOpenTimeoutRef.current != null) {
           window.clearTimeout(liveWsOpenTimeoutRef.current);
           liveWsOpenTimeoutRef.current = null;
