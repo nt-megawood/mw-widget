@@ -1,4 +1,6 @@
 import React, { useRef, useCallback } from 'react';
+import type { WidgetLanguage } from '../config/i18n';
+import { UI_COPY } from '../config/i18n';
 
 interface ChatFooterProps {
   onSend: (text: string) => void;
@@ -8,18 +10,21 @@ interface ChatFooterProps {
   isLiveMode?: boolean;
   onToggleLiveMode?: () => void;
   liveStatusText?: string | null;
+  language?: WidgetLanguage;
 }
 
 export const ChatFooter: React.FC<ChatFooterProps> = ({
   onSend,
   disabled,
-  placeholder = 'Stelle deine Frage...',
+  placeholder,
+  language = 'de',
   showLiveButton = false,
   isLiveMode = false,
   onToggleLiveMode,
   liveStatusText,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const copy = UI_COPY[language];
 
   const handleSend = useCallback(() => {
     const text = textareaRef.current?.value.trim();
@@ -49,13 +54,13 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder={placeholder}
+          placeholder={placeholder ?? copy.inputPlaceholder}
           onKeyDown={handleKeyDown}
           onChange={handleInput}
           disabled={disabled}
-          aria-label="Nachricht eingeben"
+          aria-label={copy.inputLabel}
         />
-        <button className="send-btn" onClick={handleSend} disabled={disabled} aria-label="Senden">
+        <button className="send-btn" onClick={handleSend} disabled={disabled} aria-label={copy.sendLabel}>
           ➤
         </button>
         {showLiveButton && (
@@ -72,7 +77,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
         )}
       </div>
       <div className="footer-tools">
-        <span className="branding">KI-Unterstützung kann Fehler machen.</span>
+        <span className="branding">{copy.aiDisclaimer}</span>
         {showLiveButton && liveStatusText && (
           <span className="live-status" role="status" aria-live="polite">{liveStatusText}</span>
         )}
