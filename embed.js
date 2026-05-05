@@ -43,6 +43,7 @@
   iframe.id = 'gh-chatbot-iframe-' + widgetId;
   iframe.title = 'Chatbot';
   iframe.allowTransparency = true;
+  iframe.setAttribute('allow', 'microphone; autoplay');
   iframe.loading = 'lazy';
   iframe.setAttribute('frameborder', '0');
   iframe.setAttribute('scrolling', 'no');
