@@ -16,6 +16,8 @@ import type { WidgetConfig, ConversationHistoryItem } from '../../types';
 import { getDefaultPromptPack, getPromptPack } from '../../config/promptPacks';
 import { speakText } from '../../utils/speech';
 import { getAuthData } from '../../hooks/useAuth';
+import type { WidgetLanguage } from '../../config/i18n';
+import { UI_COPY } from '../../config/i18n';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -106,8 +108,9 @@ interface MinimalSpeechRecognition {
   stop: () => void;
 }
 
-function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
-  const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; language: WidgetLanguage }) {
+  const copy = UI_COPY[language];
+  const time = new Date().toLocaleTimeString(language === 'de' ? 'de-DE' : 'en-US', { hour: '2-digit', minute: '2-digit' });
   const auth = getAuthData();
   const userName = auth?.user?.name ? ` Hallo ${auth.user.name}!` : '';
 
@@ -116,22 +119,22 @@ function InitialGreeting({ mode }: { mode: 'classic' | 'landscape' }) {
       <div className="bot-icon"><img src={`${BASE_URL}woody.png`} alt="Woody" /></div>
       <div className="bot-bubble-col">
         <div className="bubble">
-          <p>{userName} Willkommen bei megawood&#174;! &#128075;</p>
+          <p>{userName} {copy.greetingWelcome}</p>
           {mode === 'landscape' ? (
             <>
-              <p>Ich bin <b>Handwerker Woody</b>, dein persönlicher KI-Assistent! Du kannst mich alles zu unseren Produkten fragen, oder wir können eine Planung zusammen erstellen.</p>
-              <p>Lass uns gleich mit der Planung beginnen!</p>
+              <p>{copy.greetingLandscapeLine1}</p>
+              <p>{copy.greetingLandscapeLine2}</p>
             </>
           ) : (
             <>
-              <p>Ich bin <b>Woody</b>, die megawood&#174; KI! Du kannst mir alle Fragen zu unseren Produkten stellen.</p>
-              <p>Womit kann ich dir heute helfen?</p>
+              <p>{copy.greetingClassicLine1}</p>
+              <p>{copy.greetingClassicLine2}</p>
             </>
           )}
         </div>
         <div className="bot-meta">
           <span className="meta-time">{time}</span>
-          <span className="meta-brand">Erstellt von megawood KI</span>
+          <span className="meta-brand">{copy.createdBy}</span>
         </div>
       </div>
     </div>
@@ -142,6 +145,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isLiveMode, setIsLiveMode] = useState(false);
+  const [language, setLanguage] = useState<WidgetLanguage>('de');
   const [isLiveConnecting, setIsLiveConnecting] = useState(false);
   const [liveStatusText, setLiveStatusText] = useState<string | null>(null);
   const { conversationId, saveConversationId, clearConversation } = useConversation(widgetId);
@@ -609,7 +613,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     ? getPromptPack(config.pageContext, entryContext.audiencePath)
     : getDefaultPromptPack(config.pageContext);
   const posClass = `pos-${config.position}`;
-  const initialGreeting = <InitialGreeting mode={config.mode} />;
+  const copy = UI_COPY[language];
+  const initialGreeting = <InitialGreeting mode={config.mode} language={language} />;
 
   return (
     <>
@@ -622,13 +627,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           onOpen={handleOpen}
         />
       )}
-      {!isOpen && <ChatToggle onClick={handleOpen} position={config.position} />}
+      {!isOpen && <ChatToggle onClick={handleOpen} position={config.position} language={language} />}
       {isOpen && (
         <div className={`chat-container ${config.mode === 'landscape' ? 'landscape-widget' : ''} ${posClass}`}>
           {config.mode === 'landscape' ? (
             <div className="chat-layout">
               <div className="chat-main">
-                <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} />
+                <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} language={language} onLanguageChange={setLanguage} />
                 <ChatBody
                   messages={messages}
                   isThinking={isThinking}
@@ -646,14 +651,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 <ChatFooter
                   onSend={handleSend}
                   disabled={isThinking}
-                  placeholder={'Stelle deine Frage...'}
+                  placeholder={copy.inputPlaceholder}
+                  language={language}
                 />
               </div>
               {children}
             </div>
           ) : (
             <>
-              <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} />
+              <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} language={language} onLanguageChange={setLanguage} />
               <ChatBody
                 messages={messages}
                 isThinking={isThinking}
@@ -673,13 +679,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 disabled={isThinking || isLiveMode || isLiveConnecting}
                 placeholder={
                   isLiveMode
-                    ? 'Live-Modus aktiv. Sprich mit dem Chatbot.'
-                    : 'Stelle deine Frage...'
+                    ? language === 'de' ? 'Live-Modus aktiv. Sprich mit dem Chatbot.' : 'Live mode active. Speak to the chatbot.'
+                    : copy.inputPlaceholder
                 }
                 showLiveButton
                 isLiveMode={isLiveMode}
                 onToggleLiveMode={toggleLiveMode}
                 liveStatusText={liveStatusText}
+                language={language}
               />
             </>
           )}
