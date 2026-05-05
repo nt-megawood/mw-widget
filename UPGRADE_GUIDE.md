@@ -44,10 +44,6 @@ Copy `.env.example` to `.env` and fill in the values:
 cp .env.example .env
 ```
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_AUTH_TOKEN` | Bearer token for the chatbot API |
-
 > **Important:** Never commit `.env` to version control.
 
 ---
@@ -80,15 +76,11 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm run build
-        env:
-          VITE_AUTH_TOKEN: ${{ secrets.VITE_AUTH_TOKEN }}
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
 ```
-
-Add `VITE_AUTH_TOKEN` as a repository secret in **Settings → Secrets and variables → Actions**.
 
 ---
 
@@ -191,7 +183,7 @@ Run `npx tsc --noEmit` to see all errors without building. Fix type errors befor
 Ensure `eslint.config.js` exists at the project root (not `.eslintrc.*` files, which are unsupported in ESLint 9).
 
 ### Widget shows blank in iframe
-Check that the `VITE_AUTH_TOKEN` environment variable is set and the backend is reachable.
+Check that the backend is reachable and the widget can fetch its runtime token.
 
 ### Images not found in production build
 Assets in `public/` are copied as-is to `dist/`. Images referenced by absolute path (`/woody.jpg`) resolve correctly. Images imported via `import` are fingerprinted and also work.

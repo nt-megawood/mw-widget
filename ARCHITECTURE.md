@@ -134,13 +134,7 @@ useChat.sendMessage(text)
 
 ## Authentication
 
-The backend API requires a Bearer token. This is read from the environment variable:
-
-```
-VITE_AUTH_TOKEN=your-token-here
-```
-
-Set this in a `.env` file (see `.env.example`). **Never commit** the `.env` file — it is excluded by `.gitignore`.
+The backend API uses a short-lived widget token that is fetched dynamically at runtime. No static auth token is stored in `.env`.
 
 ---
 
@@ -148,7 +142,6 @@ Set this in a `.env` file (see `.env.example`). **Never commit** the `.env` file
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_AUTH_TOKEN` | Yes | Bearer token for the chatbot backend API |
 
 ---
 

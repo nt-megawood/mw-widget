@@ -17,7 +17,6 @@ Vorher mussten die API URLs an 4 verschiedenen Stellen angepasst werden:
 ### `.env` (Konfigurationsdatei)
 Enthält alle Umgebungsvariablen:
 - `VITE_API_BASE_URL` - Die Hauptkonfiguration (zentral!)
-- `VITE_AUTH_TOKEN` - Authentifizierungs-Token
 - Verschiedene Terrace Planner URLs
 
 ### `src/config/api.ts` (Konfiguration-Modul)

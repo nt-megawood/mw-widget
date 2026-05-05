@@ -23,28 +23,19 @@ import {
   TERRACE_HISTORY_URL_BASE,
 } from '../config/api';
 
-// Fallback token for initial requests before dynamic token is fetched
-const FALLBACK_AUTH_TOKEN =
-  import.meta.env.VITE_AUTH_TOKEN ||
-  '42vombj8mp9an8jv5evp3vfup8izma7oh9yxma4tp9b6anemudxb2ei3bw2koiqyx7umnp55w3rodpp79k6izp27wchm2u2vjvviwwvqxqgb2j859c4dk2g4s6k7wpct';
 const RECENT_TERRACE_CODES_STORAGE_KEY = 'recentTerrassencodes';
 
 export async function getAuthToken(): Promise<string> {
-  try {
-    return await getWidgetToken();
-  } catch {
-    // Fall back to hardcoded token if dynamic token fetch fails
-    return FALLBACK_AUTH_TOKEN;
-  }
+  return getWidgetToken();
 }
 
 /**
- * Get stored token synchronously (for non-async contexts)
- * Returns fallback if not yet loaded
+ * Get stored widget token synchronously for non-async contexts.
+ * Returns an empty string until the dynamic token has been loaded.
  */
 export function getAuthTokenSync(): string {
   const stored = localStorage.getItem('widget-bearer-token');
-  return stored || FALLBACK_AUTH_TOKEN;
+  return stored || '';
 }
 
 /**
@@ -73,8 +64,9 @@ export function getLiveWebSocketUrl(): string {
   const globalLiveUrl = (window as unknown as Record<string, string>).CHATBOT_LIVE_WS_URL;
   if (globalLiveUrl) {
     const configuredUrl = new URL(globalLiveUrl);
-    if (!configuredUrl.searchParams.get('token')) {
-      configuredUrl.searchParams.set('token', getAuthTokenSync());
+    const token = getAuthTokenSync();
+    if (token && !configuredUrl.searchParams.get('token')) {
+      configuredUrl.searchParams.set('token', token);
     }
     return configuredUrl.toString();
   }
@@ -82,9 +74,10 @@ export function getLiveWebSocketUrl(): string {
   return getConfigLiveWebSocketUrl(getAuthTokenSync());
 }
 
-function buildAuthHeaders(includeJsonContentType = false): Record<string, string> {
+async function buildAuthHeaders(includeJsonContentType = false): Promise<Record<string, string>> {
+  const token = await getAuthToken();
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${getAuthTokenSync()}`,
+    Authorization: `Bearer ${token}`,
   };
   if (includeJsonContentType) {
     headers['Content-Type'] = 'application/json';
@@ -192,7 +185,7 @@ export async function sendMessage(
 
   const response = await fetch(getApiUrl(), {
     method: 'POST',
-    headers: buildAuthHeaders(true),
+    headers: await buildAuthHeaders(true),
     body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error(`API-Fehler: ${response.status} ${response.statusText}`);
@@ -202,7 +195,7 @@ export async function sendMessage(
 export async function getConversation(conversationId: string): Promise<ConversationResponse> {
   if (!conversationId) throw new Error('Konversations-ID fehlt');
   const response = await fetch(`${getConversationUrl()}/${encodeURIComponent(conversationId)}`, {
-    headers: buildAuthHeaders(),
+    headers: await buildAuthHeaders(),
   });
   if (!response.ok) throw new Error(`Kontext konnte nicht geladen werden: ${response.status}`);
   return response.json();
@@ -212,7 +205,7 @@ export async function deleteConversation(conversationId: string): Promise<void> 
   if (!conversationId) return;
   await fetch(`${getConversationUrl()}/${encodeURIComponent(conversationId)}`, {
     method: 'DELETE',
-    headers: buildAuthHeaders(),
+    headers: await buildAuthHeaders(),
   }).catch(() => {});
 }
 
@@ -225,7 +218,7 @@ export async function sendPresenceStatus(
     `${getConversationUrl()}/${encodeURIComponent(conversationId)}/presence`,
     {
       method: 'POST',
-      headers: buildAuthHeaders(true),
+      headers: await buildAuthHeaders(true),
       body: JSON.stringify({ known_history_count: Math.max(0, Number(knownHistoryCount) || 0) }),
     }
   );
@@ -295,7 +288,7 @@ export async function getCustomerTerraceHistory(userId: number | string): Promis
   const cleanedUserId = String(userId || '').trim();
   if (!cleanedUserId) return [];
   const response = await fetch(`${TERRACE_HISTORY_URL_BASE}/historie/${encodeURIComponent(cleanedUserId)}/megawood`, {
-    headers: buildAuthHeaders(),
+    headers: await buildAuthHeaders(),
   });
   if (!response.ok) {
     throw new Error(`Historie konnte nicht geladen werden (${response.status}).`);

@@ -10,7 +10,7 @@ import { useChat } from '../../hooks/useChat';
 import { useConversation } from '../../hooks/useConversation';
 import { useTeaser } from '../../hooks/useTeaser';
 import { usePresence } from '../../hooks/usePresence';
-import { useWidgetToken } from '../../hooks/useWidgetToken';
+//import { useWidgetToken } from '../../hooks/useWidgetToken';
 import { getConversation, deleteConversation, getLiveWebSocketUrl } from '../../services/api';
 import type { WidgetConfig, ConversationHistoryItem } from '../../types';
 import { getDefaultPromptPack, getPromptPack } from '../../config/promptPacks';
@@ -210,7 +210,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   });
 
   // Initialize widget token on mount
-  const { token: widgetToken, loading: tokenLoading, error: tokenError } = useWidgetToken();
+  //const { token: widgetToken, loading: tokenLoading, error: tokenError } = useWidgetToken();
 
   // Restore conversation history on mount only. We intentionally omit conversationId
   // and restoreMessages from the dependency array — this effect should run exactly

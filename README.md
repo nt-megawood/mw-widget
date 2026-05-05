@@ -53,7 +53,7 @@ Both widgets can run in parallel on the same page.
 # Install dependencies
 npm install
 
-# Copy environment template and add your API token
+# Copy environment template and adjust the API base URL if needed
 cp .env.example .env
 
 # Start development server
@@ -164,7 +164,7 @@ For upgrade and maintenance instructions, see [UPGRADE_GUIDE.md](UPGRADE_GUIDE.m
 
 ## Backend API
 
-The chatbot communicates with the megawood backend:
+The chatbot communicates with the megawood backend and fetches a widget token dynamically at runtime:
 
 ```
 POST https://mw-chatbot-backend.vercel.app/chat

@@ -989,6 +989,8 @@
 /* Sources block below bot bubble */
 .bot-sources {
   margin-top: 8px;
+  margin-bottom: 8px;
+  margin-left: 4px;
   width: 100%;
 }
 
