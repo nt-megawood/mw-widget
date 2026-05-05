@@ -13,17 +13,20 @@ import type {
 import { getAuthData } from '../hooks/useAuth';
 import { isB2BUser } from '../hooks/useAuth';
 import { getWidgetToken } from '../hooks/useWidgetToken';
+import {
+  getApiUrl as getConfigApiUrl,
+  getLiveWebSocketUrl as getConfigLiveWebSocketUrl,
+  TERRACE_LOAD_URL,
+  TERRACE_SAVE_URL,
+  TERRACE_BAUPLAN_PDF_URL_BASE,
+  TERRACE_MATERIALLISTE_PDF_URL_BASE,
+  TERRACE_HISTORY_URL_BASE,
+} from '../config/api';
 
-const DEFAULT_API_URL = 'https://mw-chatbot-backend.vercel.app/chat';
 // Fallback token for initial requests before dynamic token is fetched
 const FALLBACK_AUTH_TOKEN =
   import.meta.env.VITE_AUTH_TOKEN ||
   '42vombj8mp9an8jv5evp3vfup8izma7oh9yxma4tp9b6anemudxb2ei3bw2koiqyx7umnp55w3rodpp79k6izp27wchm2u2vjvviwwvqxqgb2j859c4dk2g4s6k7wpct';
-const TERRACE_LOAD_URL = 'https://betaplaner.megawood.com/api/terrassedaten/ladeDaten';
-const TERRACE_SAVE_URL = 'https://betaplaner.megawood.com/api/terrassedaten/speichereDaten';
-const TERRACE_BAUPLAN_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/bauplan/pdf';
-const TERRACE_MATERIALLISTE_PDF_URL_BASE = 'https://betaplaner.megawood.com/api/materialliste/pdf';
-const TERRACE_HISTORY_URL_BASE = 'https://betaplaner.megawood.com/api/terrassehistorie';
 const RECENT_TERRACE_CODES_STORAGE_KEY = 'recentTerrassencodes';
 
 export async function getAuthToken(): Promise<string> {
@@ -44,16 +47,28 @@ export function getAuthTokenSync(): string {
   return stored || FALLBACK_AUTH_TOKEN;
 }
 
+/**
+ * Get the chat API URL
+ * Configured centrally in src/config/api.ts
+ */
 function getApiUrl(): string {
-  return (window as unknown as Record<string, string>).CHATBOT_API_URL || DEFAULT_API_URL;
+  return (window as unknown as Record<string, string>).CHATBOT_API_URL || getConfigApiUrl();
 }
 
+/**
+ * Get the conversation API URL
+ * Configured centrally in src/config/api.ts
+ */
 function getConversationUrl(): string {
   return getApiUrl()
     .replace(/\/terrassenplaner\/chat$/, '/conversation')
     .replace(/\/chat$/, '/conversation');
 }
 
+/**
+ * Get the live WebSocket URL
+ * Configured centrally in src/config/api.ts
+ */
 export function getLiveWebSocketUrl(): string {
   const globalLiveUrl = (window as unknown as Record<string, string>).CHATBOT_LIVE_WS_URL;
   if (globalLiveUrl) {
@@ -64,20 +79,7 @@ export function getLiveWebSocketUrl(): string {
     return configuredUrl.toString();
   }
 
-  const apiUrl = getApiUrl();
-  const liveHttpUrl = apiUrl
-    .replace(/\/terrassenplaner\/chat$/, '/live')
-    .replace(/\/chat$/, '/live');
-
-  const wsBase = liveHttpUrl
-    .replace(/^https:\/\//i, 'wss://')
-    .replace(/^http:\/\//i, 'ws://');
-
-  const url = new URL(wsBase);
-  if (!url.searchParams.get('token')) {
-    url.searchParams.set('token', getAuthTokenSync());
-  }
-  return url.toString();
+  return getConfigLiveWebSocketUrl(getAuthTokenSync());
 }
 
 function buildAuthHeaders(includeJsonContentType = false): Record<string, string> {

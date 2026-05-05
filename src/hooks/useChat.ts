@@ -58,15 +58,15 @@ function clearEntryContext(widgetId: string): void {
 
 const THINKING_MESSAGES = [
   'Woody denkt nach...',
-  'Woody überlegt ganz kurz 🤔',
-  'Woody sucht die beste Antwort für dich 🔍',
-  'Einen Moment, Woody schaut nach 📚',
-  'Woody sammelt gerade alle Infos 🌿',
-  'Woody setzt alles für dich zusammen 🧩',
-  'Fast geschafft – Woody ist dran 💪',
-  'Woody prüft das nochmal ganz genau 👀',
+  'Woody überlegt ganz kurz',
+  'Woody sucht die beste Antwort für dich',
+  'Einen Moment, Woody schaut nach',
+  'Woody sammelt gerade alle Infos',
+  'Woody setzt alles für dich zusammen',
+  'Fast geschafft – Woody ist dran',
+  'Woody prüft das nochmal ganz genau',
   'Oh, gute Frage… Woody denkt darüber nach',
-  'Woody arbeitet dran, gleich fertig ✨',
+  'Woody arbeitet dran, gleich fertig',
 ];
 
 const INPUT_FIELDS_BY_FORM: Record<string, Array<{ key: string; label: string }>> = {

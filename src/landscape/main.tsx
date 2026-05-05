@@ -3,12 +3,13 @@ import { createRoot } from 'react-dom/client';
 import { LandscapeApp } from './LandscapeApp';
 import type { WidgetConfig, TeaserConfig, Position } from '../types';
 import { normalizePageContext } from '../config/pageContext';
+import { getApiUrl } from '../config/api';
 import '../styles/classic.css';
 import '../styles/landscape.css';
 
-// Override API URL for terrace planner endpoint
-(window as unknown as Record<string, string>).CHATBOT_API_URL =
-  'https://mw-chatbot-backend.vercel.app/chat';
+// Configure API URL globally for all API calls
+// This is read from VITE_API_BASE_URL environment variable
+(window as unknown as Record<string, string>).CHATBOT_API_URL = getApiUrl();
 
 function getTeaserConfig(): TeaserConfig {
   const params = new URLSearchParams(window.location.search);

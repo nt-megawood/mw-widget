@@ -1,4 +1,8 @@
-const API_URL = window.CHATBOT_API_URL || 'https://mw-chatbot-backend.vercel.app/chat';
+// Note: For configuration, see .env file
+// All API URLs are now centrally configured via import.meta.env (Vite environment variables)
+
+// These URLs are read from the .env file at build time
+const API_URL = window.CHATBOT_API_URL || 'http://localhost:8000/v1/chat';
 // Derive the conversation base URL by replacing known chat endpoints.
 // This ensures '/terrassenplaner/chat' -> '/conversation' (not '/terrassenplaner/conversation').
 const CONVERSATION_URL = API_URL

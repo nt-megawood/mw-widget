@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getAuthData, isB2BUser } from './useAuth';
+import { getBackendBaseUrl } from '../config/api';
 
 const WIDGET_TOKEN_STORAGE_KEY = 'widget-bearer-token';
 const WIDGET_TOKEN_EXPIRY_KEY = 'widget-bearer-token-expiry';
@@ -16,11 +17,10 @@ export interface WidgetTokenResponse {
 
 /**
  * Get the backend API base URL (without chat endpoint)
+ * Configured centrally in src/config/api.ts
  */
-function getBackendBaseUrl(): string {
-  const chatUrl = (window as unknown as Record<string, string>).CHATBOT_API_URL || 
-    'https://mw-chatbot-backend.vercel.app/chat';
-  return chatUrl.replace(/\/(terrassenplaner\/)?chat$/, '').replace(/\/$/, '');
+function getBackendUrl(): string {
+  return getBackendBaseUrl();
 }
 
 /**
@@ -30,7 +30,7 @@ async function fetchWidgetToken(): Promise<WidgetTokenResponse> {
   const auth = getAuthData();
   const isAuthenticated = auth?.registered && auth?.user;
   
-  const baseUrl = getBackendBaseUrl();
+  const baseUrl = getBackendUrl();
   const tokenUrl = `${baseUrl}/v1/auth/widget-token`;
 
   const requestBody = {
