@@ -15,6 +15,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onRefresh, onClose, onLo
   const copy = UI_COPY[language];
   const authData = useAuth();
   const isLoggedIn = Boolean(authData);
+  const nextLanguage: WidgetLanguage = language === 'de' ? 'en' : 'de';
 
   const handleAuthAction = () => {
     if (isLoggedIn) {
@@ -33,23 +34,23 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onRefresh, onClose, onLo
         className="logo-img"
       />
       <div className="header-actions">
-        <select
-          className="header-language-select"
-          value={language}
-          onChange={(event) => onLanguageChange(event.target.value as WidgetLanguage)}
-          aria-label="Language"
-        >
-          <option value="de">Deutsch</option>
-          <option value="en">English</option>
-        </select>
         <button
-          className="header-login-btn"
+          className="header-pill-btn"
+          onClick={() => onLanguageChange(nextLanguage)}
+          title={language === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'}
+          aria-label={language === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'}
+          type="button"
+        >
+          {language.toUpperCase()}
+        </button>
+        <button
+          className="header-pill-btn"
           onClick={handleAuthAction}
           title={isLoggedIn ? copy.logoutAction : copy.loginAction}
           aria-label={isLoggedIn ? copy.logoutAction : copy.loginAction}
           type="button"
         >
-          {isLoggedIn ? copy.logout : copy.login}
+          {isLoggedIn ? '↪' : '↩'}
         </button>
         <div className="header-icons">
           <button
