@@ -546,6 +546,7 @@ export function useChat({
   const [activeInputRequest, setActiveInputRequest] = useState<InputRequest | null>(null);
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingText, setThinkingText] = useState(THINKING_MESSAGES[0]);
+  const pendingRequestControllerRef = useRef<AbortController | null>(null);
   const [entryContext, setEntryContext] = useState<EntryContext>(() => readEntryContext(widgetId));
   const [dealerFlowContext, setDealerFlowContext] = useState<DealerFlowContext | null>(null);
   const [dealerCtaCheckpoints, setDealerCtaCheckpoints] = useState<DealerCtaCheckpointState>(
@@ -630,6 +631,12 @@ export function useChat({
     }
   }, []);
 
+  const cancelResponseGeneration = useCallback(() => {
+    pendingRequestControllerRef.current?.abort();
+    pendingRequestControllerRef.current = null;
+    stopThinking();
+  }, [stopThinking]);
+
   const addUserMessage = useCallback((text: string) => {
     const message: Message = {
       id: generateUUID(),
@@ -710,6 +717,9 @@ export function useChat({
     setActiveQuickReplies([]);
     setActiveInputRequest(null);
     startThinking();
+    pendingRequestControllerRef.current?.abort();
+    const requestController = new AbortController();
+    pendingRequestControllerRef.current = requestController;
     const currentSessionId = sessionIdRef.current;
     const currentConversationId = conversationIdRef.current;
     try {
@@ -719,7 +729,11 @@ export function useChat({
         entryContext,
         pageContext,
         nextDealerFlowContext,
+        requestController.signal,
       );
+      if (pendingRequestControllerRef.current === requestController) {
+        pendingRequestControllerRef.current = null;
+      }
       if (currentSessionId !== sessionIdRef.current) return;
       stopThinking();
       if (response.conversation_id) {
@@ -767,6 +781,12 @@ export function useChat({
       const code = extractPlanningCode(response.answer);
       if (code) onPlanningCodeDetectedRef.current?.(code);
     } catch (error) {
+      if ((error as DOMException)?.name === 'AbortError') {
+        return;
+      }
+      if (pendingRequestControllerRef.current === requestController) {
+        pendingRequestControllerRef.current = null;
+      }
       if (currentSessionId !== sessionIdRef.current) return;
       stopThinking();
       addBotMessage('Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut, oder kontaktiere unseren Support.');
@@ -923,5 +943,6 @@ export function useChat({
     addBotMessage,
     clearMessages,
     restoreMessages,
+    cancelResponseGeneration,
   };
 }
