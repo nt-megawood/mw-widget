@@ -158,6 +158,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     addBotMessage,
     clearMessages,
     restoreMessages,
+    cancelResponseGeneration,
   } =
     useChat({
       widgetId,
@@ -651,6 +652,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 <ChatFooter
                   onSend={handleSend}
                   disabled={isThinking}
+                  isGenerating={isThinking}
+                  onCancelGeneration={cancelResponseGeneration}
                   placeholder={copy.inputPlaceholder}
                   language={language}
                 />
@@ -677,6 +680,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
               <ChatFooter
                 onSend={handleSend}
                 disabled={isThinking || isLiveMode || isLiveConnecting}
+                isGenerating={isThinking}
+                onCancelGeneration={cancelResponseGeneration}
                 placeholder={
                   isLiveMode
                     ? language === 'de' ? 'Live-Modus aktiv. Sprich mit dem Chatbot.' : 'Live mode active. Speak to the chatbot.'

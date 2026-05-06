@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import type { WidgetLanguage } from '../config/i18n';
 import { UI_COPY } from '../config/i18n';
 
@@ -9,6 +9,8 @@ interface ChatFooterProps {
   showLiveButton?: boolean;
   isLiveMode?: boolean;
   onToggleLiveMode?: () => void;
+  isGenerating?: boolean;
+  onCancelGeneration?: () => void;
   liveStatusText?: string | null;
   language?: WidgetLanguage;
 }
@@ -21,9 +23,12 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   showLiveButton = false,
   isLiveMode = false,
   onToggleLiveMode,
+  isGenerating = false,
+  onCancelGeneration,
   liveStatusText,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [inputValue, setInputValue] = useState('');
   const copy = UI_COPY[language];
 
   const handleSend = useCallback(() => {
@@ -34,6 +39,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
       textareaRef.current.value = '';
       textareaRef.current.style.height = 'auto';
     }
+    setInputValue('');
   }, [onSend, disabled]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -44,9 +50,13 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
     e.target.style.height = 'auto';
     e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
   };
+
+  const hasText = inputValue.trim().length > 0;
+  const showSendOrCancelButton = hasText || isGenerating;
 
   return (
     <div className="chat-footer">
@@ -57,22 +67,33 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
           placeholder={placeholder ?? copy.inputPlaceholder}
           onKeyDown={handleKeyDown}
           onChange={handleInput}
+          value={inputValue}
           disabled={disabled}
           aria-label={copy.inputLabel}
         />
-        <button className="send-btn" onClick={handleSend} disabled={disabled} aria-label={copy.sendLabel}>
-          ➤
-        </button>
-        {showLiveButton && (
+        {showSendOrCancelButton ? (
           <button
-            className={`live-btn${isLiveMode ? ' active' : ''}`}
+            className={`send-btn${isGenerating ? ' cancel-btn' : ''}`}
+            type="button"
+            onClick={isGenerating ? onCancelGeneration : handleSend}
+            disabled={isGenerating ? !onCancelGeneration : disabled}
+            aria-label={isGenerating ? 'Antwort abbrechen' : copy.sendLabel}
+            title={isGenerating ? 'Antwort abbrechen' : copy.sendLabel}
+          >
+            {isGenerating ? '✕' : '➤'}
+          </button>
+        ) : showLiveButton && (
+          <button
+            className={`live-btn live-icon-btn${isLiveMode ? ' active' : ''}`}
             type="button"
             onClick={onToggleLiveMode}
             disabled={disabled && !isLiveMode}
             aria-label={isLiveMode ? 'Live-Chat beenden' : 'Live-Chat starten'}
             title={isLiveMode ? 'Live-Chat beenden' : 'Live-Chat starten'}
           >
-            {isLiveMode ? 'Live an' : 'Live'}
+            <span className="live-bars" aria-hidden="true">
+              <span /><span /><span /><span /><span />
+            </span>
           </button>
         )}
       </div>

@@ -150,6 +150,7 @@ export async function sendMessage(
   entryContext?: EntryContext | null,
   pageContext?: PageContext,
   dealerFlowContext?: DealerFlowContext | null,
+  signal?: AbortSignal,
 ): Promise<ApiResponse> {
   const body: Record<string, unknown> = { message };
   if (conversationId) body.conversation_id = conversationId;
@@ -187,6 +188,7 @@ export async function sendMessage(
     method: 'POST',
     headers: await buildAuthHeaders(true),
     body: JSON.stringify(body),
+    signal,
   });
   if (!response.ok) throw new Error(`API-Fehler: ${response.status} ${response.statusText}`);
   return response.json();
