@@ -14,7 +14,7 @@ import { usePresence } from '../../hooks/usePresence';
 import { getConversation, deleteConversation, getLiveWebSocketUrl } from '../../services/api';
 import type { WidgetConfig, ConversationHistoryItem } from '../../types';
 import { getDefaultPromptPack, getPromptPack } from '../../config/promptPacks';
-import { speakText } from '../../utils/speech';
+import { speakText, stopSpeaking } from '../../utils/speech';
 import { getAuthData } from '../../hooks/useAuth';
 import type { WidgetLanguage } from '../../config/i18n';
 import { UI_COPY } from '../../config/i18n';
@@ -58,6 +58,37 @@ function pcm16BytesToFloat32(bytes: Uint8Array): Float32Array {
   return out;
 }
 
+function mixAudioBufferToMono(inputBuffer: AudioBuffer): Float32Array {
+  const channelCount = Math.max(1, inputBuffer.numberOfChannels || 1);
+  const length = inputBuffer.length;
+  const mono = new Float32Array(length);
+
+  if (channelCount === 1) {
+    mono.set(inputBuffer.getChannelData(0));
+    return mono;
+  }
+
+  for (let channelIndex = 0; channelIndex < channelCount; channelIndex += 1) {
+    const channelData = inputBuffer.getChannelData(channelIndex);
+    for (let sampleIndex = 0; sampleIndex < length; sampleIndex += 1) {
+      mono[sampleIndex] += channelData[sampleIndex] / channelCount;
+    }
+  }
+
+  return mono;
+}
+
+function int16ArrayToLittleEndianBytes(samples: Int16Array): Uint8Array {
+  const bytes = new Uint8Array(samples.length * 2);
+  const view = new DataView(bytes.buffer);
+
+  for (let i = 0; i < samples.length; i += 1) {
+    view.setInt16(i * 2, samples[i], true);
+  }
+
+  return bytes;
+}
+
 function downsampleTo16k(input: Float32Array, sourceSampleRate: number): Int16Array {
   if (sourceSampleRate <= 16000) {
     const direct = new Int16Array(input.length);
@@ -94,6 +125,7 @@ interface LiveServerEvent {
   audio?: string;
   mime_type?: string;
   message?: string;
+  thought?: boolean;
 }
 
 interface MinimalSpeechRecognition {
@@ -155,6 +187,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     thinkingText,
     sendMessage,
     handleQuickReply,
+    addUserMessage,
     addBotMessage,
     clearMessages,
     restoreMessages,
@@ -178,16 +211,35 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   const liveInputCtxRef = useRef<AudioContext | null>(null);
   const liveInputSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const liveProcessorRef = useRef<ScriptProcessorNode | null>(null);
+  const liveInputGainRef = useRef<GainNode | null>(null);
   const liveOutputCtxRef = useRef<AudioContext | null>(null);
   const liveOutputNextStartRef = useRef(0);
   const liveTurnTextRef = useRef('');
   const liveTurnHadAudioRef = useRef(false);
+  const liveUserMessageAddedRef = useRef(false);
+  const liveUserTextRef = useRef('');
   const liveIntentionalStopRef = useRef(false);
   const liveTransportRef = useRef<'websocket' | 'browser-stt' | null>(null);
   const speechRecognitionRef = useRef<MinimalSpeechRecognition | null>(null);
   const liveWsOpenTimeoutRef = useRef<number | null>(null);
   const liveWsOpenedRef = useRef(false);
   const lastAutoSpokenBotMessageIdRef = useRef<string | null>(null);
+
+  const restartBrowserSpeechRecognition = useCallback(() => {
+    if (liveIntentionalStopRef.current) return;
+    if (liveTransportRef.current !== 'browser-stt') return;
+
+    const recognition = speechRecognitionRef.current;
+    if (!recognition) return;
+
+    try {
+      recognition.start();
+    } catch {
+      // Ignore browsers that already restarted the recognizer internally.
+    }
+  }, []);
+
+  const [browserSttPrefill, setBrowserSttPrefill] = useState('');
 
   const handleNewMessages = useCallback(
     (newMessages: ConversationHistoryItem[]) => {
@@ -273,6 +325,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       liveProcessorRef.current.onaudioprocess = null;
       liveProcessorRef.current = null;
     }
+    if (liveInputGainRef.current) {
+      try { liveInputGainRef.current.disconnect(); } catch {}
+      liveInputGainRef.current = null;
+    }
     if (liveInputSourceRef.current) {
       liveInputSourceRef.current.disconnect();
       liveInputSourceRef.current = null;
@@ -295,6 +351,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     liveOutputNextStartRef.current = 0;
     liveTurnTextRef.current = '';
     liveTurnHadAudioRef.current = false;
+    liveUserMessageAddedRef.current = false;
+    liveUserTextRef.current = '';
     liveTransportRef.current = null;
     setIsLiveMode(false);
     setIsLiveConnecting(false);
@@ -325,8 +383,31 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     source.buffer = buffer;
     source.connect(outputCtx.destination);
 
+    // If we are using browser STT fallback, stop the recognition while we play
+    // audio to avoid the playback being picked up as user input. Restart
+    // recognition when playback finishes.
+    try {
+      if (liveTransportRef.current === 'browser-stt') {
+        const recognition = speechRecognitionRef.current;
+        if (recognition) {
+          try { recognition.onend = null; } catch {}
+          try { recognition.stop(); } catch {}
+        }
+      }
+    } catch {}
+
     const startAt = Math.max(outputCtx.currentTime, liveOutputNextStartRef.current);
     source.start(startAt);
+    source.onended = () => {
+      liveOutputNextStartRef.current = Math.max(liveOutputNextStartRef.current, outputCtx.currentTime);
+      liveTurnHadAudioRef.current = false;
+      if (liveTransportRef.current === 'browser-stt') {
+        try {
+          restartBrowserSpeechRecognition();
+        } catch {}
+      }
+    };
+
     liveOutputNextStartRef.current = startAt + buffer.duration;
     liveTurnHadAudioRef.current = true;
   }, []);
@@ -364,7 +445,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
         const result = event.results[i];
         const transcript = String(result?.[0]?.transcript || '').trim();
         if (!transcript) continue;
-        sendMessage(transcript);
+        stopSpeaking();
+        // Fill the input for the user to review/edit before sending
+        setBrowserSttPrefill(transcript);
+        setLiveStatusText(`Erkannt: "${transcript}" — bitte prüfen und senden.`);
       }
     };
 
@@ -377,12 +461,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     recognition.onend = () => {
       if (liveIntentionalStopRef.current) return;
       if (liveTransportRef.current !== 'browser-stt') return;
-      try {
-        recognition.start();
-      } catch {
-        addBotMessage('Spracherkennung wurde beendet. Du bist wieder im normalen Textmodus.');
-        stopLiveMode(true);
-      }
+      restartBrowserSpeechRecognition();
     };
 
     try {
@@ -392,7 +471,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       addBotMessage('Spracherkennung konnte nicht gestartet werden. Bitte nutze den normalen Textchat.');
       stopLiveMode(true);
     }
-  }, [addBotMessage, sendMessage, stopLiveMode]);
+  }, [addBotMessage, restartBrowserSpeechRecognition, sendMessage, stopLiveMode]);
 
   const startLiveMode = useCallback(async () => {
     if (isLiveMode || isLiveConnecting) return;
@@ -471,7 +550,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
         liveTransportRef.current = 'websocket';
         setIsLiveMode(true);
         setIsLiveConnecting(false);
-        setLiveStatusText('Live-Modus aktiv: Sprich einfach los.');
+        setLiveStatusText(null);
 
         const inputCtx = new AudioContext();
         liveInputCtxRef.current = inputCtx;
@@ -484,13 +563,25 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           if (!liveSocketRef.current || liveSocketRef.current.readyState !== WebSocket.OPEN) {
             return;
           }
-          const channelData = event.inputBuffer.getChannelData(0);
-          const pcm16 = downsampleTo16k(channelData, inputCtx.sampleRate);
-          liveSocketRef.current.send(pcm16.buffer as ArrayBuffer);
+          const mono = mixAudioBufferToMono(event.inputBuffer);
+          const pcm16 = downsampleTo16k(mono, inputCtx.sampleRate);
+          const pcm16Bytes = int16ArrayToLittleEndianBytes(pcm16);
+          liveSocketRef.current.send(pcm16Bytes.slice().buffer);
         };
 
         sourceNode.connect(processor);
-        processor.connect(inputCtx.destination);
+        // Connect processor to a muted gain node to keep the audio graph alive
+        // without audible playback (prevents echo/feedback).
+        try {
+          const silentGain = inputCtx.createGain();
+          silentGain.gain.value = 0;
+          liveInputGainRef.current = silentGain;
+          processor.connect(silentGain);
+          silentGain.connect(inputCtx.destination);
+        } catch {
+          // Fallback: connect directly if creating gain nodes fails.
+          processor.connect(inputCtx.destination);
+        }
       };
 
       ws.onmessage = (event: MessageEvent<string>) => {
@@ -501,7 +592,19 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           return;
         }
 
+        if (payload.type === 'input_transcription' && payload.text) {
+          liveUserTextRef.current = payload.text;
+          return;
+        }
+
+        if (payload.type === 'output_transcription' && payload.text) {
+          if (payload.thought) return;
+          liveTurnTextRef.current += `${payload.text}`;
+          return;
+        }
+
         if (payload.type === 'output_text' && payload.text) {
+          if (payload.thought) return;
           liveTurnTextRef.current += `${payload.text}`;
           return;
         }
@@ -512,15 +615,21 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
         }
 
         if (payload.type === 'turn_complete') {
+          if (!liveUserMessageAddedRef.current) {
+            const finalUserText = liveUserTextRef.current.trim();
+            if (finalUserText) {
+              addUserMessage(finalUserText);
+            }
+            liveUserMessageAddedRef.current = true;
+          }
           const finalText = liveTurnTextRef.current.trim();
           if (finalText) {
             addBotMessage(finalText);
-            if (!liveTurnHadAudioRef.current) {
-              speakText(finalText);
-            }
           }
           liveTurnTextRef.current = '';
           liveTurnHadAudioRef.current = false;
+          liveUserMessageAddedRef.current = false;
+          liveUserTextRef.current = '';
           return;
         }
 
@@ -588,8 +697,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     if (!lastMessage || lastMessage.role !== 'bot') return;
     if (lastAutoSpokenBotMessageIdRef.current === lastMessage.id) return;
     lastAutoSpokenBotMessageIdRef.current = lastMessage.id;
-    speakText(lastMessage.text);
-  }, [isLiveMode, messages]);
+    speakText(lastMessage.text, { onEnd: restartBrowserSpeechRecognition });
+  }, [isLiveMode, messages, restartBrowserSpeechRecognition]);
 
   const handleRefresh = async () => {
     if (conversationId) {
@@ -656,6 +765,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   onCancelGeneration={cancelResponseGeneration}
                   placeholder={copy.inputPlaceholder}
                   language={language}
+                  prefillInput={browserSttPrefill}
                 />
               </div>
               {children}
@@ -684,7 +794,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 onCancelGeneration={cancelResponseGeneration}
                 placeholder={
                   isLiveMode
-                    ? language === 'de' ? 'Live-Modus aktiv. Sprich mit dem Chatbot.' : 'Live mode active. Speak to the chatbot.'
+                    ? language === 'de' ? 'Woody hört dir zu...' : 'Woody is listening...'
                     : copy.inputPlaceholder
                 }
                 showLiveButton
@@ -692,6 +802,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 onToggleLiveMode={toggleLiveMode}
                 liveStatusText={liveStatusText}
                 language={language}
+                prefillInput={browserSttPrefill}
               />
             </>
           )}

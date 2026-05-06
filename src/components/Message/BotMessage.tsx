@@ -118,7 +118,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId,
                 setShowSources((prev) => !prev);
               }}
             >
-              So ist Woody auf die Antwort gekommen.
+              So ist Woody auf seine Antwort gekommen.
             </summary>
             <div className="sources-content">
               {message.sources.map((url, i) => (

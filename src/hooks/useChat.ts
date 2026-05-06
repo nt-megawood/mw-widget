@@ -940,6 +940,7 @@ export function useChat({
     startEntryFlow,
     sendMessage,
     handleQuickReply,
+    addUserMessage,
     addBotMessage,
     clearMessages,
     restoreMessages,

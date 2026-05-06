@@ -13,7 +13,21 @@ interface ChatFooterProps {
   onCancelGeneration?: () => void;
   liveStatusText?: string | null;
   language?: WidgetLanguage;
+  prefillInput?: string;
 }
+
+const IconSend = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h13" />
+    <path d="m12 5 7 7-7 7" />
+  </svg>
+);
+
+const IconStop = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <rect x="6" y="6" width="24" height="24" rx="3" />
+  </svg>
+);
 
 export const ChatFooter: React.FC<ChatFooterProps> = ({
   onSend,
@@ -26,10 +40,23 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   isGenerating = false,
   onCancelGeneration,
   liveStatusText,
+  prefillInput,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputValue, setInputValue] = useState('');
   const copy = UI_COPY[language];
+
+  React.useEffect(() => {
+    if (typeof prefillInput === 'string' && prefillInput.trim().length > 0) {
+      setInputValue(prefillInput);
+      if (textareaRef.current) {
+        textareaRef.current.value = prefillInput;
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+        textareaRef.current.focus();
+      }
+    }
+  }, [prefillInput]);
 
   const handleSend = useCallback(() => {
     const text = textareaRef.current?.value.trim();
@@ -80,7 +107,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
             aria-label={isGenerating ? 'Antwort abbrechen' : copy.sendLabel}
             title={isGenerating ? 'Antwort abbrechen' : copy.sendLabel}
           >
-            {isGenerating ? '✕' : '➤'}
+            {isGenerating ? <IconStop /> : <IconSend />}
           </button>
         ) : showLiveButton && (
           <button
