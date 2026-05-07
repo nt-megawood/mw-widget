@@ -58,7 +58,7 @@ function pcm16BytesToFloat32(bytes: Uint8Array): Float32Array {
   return out;
 }
 
-function mixAudioBufferToMono(inputBuffer: AudioBuffer): Float32Array {
+/*function mixAudioBufferToMono(inputBuffer: AudioBuffer): Float32Array {
   const channelCount = Math.max(1, inputBuffer.numberOfChannels || 1);
   const length = inputBuffer.length;
   const mono = new Float32Array(length);
@@ -76,9 +76,9 @@ function mixAudioBufferToMono(inputBuffer: AudioBuffer): Float32Array {
   }
 
   return mono;
-}
+}*/
 
-function int16ArrayToLittleEndianBytes(samples: Int16Array): Uint8Array {
+/*function int16ArrayToLittleEndianBytes(samples: Int16Array): Uint8Array {
   const bytes = new Uint8Array(samples.length * 2);
   const view = new DataView(bytes.buffer);
 
@@ -87,9 +87,18 @@ function int16ArrayToLittleEndianBytes(samples: Int16Array): Uint8Array {
   }
 
   return bytes;
+}*/
+
+// Convert Uint8Array to base64 string for WebSocket transmission
+function uint8ArrayToBase64(data: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < data.length; i += 1) {
+    binary += String.fromCharCode(data[i]);
+  }
+  return window.btoa(binary);
 }
 
-function downsampleTo16k(input: Float32Array, sourceSampleRate: number): Int16Array {
+/*function downsampleTo16k(input: Float32Array, sourceSampleRate: number): Int16Array {
   if (sourceSampleRate <= 16000) {
     const direct = new Int16Array(input.length);
     for (let i = 0; i < input.length; i += 1) {
@@ -117,7 +126,7 @@ function downsampleTo16k(input: Float32Array, sourceSampleRate: number): Int16Ar
     offset = nextOffset;
   }
   return out;
-}
+}*/
 
 interface LiveServerEvent {
   type?: string;
@@ -210,7 +219,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   const liveMicStreamRef = useRef<MediaStream | null>(null);
   const liveInputCtxRef = useRef<AudioContext | null>(null);
   const liveInputSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const liveProcessorRef = useRef<ScriptProcessorNode | null>(null);
+  // AudioWorkletNode replaces deprecated ScriptProcessorNode for smooth continuous audio chunking
+  const liveWorkletNodeRef = useRef<AudioWorkletNode | null>(null);
   const liveInputGainRef = useRef<GainNode | null>(null);
   const liveOutputCtxRef = useRef<AudioContext | null>(null);
   const liveOutputNextStartRef = useRef(0);
@@ -320,10 +330,17 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       recognition.stop();
     }
 
-    if (liveProcessorRef.current) {
-      liveProcessorRef.current.disconnect();
-      liveProcessorRef.current.onaudioprocess = null;
-      liveProcessorRef.current = null;
+    // Clean up AudioWorkletNode and related audio infrastructure
+    if (liveWorkletNodeRef.current) {
+      try {
+        liveWorkletNodeRef.current.disconnect();
+        // Close the worklet port and send final flush message
+        try {
+          liveWorkletNodeRef.current.port.postMessage({ type: 'flush' });
+          liveWorkletNodeRef.current.port.close();
+        } catch {}
+      } catch {}
+      liveWorkletNodeRef.current = null;
     }
     if (liveInputGainRef.current) {
       try { liveInputGainRef.current.disconnect(); } catch {}
@@ -511,10 +528,16 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           liveSocketRef.current = null;
         }
 
-        if (liveProcessorRef.current) {
-          liveProcessorRef.current.disconnect();
-          liveProcessorRef.current.onaudioprocess = null;
-          liveProcessorRef.current = null;
+        // Clean up AudioWorkletNode instead of deprecated ScriptProcessorNode
+        if (liveWorkletNodeRef.current) {
+          try {
+            liveWorkletNodeRef.current.disconnect();
+            try {
+              liveWorkletNodeRef.current.port.postMessage({ type: 'flush' });
+              liveWorkletNodeRef.current.port.close();
+            } catch {}
+          } catch {}
+          liveWorkletNodeRef.current = null;
         }
         if (liveInputSourceRef.current) {
           liveInputSourceRef.current.disconnect();
@@ -540,7 +563,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
         }
       }, 3000);
 
-      ws.onopen = () => {
+      ws.onopen = async () => {
         if (liveIntentionalStopRef.current) return;
         liveWsOpenedRef.current = true;
         if (liveWsOpenTimeoutRef.current != null) {
@@ -552,35 +575,58 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
         setIsLiveConnecting(false);
         setLiveStatusText(null);
 
-        const inputCtx = new AudioContext();
-        liveInputCtxRef.current = inputCtx;
-        const sourceNode = inputCtx.createMediaStreamSource(stream);
-        liveInputSourceRef.current = sourceNode;
-        const processor = inputCtx.createScriptProcessor(4096, 1, 1);
-        liveProcessorRef.current = processor;
-
-        processor.onaudioprocess = (event) => {
-          if (!liveSocketRef.current || liveSocketRef.current.readyState !== WebSocket.OPEN) {
-            return;
-          }
-          const mono = mixAudioBufferToMono(event.inputBuffer);
-          const pcm16 = downsampleTo16k(mono, inputCtx.sampleRate);
-          const pcm16Bytes = int16ArrayToLittleEndianBytes(pcm16);
-          liveSocketRef.current.send(pcm16Bytes.slice().buffer);
-        };
-
-        sourceNode.connect(processor);
-        // Connect processor to a muted gain node to keep the audio graph alive
-        // without audible playback (prevents echo/feedback).
         try {
+          // Initialize 16kHz AudioContext for input capture
+          // This ensures the worklet receives audio at the expected sample rate
+          const inputCtx = new AudioContext({ sampleRate: 16000 });
+          liveInputCtxRef.current = inputCtx;
+          
+          const sourceNode = inputCtx.createMediaStreamSource(stream);
+          liveInputSourceRef.current = sourceNode;
+
+          // Load the AudioWorklet module from public/input-processor.js
+          // The worklet handles smooth continuous chunking at 125ms intervals
+          await inputCtx.audioWorklet.addModule(`${BASE_URL}input-processor.js`);
+          const workletNode = new AudioWorkletNode(inputCtx, 'InputProcessor');
+          liveWorkletNodeRef.current = workletNode;
+
+          // Set up message handler to receive audio chunks from the worklet
+          // Each message contains PCM 16-bit audio data ready to send via WebSocket
+          workletNode.port.onmessage = (event: MessageEvent) => {
+            const message = event.data;
+            if (message.type === 'audio' && message.data) {
+              if (!liveSocketRef.current || liveSocketRef.current.readyState !== WebSocket.OPEN) {
+                return;
+              }
+              // Send audio chunk immediately to WebSocket (worklet dictates pace at ~125ms)
+              // No additional buffering or time-based intervals needed
+              const audioBase64 = uint8ArrayToBase64(message.data);
+              const payload = {
+                type: 'input_audio',
+                audio: audioBase64,
+                sampleRate: message.targetSampleRate, // 16kHz expected
+                samplesCount: message.samplesCount,
+                timestamp: message.timestamp,
+              };
+              liveSocketRef.current.send(JSON.stringify(payload));
+            } else if (message.type === 'warning') {
+              console.warn('AudioWorklet warning:', message.message);
+            }
+          };
+
+          // Connect microphone → worklet → muted gain node
+          // This keeps the audio graph alive without audible playback (no echo/feedback)
+          sourceNode.connect(workletNode);
+          
           const silentGain = inputCtx.createGain();
           silentGain.gain.value = 0;
           liveInputGainRef.current = silentGain;
-          processor.connect(silentGain);
+          workletNode.connect(silentGain);
           silentGain.connect(inputCtx.destination);
-        } catch {
-          // Fallback: connect directly if creating gain nodes fails.
-          processor.connect(inputCtx.destination);
+        } catch (err) {
+          console.error('Failed to initialize AudioWorklet:', err);
+          addBotMessage('AudioWorklet-Initialisierung fehlgeschlagen. Aktiviere Browser-Spracherkennung.');
+          activateBrowserFallback();
         }
       };
 
