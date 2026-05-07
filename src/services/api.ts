@@ -15,7 +15,6 @@ import { isB2BUser } from '../hooks/useAuth';
 import { getWidgetToken } from '../hooks/useWidgetToken';
 import {
   getApiUrl as getConfigApiUrl,
-  getLiveWebSocketUrl as getConfigLiveWebSocketUrl,
   TERRACE_LOAD_URL,
   TERRACE_SAVE_URL,
   TERRACE_BAUPLAN_PDF_URL_BASE,
@@ -27,15 +26,6 @@ const RECENT_TERRACE_CODES_STORAGE_KEY = 'recentTerrassencodes';
 
 export async function getAuthToken(): Promise<string> {
   return getWidgetToken();
-}
-
-/**
- * Get stored widget token synchronously for non-async contexts.
- * Returns an empty string until the dynamic token has been loaded.
- */
-export function getAuthTokenSync(): string {
-  const stored = localStorage.getItem('widget-bearer-token');
-  return stored || '';
 }
 
 /**
@@ -54,24 +44,6 @@ function getConversationUrl(): string {
   return getApiUrl()
     .replace(/\/terrassenplaner\/chat$/, '/conversation')
     .replace(/\/chat$/, '/conversation');
-}
-
-/**
- * Get the live WebSocket URL
- * Configured centrally in src/config/api.ts
- */
-export function getLiveWebSocketUrl(): string {
-  const globalLiveUrl = (window as unknown as Record<string, string>).CHATBOT_LIVE_WS_URL;
-  if (globalLiveUrl) {
-    const configuredUrl = new URL(globalLiveUrl);
-    const token = getAuthTokenSync();
-    if (token && !configuredUrl.searchParams.get('token')) {
-      configuredUrl.searchParams.set('token', token);
-    }
-    return configuredUrl.toString();
-  }
-
-  return getConfigLiveWebSocketUrl(getAuthTokenSync());
 }
 
 async function buildAuthHeaders(includeJsonContentType = false): Promise<Record<string, string>> {
