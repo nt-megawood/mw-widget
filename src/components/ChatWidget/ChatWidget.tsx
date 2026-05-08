@@ -95,6 +95,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
 
   const [browserSttPrefill] = useState('');
   const { partialText, finalText, statusText: liveStatusText, start: startStt, stop: stopStt, clearFinal } = useRealtimeStt();
+  const lastSubmittedSttTextRef = useRef('');
+  const lastSubmittedAtRef = useRef(0);
 
   const handleNewMessages = useCallback(
     (newMessages: ConversationHistoryItem[]) => {
@@ -168,8 +170,20 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   }, [addBotMessage, isLiveConnecting, isLiveMode, startStt]);
 
   useEffect(() => {
-    if (!finalText.trim()) return;
-    sendMessage(finalText.trim());
+    const normalizedText = finalText.replace(/\s+/g, ' ').trim();
+    if (!normalizedText) return;
+
+    const now = Date.now();
+    const isDuplicate = normalizedText === lastSubmittedSttTextRef.current && now - lastSubmittedAtRef.current < 10000;
+    if (isDuplicate || normalizedText.length < 2) {
+      clearFinal();
+      return;
+    }
+
+    lastSubmittedSttTextRef.current = normalizedText;
+    lastSubmittedAtRef.current = now;
+
+    sendMessage(normalizedText);
     clearFinal();
   }, [clearFinal, finalText, sendMessage]);
 
