@@ -553,10 +553,40 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   disableRespin = false,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [isInfoViewOpen, setIsInfoViewOpen] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isThinking]);
+  }, [messages, isThinking, isInfoViewOpen]);
+
+  if (isInfoViewOpen) {
+    return (
+      <div className="chat-body">
+        <div style={{placeContent: "center", display: "flex"}}>
+          <img width={"50px"} src='woody.png' alt="Woody" />
+        </div>
+        <div className="brand-info-view" role="region" aria-label="Informationen über den KI-Assistenten">
+          <button
+            className="brand-info-view-close"
+            onClick={() => setIsInfoViewOpen(false)}
+            aria-label="Zurück zum Chat"
+            title="Zurück zum Chat"
+            type="button"
+          >
+            &times;
+          </button>
+          <p>
+            Ich bin ein KI-gestützter Assistent und helfe dir bei Fragen rund um megawood&#174;. Meine
+            Antworten werden automatisch generiert &ndash; ich bin daher möglicherweise nicht immer
+            100&nbsp;% korrekt. Bitte überprüfe wichtige Informationen.
+          </p>
+          <div className="brand-info-view-context">
+            <strong>Kontext-ID:</strong> {conversationId || 'Keine Kontext-ID verfügbar'}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="chat-body">
@@ -586,6 +616,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
             conversationId={conversationId}
             onRespin={onRespinLastAnswer}
             disableRespin={disableRespin}
+            onShowInfoView={() => setIsInfoViewOpen(true)}
           />
         ) : (
           <UserMessage key={message.id} message={message} />

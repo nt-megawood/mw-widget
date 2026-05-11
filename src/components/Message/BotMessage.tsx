@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { Message } from '../../types';
 import { renderMarkdown } from '../../utils/markdown';
 import { speakText, stopSpeaking } from '../../utils/speech';
-import { BrandPopup } from '../BrandPopup';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -11,6 +10,7 @@ interface BotMessageProps {
   conversationId?: string | null;
   onRespin?: () => void;
   disableRespin?: boolean;
+  onShowInfoView?: () => void;
 }
 
 const IconThumbUp = () => (
@@ -65,11 +65,16 @@ const IconSpeak = () => (
   </svg>
 );
 
-export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId, onRespin, disableRespin = false }) => {
+export const BotMessage: React.FC<BotMessageProps> = ({
+  message,
+  conversationId,
+  onRespin,
+  disableRespin = false,
+  onShowInfoView,
+}) => {
   const [thumbState, setThumbState] = useState<'up' | 'down' | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [showBrandPopup, setShowBrandPopup] = useState(false);
   const [showSources, setShowSources] = useState(false);
 
   const handleCopy = async () => {
@@ -178,22 +183,16 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId,
             title={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
             aria-label={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
             type="button"
+            onClick={onShowInfoView}
           >
             <IconInfo />
           </button>
-          <span
-            className="meta-brand"
-            onClick={() => setShowBrandPopup(true)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setShowBrandPopup(true)}
-          >
+          <span className="meta-brand">
             Erstellt von megawood KI
           </span>
           <span className="meta-time">{formattedTime}</span>
         </div>
       </div>
-      {showBrandPopup && <BrandPopup onClose={() => setShowBrandPopup(false)} />}
     </div>
   );
 };
