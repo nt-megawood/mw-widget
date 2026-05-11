@@ -57,17 +57,25 @@ const IconInfo = () => (
     <path d="M12 8h.01"/>
   </svg>
 );
+
+const IconChevronDown = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+const IconSearch = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3" />
+  </svg>
+);
+
 const IconSpeak = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
     <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
     <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-  </svg>
-);
-
-const IconStar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="0">
-    <polygon points="12 2 15.09 10.26 24 10.26 17.55 15.74 19.64 24 12 19.52 4.36 24 6.45 15.74 0 10.26 8.91 10.26 12 2" style={{fill: 'var(--primary-color, currentColor)'}}/>
   </svg>
 );
 
@@ -129,12 +137,21 @@ export const BotMessage: React.FC<BotMessageProps> = ({
                 setShowSources((prev) => !prev);
               }}
             >
-              <p style={{margin: 0, padding: 0, color: 'var(--primary-color)'}}>✨</p> So ist Woody auf seine Antwort gekommen.
+              {/*<span className="sources-summary-icon" aria-hidden="true">
+                <IconSearch />
+              </span>*/}
+              <span className="sources-summary-title">✨ So ist Woody auf seine Antwort gekommen</span>
+              <span className="sources-summary-chevron" aria-hidden="true">
+                <IconChevronDown />
+              </span>
             </summary>
             <div className="sources-content">
               {message.sources.map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                  {url}
+                <a key={i} className="source-item" href={url} target="_blank" rel="noopener noreferrer">
+                  <span className="source-item-icon" aria-hidden="true">
+                    <IconSearch />
+                  </span>
+                  <span className="source-item-url">{url}</span>
                 </a>
               ))}
             </div>
