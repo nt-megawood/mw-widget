@@ -65,6 +65,12 @@ const IconSpeak = () => (
   </svg>
 );
 
+const IconStar = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="0">
+    <polygon points="12 2 15.09 10.26 24 10.26 17.55 15.74 19.64 24 12 19.52 4.36 24 6.45 15.74 0 10.26 8.91 10.26 12 2" style={{fill: 'var(--primary-color, currentColor)'}}/>
+  </svg>
+);
+
 export const BotMessage: React.FC<BotMessageProps> = ({
   message,
   conversationId,
@@ -123,7 +129,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({
                 setShowSources((prev) => !prev);
               }}
             >
-              So ist Woody auf seine Antwort gekommen.
+              <p style={{margin: 0, padding: 0, color: 'var(--primary-color)'}}>✨</p> So ist Woody auf seine Antwort gekommen.
             </summary>
             <div className="sources-content">
               {message.sources.map((url, i) => (

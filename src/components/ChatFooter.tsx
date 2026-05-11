@@ -125,7 +125,14 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
         )}
       </div>
       <div className="footer-tools">
-        <span className="branding">{copy.aiDisclaimer}</span>
+        <div className="branding">
+          <span className="ai-disclaimer">{copy.aiDisclaimer}</span>
+          <nav className="ai-links" aria-label="Rechtliches">
+            <a className="ai-link" href="/datenschutz">Datenschutz</a>
+            <span className="ai-dot" aria-hidden="true">•</span>
+            <a className="ai-link" href="/impressum">Impressum</a>
+          </nav>
+        </div>
         {showLiveButton && liveStatusText && (
           <span className="live-status" role="status" aria-live="polite">{liveStatusText}</span>
         )}

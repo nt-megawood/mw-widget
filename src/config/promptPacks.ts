@@ -12,7 +12,7 @@ const PROMPT_PACKS: PromptPackMap = {
   start: {
     privatkunde: [
       { label: 'Wie kannst du mir helfen?', message: 'Was kannst du alles für mich tun?' },
-      { label: 'Die passende Diele finden', message: 'Ich suche eine passende Diele für meine Terrasse. Kannst du mir eine einfache Empfehlung geben?' },
+      { label: 'Die passende Diele finden', message: 'Ich suche eine passende Diele für meine Terrasse. Welche Dielen bietet megawood® an?' },
       { label: 'Händler in meiner Nähe', message: 'Ich suche einen Händler in meiner Nähe.' },
     ],
     gewerblich: [
