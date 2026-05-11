@@ -17,15 +17,15 @@ interface ChatFooterProps {
 }
 
 const IconSend = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h13" />
     <path d="m12 5 7 7-7 7" />
   </svg>
 );
 
 const IconStop = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <rect x="6" y="6" width="24" height="24" rx="3" />
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <rect x="5" y="5" width="14" height="14" rx="3" />
   </svg>
 );
 

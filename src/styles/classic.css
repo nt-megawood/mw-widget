@@ -531,7 +531,6 @@
   position: relative;
   margin: 16px;
   background: var(--bg-white);
-  border: 1px solid rgba(180, 4, 47, 0.2);
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   padding: 14px 16px 12px;
@@ -930,20 +929,22 @@
 }
 
 .chat-btn {
-  background: var(--primary-red);
-  color: white;
-  border: none;
+  background: white;
+  color: var(--primary-red);
+  border: 1px solid var(--primary-red);
   padding: 8px 18px;
   border-radius: 20px;
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  transition: background 0.2s, opacity 0.2s, color 0.2s, border-color 0.2s;
   min-width: 130px;
   text-align: center;
 }
 
 .chat-btn:hover {
-  background: var(--primary-red-dark);
+  background: var(--primary-red);
+  color: white;
+  border-color: var(--primary-red);
 }
 
 .chat-btn.whatsapp {
