@@ -83,7 +83,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   };
 
   const hasText = inputValue.trim().length > 0;
-  const showSendOrCancelButton = hasText || isGenerating;
+  const showSendOrCancelButton = hasText || isGenerating || !showLiveButton;
 
   return (
     <div className="chat-footer">
@@ -103,7 +103,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
             className={`send-btn${isGenerating ? ' cancel-btn' : ''}`}
             type="button"
             onClick={isGenerating ? onCancelGeneration : handleSend}
-            disabled={isGenerating ? !onCancelGeneration : disabled}
+            disabled={isGenerating ? !onCancelGeneration : (disabled || (!hasText && !isGenerating))}
             aria-label={isGenerating ? 'Antwort abbrechen' : copy.sendLabel}
             title={isGenerating ? 'Antwort abbrechen' : copy.sendLabel}
           >

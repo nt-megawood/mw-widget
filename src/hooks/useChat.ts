@@ -241,9 +241,35 @@ function extractColorChoicesFromAnswer(answer: string): string[] {
 function buildFallbackQuickReplies(answer: string, fromApi?: QuickReplyOption[]): QuickReplyOption[] {
   const lower = String(answer || '').toLowerCase();
   const existingCode = extractPlanningCode(answer);
+  const generatedReplies: QuickReplyOption[] = [];
+
+  if (
+    lower.includes('planer.megawood.com')
+    || lower.includes('terrassenplaner')
+    || (lower.includes('gemeinsam planen') && lower.includes('planer'))
+  ) {
+    generatedReplies.push(buildPlannerReply());
+  }
 
   if (lower.includes('muster') || lower.includes('kostenfreies exemplar') || lower.includes('kostenfreies muster')) {
-    return [buildMusterBestellenReply()];
+    generatedReplies.push(buildMusterBestellenReply());
+  }
+
+  if (
+    lower.includes('fachhändler')
+    || lower.includes('fachhaendler')
+    || lower.includes('händlersuche')
+    || lower.includes('haendlersuche')
+    || lower.includes('händler')
+  ) {
+    generatedReplies.push(buildDealerFinderReply());
+  }
+
+  if (generatedReplies.length > 0) {
+    if (fromApi && fromApi.length > 0) {
+      return generatedReplies.reduce((merged, reply) => appendUniqueQuickReply(merged, reply), [...fromApi]);
+    }
+    return generatedReplies;
   }
 
   const asksForPlanningCode =
@@ -490,6 +516,23 @@ function buildMusterBestellenReply(): QuickReplyOption {
     label: 'Kostenfreies Muster bestellen',
     message: '',
     action: 'request_muster_bestellen_input',
+  };
+}
+
+function buildPlannerReply(): QuickReplyOption {
+  return {
+    label: 'Zum megawood Terrassenplaner',
+    message: '',
+    action: 'open_url',
+    url: 'https://planer.megawood.com',
+  };
+}
+
+function buildDealerFinderReply(): QuickReplyOption {
+  return {
+    label: 'Fachhändler finden',
+    message: '',
+    action: 'request_location_input',
   };
 }
 
@@ -887,6 +930,10 @@ export function useChat({
 
     if (reply.action === 'open_url' && reply.url) {
       const url = reply.url;
+      if (url.includes('planer.megawood.com')) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      }
       if (isPlannerPdfUrl(url)) {
         setDealerCtaCheckpoints((prev) => ({ ...prev, pdfExportClickedReached: true }));
       }

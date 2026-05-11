@@ -20,6 +20,7 @@ import type { WidgetLanguage } from '../../config/i18n';
 import { UI_COPY } from '../../config/i18n';
 
 const BASE_URL = import.meta.env.BASE_URL;
+const SHOW_VOICE_BUTTON = (import.meta.env.VITE_SHOW_VOICE_BUTTON ?? 'true') === 'true';
 
 interface ChatWidgetProps {
   config: WidgetConfig;
@@ -49,6 +50,7 @@ function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; la
           ) : (
             <>
               <p>{copy.greetingClassicLine1}</p>
+              <p>{copy.greetingClassicLine3}</p>             
               <p>{copy.greetingClassicLine2}</p>
             </>
           )}
@@ -301,7 +303,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                     ? language === 'de' ? 'Woody hört dir zu...' : 'Woody is listening...'
                     : copy.inputPlaceholder
                 }
-                showLiveButton
+                showLiveButton={SHOW_VOICE_BUTTON}
                 isLiveMode={isLiveMode}
                 onToggleLiveMode={toggleLiveMode}
                 liveStatusText={partialText ? `Erkannt: ${partialText}` : liveStatusText}
