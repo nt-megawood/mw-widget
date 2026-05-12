@@ -37,7 +37,7 @@ const PROMPT_PACKS: PromptPackMap = {
     privatkunde: [
       { label: 'Neue Planung erstellen', message: 'Ich möchte eine neue Terrassenplanung erstellen.' },
       { label: 'Vorhandene Planung nutzen', message: '', action: 'request_planning_code_input' },
-      { label: 'Nach der Planung Händler finden', message: 'Ich möchte nach der Planung direkt einen Händler in meiner Nähe finden.' },
+      { label: 'Händler finden', message: 'Ich möchte nach der Planung direkt einen Händler in meiner Nähe finden.' },
     ],
     gewerblich: [
       { label: 'Projektplanung starten', message: 'Ich möchte eine neue Terrassenplanung für ein Projekt starten.' },

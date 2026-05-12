@@ -17,6 +17,7 @@ export interface UiCopy {
   greetingClassicLine3: string;
   greetingLandscapeLine1: string;
   greetingLandscapeLine2: string;
+  greetingLandscapeLine3: string;
   createdBy: string;
   aiDisclaimer: string;
 }
@@ -39,6 +40,7 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     greetingClassicLine3: 'Ich lerne noch, daher prüfe wichtige Antworten bitte sicherheitshalber nach.',
     greetingLandscapeLine1: 'Ich bin Handwerker Woody, dein persönlicher KI-Assistent! Du kannst mich alles zu unseren Produkten fragen, oder wir können eine Planung zusammen erstellen.',
     greetingLandscapeLine2: 'Lass uns gleich mit der Planung beginnen!',
+    greetingLandscapeLine3: 'Ich lerne aktuell noch, daher prüfe wichtige Antworten bitte sicherheitshalber nach!',
     createdBy: 'Erstellt von megawood KI',
     aiDisclaimer: 'KI-Unterstützung kann Fehler machen.',
   },
@@ -59,6 +61,7 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     greetingClassicLine3: 'I am still learning, so please verify important answers for accuracy.',
     greetingLandscapeLine1: 'I am Woody the Craftsman, your personal AI assistant! Ask me anything about our products, or we can create a planning together.',
     greetingLandscapeLine2: "Let's start planning right away!",
+    greetingLandscapeLine3: 'I am still learning, so please verify important answers for accuracy.',
     createdBy: 'Created by megawood AI',
     aiDisclaimer: 'AI assistance can make mistakes.',
   },

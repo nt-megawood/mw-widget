@@ -346,7 +346,7 @@
 }
 
 .logo-img {
-  height: 42px;
+  height: 60px;
   object-fit: contain;
 }
 
@@ -359,6 +359,7 @@
 
 .header-pill-btn {
   min-width: 38px;
+  min-height: 30px;
   border: 1.5px solid var(--primary-red);
   border-radius: 999px;
   background: var(--bg-white);

@@ -44,6 +44,7 @@ function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; la
           {mode === 'landscape' ? (
             <>
               <p>{copy.greetingLandscapeLine1}</p>
+              <p>{copy.greetingLandscapeLine3}</p>
               <p>{copy.greetingLandscapeLine2}</p>
             </>
           ) : (
