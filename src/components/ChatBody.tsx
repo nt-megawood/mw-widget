@@ -1,27 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { useMemo, useState } from 'react';
-import type { InputRequest, Message, QuickReplyAction, QuickReplyOption } from '../types';
+import type { InputRequest, Message } from '../types';
 import { BotMessage } from './Message/BotMessage';
 import { UserMessage } from './Message/UserMessage';
 import { ThinkingIndicator } from './Message/ThinkingIndicator';
 import { useAuth } from '../hooks/useAuth';
 import { DIELEN_COLORS, DIELEN_VARIANTS } from './PlanningEditor/planningData';
 
-export interface QuickReply {
-  label: string;
-  message: string;
-  action?: QuickReplyAction;
-}
-
 interface ChatBodyProps {
   messages: Message[];
   isThinking: boolean;
   thinkingText: string;
   initialGreeting: React.ReactNode;
-  quickReplies: QuickReply[];
-  contextualQuickReplies?: QuickReplyOption[];
   inputRequest?: InputRequest | null;
-  onQuickReply: (reply: QuickReplyOption) => void;
   onSubmitInputRequest: (payloadText: string) => void;
   conversationId?: string | null;
   onRespinLastAnswer?: () => void;
@@ -543,10 +534,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   isThinking,
   thinkingText,
   initialGreeting,
-  quickReplies,
-  contextualQuickReplies = [],
   inputRequest,
-  onQuickReply,
   onSubmitInputRequest,
   conversationId,
   onRespinLastAnswer,
@@ -591,23 +579,6 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   return (
     <div className="chat-body">
       {initialGreeting}
-      {messages.length === 0 && quickReplies.length > 0 && (
-        <div className="button-group">
-          {quickReplies.map((reply, i) => (
-            <button
-              key={i}
-              className="chat-btn"
-              onClick={() => onQuickReply({
-                label: reply.label,
-                message: reply.message,
-                action: reply.action || 'send_message',
-              })}
-            >
-              {reply.label}
-            </button>
-          ))}
-        </div>
-      )}
       {messages.map((message) =>
         message.role === 'bot' ? (
           <BotMessage
@@ -621,15 +592,6 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
         ) : (
           <UserMessage key={message.id} message={message} />
         )
-      )}
-      {messages.length > 0 && contextualQuickReplies.length > 0 && (
-        <div className="button-group contextual-button-group" aria-label="Antwortmöglichkeiten">
-          {contextualQuickReplies.map((reply, i) => (
-            <button key={`${reply.label}-${i}`} className="chat-btn" onClick={() => onQuickReply(reply)}>
-              {reply.label}
-            </button>
-          ))}
-        </div>
       )}
       {messages.length > 0 && inputRequest?.type === 'dimension_input' && (
         <DimensionInputCard request={inputRequest} onSubmit={onSubmitInputRequest} />

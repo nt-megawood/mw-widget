@@ -1,4 +1,5 @@
 import React, { useRef, useCallback, useState } from 'react';
+import type { QuickReplyOption } from '../types';
 import type { WidgetLanguage } from '../config/i18n';
 import { UI_COPY } from '../config/i18n';
 
@@ -12,6 +13,8 @@ interface ChatFooterProps {
   isGenerating?: boolean;
   onCancelGeneration?: () => void;
   liveStatusText?: string | null;
+  quickReplies?: QuickReplyOption[];
+  onQuickReply?: (reply: QuickReplyOption) => void;
   language?: WidgetLanguage;
   prefillInput?: string;
 }
@@ -40,6 +43,8 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   isGenerating = false,
   onCancelGeneration,
   liveStatusText,
+  quickReplies = [],
+  onQuickReply,
   prefillInput,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -87,6 +92,21 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
 
   return (
     <div className="chat-footer">
+      {quickReplies.length > 0 && (
+        <div className="chat-footer-cta-row" aria-label="Schnellaktionen">
+          {quickReplies.map((reply, i) => (
+            <button
+              key={`${reply.label}-${i}`}
+              className="chat-btn chat-footer-cta-btn"
+              type="button"
+              onClick={() => onQuickReply?.(reply)}
+              disabled={disabled}
+            >
+              {reply.label}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="chat-footer-input-row">
         <textarea
           ref={textareaRef}

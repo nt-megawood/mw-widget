@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatHeader } from '../ChatHeader';
 import { ChatBody } from '../ChatBody';
-import type { QuickReply } from '../ChatBody';
 import { ChatFooter } from '../ChatFooter';
 import { ChatTeaser } from '../ChatTeaser';
 import { ChatToggle } from '../ChatToggle';
@@ -13,7 +12,7 @@ import { usePresence } from '../../hooks/usePresence';
 import { useRealtimeStt } from '../../hooks/useRealtimeStt';
 //import { useWidgetToken } from '../../hooks/useWidgetToken';
 import { getConversation, deleteConversation } from '../../services/api';
-import type { WidgetConfig, ConversationHistoryItem } from '../../types';
+import type { WidgetConfig, ConversationHistoryItem, QuickReplyOption } from '../../types';
 import { getDefaultPromptPack, getPromptPack } from '../../config/promptPacks';
 import { getAuthData } from '../../hooks/useAuth';
 import type { WidgetLanguage } from '../../config/i18n';
@@ -225,9 +224,12 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
 
     sendMessage(previousMessage.text);
   }, [messages, isThinking, sendMessage]);
-  const quickReplies: QuickReply[] = isEntryComplete && entryContext.audiencePath
+  const quickReplies: QuickReplyOption[] = isEntryComplete && entryContext.audiencePath
     ? getPromptPack(config.pageContext, entryContext.audiencePath)
     : getDefaultPromptPack(config.pageContext);
+  const footerQuickReplies: QuickReplyOption[] = messages.length > 0
+    ? activeQuickReplies
+    : quickReplies;
   const posClass = `pos-${config.position}`;
   const copy = UI_COPY[language];
   const initialGreeting = <InitialGreeting mode={config.mode} language={language} />;
@@ -255,16 +257,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   isThinking={isThinking}
                   thinkingText={thinkingText}
                   initialGreeting={initialGreeting}
-                  quickReplies={quickReplies}
-                  contextualQuickReplies={activeQuickReplies}
                   inputRequest={activeInputRequest}
-                  onQuickReply={handleQuickReply}
                   onSubmitInputRequest={handleSend}
                   conversationId={conversationId}
                   onRespinLastAnswer={handleRespinLastAnswer}
                   disableRespin={isThinking}
                 />
                 <ChatFooter
+                  quickReplies={footerQuickReplies}
+                  onQuickReply={handleQuickReply}
                   onSend={handleSend}
                   disabled={isThinking}
                   isGenerating={isThinking}
@@ -284,16 +285,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 isThinking={isThinking}
                 thinkingText={thinkingText}
                 initialGreeting={initialGreeting}
-                quickReplies={quickReplies}
-                contextualQuickReplies={activeQuickReplies}
                 inputRequest={activeInputRequest}
-                onQuickReply={handleQuickReply}
                 onSubmitInputRequest={handleSend}
                 conversationId={conversationId}
                 onRespinLastAnswer={handleRespinLastAnswer}
                 disableRespin={isThinking}
               />
               <ChatFooter
+                quickReplies={footerQuickReplies}
+                onQuickReply={handleQuickReply}
                 onSend={handleSend}
                 disabled={isThinking || isLiveMode || isLiveConnecting}
                 isGenerating={isThinking}

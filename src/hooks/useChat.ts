@@ -513,7 +513,7 @@ function buildStartDealerFlowReply(): QuickReplyOption {
 
 function buildMusterBestellenReply(): QuickReplyOption {
   return {
-    label: 'Kostenfreies Muster bestellen',
+    label: 'Muster bestellen',
     message: '',
     action: 'request_muster_bestellen_input',
   };
@@ -521,7 +521,7 @@ function buildMusterBestellenReply(): QuickReplyOption {
 
 function buildPlannerReply(): QuickReplyOption {
   return {
-    label: 'Zum megawood Terrassenplaner',
+    label: 'megawood® Terrassenplaner',
     message: '',
     action: 'open_url',
     url: 'https://planer.megawood.com',
@@ -552,8 +552,8 @@ function extractDealerLocationFromMessage(text: string): { city?: string; postal
 
 function buildDealerResultsUrl(location: { city?: string; postalCode?: string }): string {
   const query = [location.city, location.postalCode].filter(Boolean).join(' ').trim();
-  if (!query) return 'https://www.megawood.com/haendlersuche';
-  return `https://www.megawood.com/haendlersuche?location=${encodeURIComponent(query)}`;
+  if (!query) return 'https://www.megawood.com/de/service/haendlersuche';
+  return `https://www.megawood.com/de/service/haendlersuche?location=${encodeURIComponent(query)}`;
 }
 
 /** Extract a terrace planning code (e.g. mgw148964) from a bot response. */
@@ -804,7 +804,7 @@ export function useChat({
           postalCode: nextDealerFlowContext.postal_code,
         });
         mergedQuickReplies = appendUniqueQuickReply(mergedQuickReplies, {
-          label: 'Händlerergebnisse öffnen',
+          label: 'Handlersuche öffnen',
           message: '',
           action: 'open_dealer_results',
           url: resultsUrl,
@@ -882,7 +882,7 @@ export function useChat({
       addBotMessage('Gerne. Ich öffne dir die Musterbestellung. Du kannst mehrere Dielen hinzufügen und die Lieferadresse direkt im Formular angeben.');
       setActiveInputRequest({
         type: 'muster_bestellen_input',
-        title: 'Kostenfreies Muster bestellen',
+        title: 'Muster bestellen',
         fields: [],
       });
       setActiveQuickReplies([]);
