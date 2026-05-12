@@ -602,7 +602,7 @@
 .chat-footer input,
 .chat-footer textarea {
   flex: 1;
-  padding: 10px 14px;
+  padding: 14px 14px;
   border: 1px solid var(--primary-red);
   border-radius: 22px;
   outline: none;
