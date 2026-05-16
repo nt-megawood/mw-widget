@@ -166,6 +166,118 @@ export async function sendMessage(
   return response.json();
 }
 
+export async function sendMessageStream(
+  message: string,
+  conversationId: string | null,
+  entryContext: EntryContext | null | undefined,
+  pageContext: PageContext | undefined,
+  dealerFlowContext: DealerFlowContext | null | undefined,
+  signal: AbortSignal | undefined,
+  onDelta: (fullText: string) => void,
+): Promise<ApiResponse> {
+  const body: Record<string, unknown> = { message, stream: true };
+  if (conversationId) body.conversation_id = conversationId;
+  const apiEntryContext = toApiEntryContext(entryContext);
+  if (apiEntryContext) body.entry_context = apiEntryContext;
+  if (pageContext) body.page_context = pageContext;
+  if (dealerFlowContext) {
+    body.dealer_flow_context = dealerFlowContext;
+    body.context = {
+      dealer_flow: dealerFlowContext,
+      page_context: pageContext,
+    };
+  }
+
+  const auth = getAuthData();
+  if (auth?.user) {
+    body.user_context = {
+      user_id: auth.user.id,
+      user_name: auth.user.name,
+      email: auth.user.email,
+      first_name: auth.user.name?.split(' ')[0] || null,
+      last_name: auth.user.name?.split(' ').slice(1).join(' ') || null,
+      street: auth.user.profile?.address1 || null,
+      house_number: auth.user.profile?.address2 || null,
+      city: auth.user.profile?.city || null,
+      country: auth.user.profile?.country || null,
+      company: auth.user.profile?.company || null,
+      postal_code: auth.user.profile?.postal_code || null,
+      is_b2b: isB2BUser(auth) || false,
+    };
+  }
+
+  const response = await fetch(getApiUrl(), {
+    method: 'POST',
+    headers: await buildAuthHeaders(true),
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!response.ok) throw new Error(`API-Fehler: ${response.status} ${response.statusText}`);
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('Streaming wird von diesem Browser nicht unterstützt');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+
+  return new Promise<ApiResponse>((resolve, reject) => {
+    function pump(): void {
+      if (signal?.aborted) {
+        reject(new DOMException('Aborted', 'AbortError'));
+        return;
+      }
+
+      reader!.read().then(({ done, value }) => {
+        if (done) {
+          reject(new Error('Stream unerwartet beendet'));
+          return;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+
+          try {
+            const data = JSON.parse(line.slice(6));
+
+            if (data.delta) {
+              fullText += data.delta;
+              onDelta(fullText);
+            }
+
+            if (data.done) {
+              const result: ApiResponse = {
+                answer: data.result.answer || fullText,
+                sources: data.result.sources,
+                quick_replies: data.result.quick_replies,
+                input_request: data.result.input_request,
+                conversation_id: data.result.conversation_id || conversationId || '',
+              };
+              resolve(result);
+              return;
+            }
+
+            if (data.error) {
+              reject(new Error(data.error));
+              return;
+            }
+          } catch {
+            // Skip malformed JSON lines
+          }
+        }
+
+        pump();
+      }).catch(reject);
+    }
+
+    pump();
+  });
+}
+
 export async function getConversation(conversationId: string): Promise<ConversationResponse> {
   if (!conversationId) throw new Error('Konversations-ID fehlt');
   const response = await fetch(`${getConversationUrl()}/${encodeURIComponent(conversationId)}`, {

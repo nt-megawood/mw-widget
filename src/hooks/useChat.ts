@@ -9,7 +9,7 @@ import type {
   QuickReplyOption,
 } from '../types';
 import { generateUUID } from '../utils/uuid';
-import { sendMessage as apiSendMessage } from '../services/api';
+import { sendMessageStream } from '../services/api';
 import { dispatchDealerConversionEvent } from '../services/analytics';
 import { getAudiencePath, useAuth } from './useAuth';
 
@@ -588,6 +588,7 @@ export function useChat({
   const [activeQuickReplies, setActiveQuickReplies] = useState<QuickReplyOption[]>([]);
   const [activeInputRequest, setActiveInputRequest] = useState<InputRequest | null>(null);
   const [isThinking, setIsThinking] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [thinkingText, setThinkingText] = useState(THINKING_MESSAGES[0]);
   const pendingRequestControllerRef = useRef<AbortController | null>(null);
   const [entryContext, setEntryContext] = useState<EntryContext>(() => readEntryContext(widgetId));
@@ -765,20 +766,48 @@ export function useChat({
     pendingRequestControllerRef.current = requestController;
     const currentSessionId = sessionIdRef.current;
     const currentConversationId = conversationIdRef.current;
+
+    const placeholderId = generateUUID();
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: placeholderId,
+        role: 'bot',
+        text: '',
+        timestamp: new Date(),
+        sessionId: currentSessionId,
+      },
+    ]);
+
+    let hasReceivedChunk = false;
+
     try {
-      const response = await apiSendMessage(
+      const response = await sendMessageStream(
         text,
         currentConversationId,
         entryContext,
         pageContext,
         nextDealerFlowContext,
         requestController.signal,
+        (fullText) => {
+          if (!hasReceivedChunk) {
+            hasReceivedChunk = true;
+            setIsThinking(false);
+            setIsStreaming(true);
+          }
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === placeholderId ? { ...msg, text: fullText } : msg,
+            ),
+          );
+        },
       );
       if (pendingRequestControllerRef.current === requestController) {
         pendingRequestControllerRef.current = null;
       }
       if (currentSessionId !== sessionIdRef.current) return;
-      stopThinking();
+      setIsStreaming(false);
+      setIsThinking(false);
       if (response.conversation_id) {
         onConversationIdChange(response.conversation_id);
       }
@@ -818,21 +847,44 @@ export function useChat({
         emitDealerEvent('dealer_results_shown', resultsContext);
       }
       const visibleSources = shouldHideSources(response.answer) ? undefined : response.sources;
-      addBotMessage(response.answer, visibleSources, mergedQuickReplies, normalizedInputRequest);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === placeholderId
+            ? {
+                ...msg,
+                text: response.answer,
+                sources: visibleSources,
+                quickReplies: mergedQuickReplies,
+                inputRequest: normalizedInputRequest,
+              }
+            : msg,
+        ),
+      );
       setActiveQuickReplies(mergedQuickReplies);
       setActiveInputRequest(normalizedInputRequest);
       const code = extractPlanningCode(response.answer);
       if (code) onPlanningCodeDetectedRef.current?.(code);
     } catch (error) {
+      setIsStreaming(false);
       if ((error as DOMException)?.name === 'AbortError') {
+        setMessages((prev) => prev.filter((msg) => msg.id !== placeholderId));
         return;
       }
       if (pendingRequestControllerRef.current === requestController) {
         pendingRequestControllerRef.current = null;
       }
       if (currentSessionId !== sessionIdRef.current) return;
-      stopThinking();
-      addBotMessage('Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut, oder kontaktiere unseren Support.');
+      setIsThinking(false);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === placeholderId
+            ? {
+                ...msg,
+                text: 'Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut, oder kontaktiere unseren Support.',
+              }
+            : msg,
+        ),
+      );
       console.error('Chat error:', error);
     }
   }, [
@@ -982,6 +1034,7 @@ export function useChat({
     entryContext,
     isEntryComplete,
     isThinking,
+    isStreaming,
     thinkingText,
     setEntryGoal,
     startEntryFlow,

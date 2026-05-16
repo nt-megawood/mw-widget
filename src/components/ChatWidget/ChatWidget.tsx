@@ -74,6 +74,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     entryContext,
     isEntryComplete,
     isThinking,
+    isStreaming,
     thinkingText,
     sendMessage,
     handleQuickReply,
@@ -268,8 +269,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   quickReplies={footerQuickReplies}
                   onQuickReply={handleQuickReply}
                   onSend={handleSend}
-                  disabled={isThinking}
-                  isGenerating={isThinking}
+                  disabled={isStreaming}
+                  isGenerating={isStreaming}
                   onCancelGeneration={cancelResponseGeneration}
                   placeholder={copy.inputPlaceholder}
                   language={language}
@@ -296,8 +297,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 quickReplies={footerQuickReplies}
                 onQuickReply={handleQuickReply}
                 onSend={handleSend}
-                disabled={isThinking || isLiveMode || isLiveConnecting}
-                isGenerating={isThinking}
+                disabled={isStreaming || isLiveMode || isLiveConnecting}
+                isGenerating={isStreaming}
                 onCancelGeneration={cancelResponseGeneration}
                 placeholder={
                   isLiveMode
