@@ -126,7 +126,9 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
         if (options.language) {
           client.setLanguage(options.language);
         }
-        hasConfirmedSpeechRef.current = false;
+        if (hasConfirmedSpeechRef.current) {
+          flushBuffer(pendingAudioRef.current, (chunk) => client.sendAudioChunk(chunk));
+        }
         utteranceStartRef.current = Date.now();
         silenceFramesRef.current = 0;
         abortFramesRef.current = 0;
@@ -146,7 +148,6 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
             isCooldownRef.current = false;
           }, COOLDOWN_MS);
           updateVadState('listening');
-          startListeningRef.current();
         }
       },
       onError: (message) => {
@@ -159,7 +160,6 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
             isCooldownRef.current = false;
           }, COOLDOWN_MS);
           updateVadState('listening');
-          startListeningRef.current();
         }
       },
       onClose: () => {
@@ -246,6 +246,8 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
           }
           if (rms >= voiceThreshold) {
             speechOnsetFramesRef.current++;
+            const pcm16 = floatToPcm16(ch);
+            bufferChunk(pendingAudioRef.current, pcm16, MAX_PENDING_CHUNKS);
             if (speechOnsetFramesRef.current >= SPEECH_ONSET_FRAMES) {
               speechOnsetFramesRef.current = 0;
               hasConfirmedSpeechRef.current = false;
@@ -293,7 +295,6 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
                       isCooldownRef.current = false;
                     }, COOLDOWN_MS);
                     updateVadState('listening');
-                    startListeningRef.current();
                   }
                 }, RESPONSE_TIMEOUT_MS);
               } else {
@@ -318,7 +319,6 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
                     isCooldownRef.current = false;
                   }, COOLDOWN_MS);
                   updateVadState('listening');
-                  startListeningRef.current();
                 }
               }, RESPONSE_TIMEOUT_MS);
             } else {
