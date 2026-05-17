@@ -13,6 +13,7 @@ interface ChatFooterProps {
   isGenerating?: boolean;
   onCancelGeneration?: () => void;
   liveStatusText?: string | null;
+  vadState?: 'idle' | 'listening' | 'recording' | 'processing';
   quickReplies?: QuickReplyOption[];
   onQuickReply?: (reply: QuickReplyOption) => void;
   language?: WidgetLanguage;
@@ -43,6 +44,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   isGenerating = false,
   onCancelGeneration,
   liveStatusText,
+  vadState,
   quickReplies = [],
   onQuickReply,
   prefillInput,
@@ -131,16 +133,16 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
           </button>
         ) : showLiveButton && (
           <button
-            className={`live-btn live-icon-btn${isLiveMode ? ' active' : ''}`}
+            className={`live-btn live-icon-btn${isLiveMode ? ` active${vadState ? ` vad-${vadState}` : ''}` : ''}`}
             type="button"
             onClick={onToggleLiveMode}
             disabled={disabled && !isLiveMode}
             aria-label={isLiveMode ? 'Live-Chat beenden' : 'Live-Chat starten'}
             title={isLiveMode ? 'Live-Chat beenden' : 'Live-Chat starten'}
           >
-            <span className="live-bars" aria-hidden="true">
-              <span /><span /><span /><span /><span />
-            </span>
+          <span className="live-bars" aria-hidden="true">
+            <span /><span /><span /><span /><span /><span /><span />
+          </span>
           </button>
         )}
       </div>

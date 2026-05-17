@@ -1059,17 +1059,18 @@
 
 .live-bars {
   display: inline-flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 16px;
-  width: 18px;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  width: 32px;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
 }
 
 .live-bars span {
-  width: 2px;
+  width: 3px;
   background: currentColor;
-  border-radius: 2px;
-  transform-origin: center bottom;
+  border-radius: 3px;
+  transform-origin: center;
 }
 
 .chat-footer .live-btn:hover:not(:disabled),
@@ -1088,48 +1089,62 @@
 }
 
 .chat-footer .live-btn:hover:not(:disabled) .live-bars span,
-.chat-footer .live-btn:focus-visible .live-bars span {
-  animation: live-wave 760ms ease-in-out infinite;
+.chat-footer .live-btn:focus-visible .live-bars span,
+.chat-footer .live-btn.active .live-bars span {
+  animation: live-wave 1.2s ease-in-out infinite;
 }
 
 .live-bars span:nth-child(1) {
-  height: 6px;
+  height: 4px;
   animation-delay: 0ms;
 }
 
 .live-bars span:nth-child(2) {
-  height: 11px;
-  animation-delay: 90ms;
+  height: 8px;
+  animation-delay: 80ms;
 }
 
 .live-bars span:nth-child(3) {
-  height: 14px;
-  animation-delay: 180ms;
+  height: 12px;
+  animation-delay: 160ms;
 }
 
 .live-bars span:nth-child(4) {
-  height: 10px;
-  animation-delay: 120ms;
+  height: 16px;
+  animation-delay: 240ms;
 }
 
 .live-bars span:nth-child(5) {
+  height: 11px;
+  animation-delay: 320ms;
+}
+
+.live-bars span:nth-child(6) {
   height: 7px;
-  animation-delay: 30ms;
+  animation-delay: 400ms;
+}
+
+.live-bars span:nth-child(7) {
+  height: 4px;
+  animation-delay: 480ms;
 }
 
 @keyframes live-wave {
-
   0%,
   100% {
-    transform: scaleY(0.78);
+    transform: scaleY(0.6);
   }
 
-  40% {
-    transform: scaleY(1.45);
+  25% {
+    transform: scaleY(1.3);
   }
 
-  70% {
-    transform: scaleY(1.05);
+  50% {
+    transform: scaleY(0.85);
+  }
+
+  75% {
+    transform: scaleY(1.15);
   }
 }
 
@@ -1137,6 +1152,28 @@
 .chat-footer .send-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* VAD state animations for live button */
+.chat-footer .live-btn.active.vad-listening {
+  animation: vad-pulse-listening 2s ease-in-out infinite;
+}
+
+.chat-footer .live-btn.active.vad-recording {
+  background: #ff4444;
+  border-color: #ff4444;
+  box-shadow: 0 6px 14px rgba(255, 68, 68, 0.35);
+}
+
+.chat-footer .live-btn.active.vad-processing {
+  background: #ffaa00;
+  border-color: #ffaa00;
+  box-shadow: 0 6px 14px rgba(255, 170, 0, 0.35);
+}
+
+@keyframes vad-pulse-listening {
+  0%, 100% { box-shadow: 0 4px 10px rgba(0, 160, 0, 0.2); }
+  50% { box-shadow: 0 4px 18px rgba(0, 200, 0, 0.5); }
 }
 
 .chat-footer input::placeholder {

@@ -94,17 +94,34 @@ export class RealtimeSttClient {
     this.ws.send(data);
   }
 
+  isReady(): boolean {
+    return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+  }
+
   sendPing(): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
     this.ws.send(JSON.stringify({ type: 'ping' }));
   }
 
-  close(): void {
+  /** Sends the desired transcription language to the backend. */
+  setLanguage(lang: string): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    this.ws.send(JSON.stringify({ type: 'set_language', language: lang }));
+  }
+
+  /** Sends close signal but keeps WebSocket alive to receive final transcription. */
+  sendEndOfAudio(): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    this.ws.send(JSON.stringify({ type: 'close' }));
+  }
+
+  /** Forcefully closes the WebSocket immediately (for cleanup/abort). */
+  disconnect(): void {
     if (!this.ws) return;
-    if (this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type: 'close' }));
-    }
-    this.ws.close();
+    this.ws.onclose = null;
+    this.ws.onmessage = null;
+    this.ws.onerror = null;
+    try { this.ws.close(); } catch {}
     this.ws = null;
   }
 }

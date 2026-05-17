@@ -97,7 +97,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   );
 
   const [browserSttPrefill] = useState('');
-  const { partialText, finalText, statusText: liveStatusText, start: startStt, stop: stopStt, clearFinal } = useRealtimeStt();
+  const { vadState, partialText, finalText, statusText: liveStatusText, start: startStt, stop: stopStt, clearFinal } = useRealtimeStt({ isStreaming, language });
   const lastSubmittedSttTextRef = useRef('');
   const lastSubmittedAtRef = useRef(0);
 
@@ -275,6 +275,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   placeholder={copy.inputPlaceholder}
                   language={language}
                   prefillInput={browserSttPrefill}
+                  showLiveButton={SHOW_VOICE_BUTTON}
+                  isLiveMode={isLiveMode}
+                  onToggleLiveMode={toggleLiveMode}
+                  liveStatusText={partialText ? `Erkannt: ${partialText}` : liveStatusText}
+                  vadState={vadState}
                 />
               </div>
               {children}
@@ -309,6 +314,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 isLiveMode={isLiveMode}
                 onToggleLiveMode={toggleLiveMode}
                 liveStatusText={partialText ? `Erkannt: ${partialText}` : liveStatusText}
+                vadState={vadState}
                 language={language}
                 prefillInput={browserSttPrefill}
               />
