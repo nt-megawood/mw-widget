@@ -10,6 +10,8 @@ interface UsePresenceOptions {
   onNewMessages: (messages: ConversationHistoryItem[]) => void;
 }
 
+const DISABLE_PRESENCE_PING = (import.meta.env.VITE_DISABLE_PRESENCE_PING ?? 'false') === 'true';
+
 export function usePresence({ conversationId, historyCount, onNewMessages }: UsePresenceOptions) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const historyCountRef = useRef(historyCount);
@@ -43,6 +45,7 @@ export function usePresence({ conversationId, historyCount, onNewMessages }: Use
 
   useEffect(() => {
     if (!conversationId) return;
+    if (DISABLE_PRESENCE_PING) return;
     startPolling();
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {

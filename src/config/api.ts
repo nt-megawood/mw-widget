@@ -32,28 +32,6 @@ export function getConversationUrl(): string {
 }
 
 /**
- * Get the live WebSocket URL
- * @param token Optional auth token to append
- * @returns WebSocket URL (wss:// or ws://)
- */
-export function getLiveWebSocketUrl(token?: string): string {
-  const liveUrl = `${API_BASE_URL}/v1/live`;
-  
-  // Convert http(s) to ws(s)
-  const wsUrl = liveUrl
-    .replace(/^https:\/\//i, 'wss://')
-    .replace(/^http:\/\//i, 'ws://');
-
-  if (token) {
-    const url = new URL(wsUrl);
-    url.searchParams.set('token', token);
-    return url.toString();
-  }
-
-  return wsUrl;
-}
-
-/**
  * Get the backend base URL (without endpoint paths)
  * Used for other API calls like token generation
  * @returns Base URL (e.g., http://localhost:8000)

@@ -197,3 +197,25 @@ Response:
 
 © megawood® — All rights reserved.
 
+
+## Realtime STT Integration
+
+Das Frontend nutzt eine Realtime-STT-WebSocket-Route unter `/v1/stt/realtime`.
+
+- Service: `src/services/sttClient.ts`
+  - `connect()`
+  - `sendAudioChunk(ArrayBuffer | Uint8Array)`
+  - `sendPing()`
+  - `close()`
+  - Events: `onReady`, `onPartialText`, `onFinalText`, `onError`
+- Hook: `src/hooks/useRealtimeStt.ts`
+  - Öffnet/verwaltet Socket + Mikrofon-Capture
+  - Sendet PCM16 mono Chunks per WebSocket
+  - Stellt `partialText`, `finalText`, `statusText`, `start()`, `stop()` bereit
+- UI:
+  - `ChatWidget` bindet den Hook an den Live-Button und zeigt Partial-Text als laufenden Status an.
+  - Final-Text wird nach Abschluss automatisch als Chat-Nachricht gesendet.
+
+Hinweise:
+- Socket wird beim Stoppen und beim Component-Unmount sauber geschlossen.
+- Audio- und Media-Ressourcen werden bei wiederholtem Start/Stop bereinigt.

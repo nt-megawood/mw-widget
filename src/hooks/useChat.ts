@@ -9,7 +9,7 @@ import type {
   QuickReplyOption,
 } from '../types';
 import { generateUUID } from '../utils/uuid';
-import { sendMessage as apiSendMessage } from '../services/api';
+import { sendMessageStream } from '../services/api';
 import { dispatchDealerConversionEvent } from '../services/analytics';
 import { getAudiencePath, useAuth } from './useAuth';
 
@@ -241,9 +241,35 @@ function extractColorChoicesFromAnswer(answer: string): string[] {
 function buildFallbackQuickReplies(answer: string, fromApi?: QuickReplyOption[]): QuickReplyOption[] {
   const lower = String(answer || '').toLowerCase();
   const existingCode = extractPlanningCode(answer);
+  const generatedReplies: QuickReplyOption[] = [];
+
+  if (
+    lower.includes('planer.megawood.com')
+    || lower.includes('terrassenplaner')
+    || (lower.includes('gemeinsam planen') && lower.includes('planer'))
+  ) {
+    generatedReplies.push(buildPlannerReply());
+  }
 
   if (lower.includes('muster') || lower.includes('kostenfreies exemplar') || lower.includes('kostenfreies muster')) {
-    return [buildMusterBestellenReply()];
+    generatedReplies.push(buildMusterBestellenReply());
+  }
+
+  if (
+    lower.includes('fachhändler')
+    || lower.includes('fachhaendler')
+    || lower.includes('händlersuche')
+    || lower.includes('haendlersuche')
+    || lower.includes('händler')
+  ) {
+    generatedReplies.push(buildDealerFinderReply());
+  }
+
+  if (generatedReplies.length > 0) {
+    if (fromApi && fromApi.length > 0) {
+      return generatedReplies.reduce((merged, reply) => appendUniqueQuickReply(merged, reply), [...fromApi]);
+    }
+    return generatedReplies;
   }
 
   const asksForPlanningCode =
@@ -487,9 +513,26 @@ function buildStartDealerFlowReply(): QuickReplyOption {
 
 function buildMusterBestellenReply(): QuickReplyOption {
   return {
-    label: 'Kostenfreies Muster bestellen',
+    label: 'Muster bestellen',
     message: '',
     action: 'request_muster_bestellen_input',
+  };
+}
+
+function buildPlannerReply(): QuickReplyOption {
+  return {
+    label: 'megawood® Terrassenplaner',
+    message: '',
+    action: 'open_url',
+    url: 'https://planer.megawood.com',
+  };
+}
+
+function buildDealerFinderReply(): QuickReplyOption {
+  return {
+    label: 'Fachhändler finden',
+    message: '',
+    action: 'request_location_input',
   };
 }
 
@@ -509,8 +552,8 @@ function extractDealerLocationFromMessage(text: string): { city?: string; postal
 
 function buildDealerResultsUrl(location: { city?: string; postalCode?: string }): string {
   const query = [location.city, location.postalCode].filter(Boolean).join(' ').trim();
-  if (!query) return 'https://www.megawood.com/haendlersuche';
-  return `https://www.megawood.com/haendlersuche?location=${encodeURIComponent(query)}`;
+  if (!query) return 'https://www.megawood.com/de/service/haendlersuche';
+  return `https://www.megawood.com/de/service/haendlersuche?location=${encodeURIComponent(query)}`;
 }
 
 /** Extract a terrace planning code (e.g. mgw148964) from a bot response. */
@@ -545,6 +588,7 @@ export function useChat({
   const [activeQuickReplies, setActiveQuickReplies] = useState<QuickReplyOption[]>([]);
   const [activeInputRequest, setActiveInputRequest] = useState<InputRequest | null>(null);
   const [isThinking, setIsThinking] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [thinkingText, setThinkingText] = useState(THINKING_MESSAGES[0]);
   const pendingRequestControllerRef = useRef<AbortController | null>(null);
   const [entryContext, setEntryContext] = useState<EntryContext>(() => readEntryContext(widgetId));
@@ -722,20 +766,48 @@ export function useChat({
     pendingRequestControllerRef.current = requestController;
     const currentSessionId = sessionIdRef.current;
     const currentConversationId = conversationIdRef.current;
+
+    const placeholderId = generateUUID();
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: placeholderId,
+        role: 'bot',
+        text: '',
+        timestamp: new Date(),
+        sessionId: currentSessionId,
+      },
+    ]);
+
+    let hasReceivedChunk = false;
+
     try {
-      const response = await apiSendMessage(
+      const response = await sendMessageStream(
         text,
         currentConversationId,
         entryContext,
         pageContext,
         nextDealerFlowContext,
         requestController.signal,
+        (fullText) => {
+          if (!hasReceivedChunk) {
+            hasReceivedChunk = true;
+            setIsThinking(false);
+            setIsStreaming(true);
+          }
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === placeholderId ? { ...msg, text: fullText } : msg,
+            ),
+          );
+        },
       );
       if (pendingRequestControllerRef.current === requestController) {
         pendingRequestControllerRef.current = null;
       }
       if (currentSessionId !== sessionIdRef.current) return;
-      stopThinking();
+      setIsStreaming(false);
+      setIsThinking(false);
       if (response.conversation_id) {
         onConversationIdChange(response.conversation_id);
       }
@@ -761,7 +833,7 @@ export function useChat({
           postalCode: nextDealerFlowContext.postal_code,
         });
         mergedQuickReplies = appendUniqueQuickReply(mergedQuickReplies, {
-          label: 'Händlerergebnisse öffnen',
+          label: 'Handlersuche öffnen',
           message: '',
           action: 'open_dealer_results',
           url: resultsUrl,
@@ -775,21 +847,44 @@ export function useChat({
         emitDealerEvent('dealer_results_shown', resultsContext);
       }
       const visibleSources = shouldHideSources(response.answer) ? undefined : response.sources;
-      addBotMessage(response.answer, visibleSources, mergedQuickReplies, normalizedInputRequest);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === placeholderId
+            ? {
+                ...msg,
+                text: response.answer,
+                sources: visibleSources,
+                quickReplies: mergedQuickReplies,
+                inputRequest: normalizedInputRequest,
+              }
+            : msg,
+        ),
+      );
       setActiveQuickReplies(mergedQuickReplies);
       setActiveInputRequest(normalizedInputRequest);
       const code = extractPlanningCode(response.answer);
       if (code) onPlanningCodeDetectedRef.current?.(code);
     } catch (error) {
+      setIsStreaming(false);
       if ((error as DOMException)?.name === 'AbortError') {
+        setMessages((prev) => prev.filter((msg) => msg.id !== placeholderId));
         return;
       }
       if (pendingRequestControllerRef.current === requestController) {
         pendingRequestControllerRef.current = null;
       }
       if (currentSessionId !== sessionIdRef.current) return;
-      stopThinking();
-      addBotMessage('Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut, oder kontaktiere unseren Support.');
+      setIsThinking(false);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === placeholderId
+            ? {
+                ...msg,
+                text: 'Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut, oder kontaktiere unseren Support.',
+              }
+            : msg,
+        ),
+      );
       console.error('Chat error:', error);
     }
   }, [
@@ -839,7 +934,7 @@ export function useChat({
       addBotMessage('Gerne. Ich öffne dir die Musterbestellung. Du kannst mehrere Dielen hinzufügen und die Lieferadresse direkt im Formular angeben.');
       setActiveInputRequest({
         type: 'muster_bestellen_input',
-        title: 'Kostenfreies Muster bestellen',
+        title: 'Muster bestellen',
         fields: [],
       });
       setActiveQuickReplies([]);
@@ -887,6 +982,10 @@ export function useChat({
 
     if (reply.action === 'open_url' && reply.url) {
       const url = reply.url;
+      if (url.includes('planer.megawood.com')) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      }
       if (isPlannerPdfUrl(url)) {
         setDealerCtaCheckpoints((prev) => ({ ...prev, pdfExportClickedReached: true }));
       }
@@ -935,6 +1034,7 @@ export function useChat({
     entryContext,
     isEntryComplete,
     isThinking,
+    isStreaming,
     thinkingText,
     setEntryGoal,
     startEntryFlow,

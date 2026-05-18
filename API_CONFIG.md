@@ -29,9 +29,6 @@ getApiUrl(): string
 // Conversation API URL (für History)
 getConversationUrl(): string
 
-// Live WebSocket URL
-getLiveWebSocketUrl(token?: string): string
-
 // Backend Base URL (ohne Endpoint)
 getBackendBaseUrl(): string
 ```
@@ -75,7 +72,6 @@ Die Konfiguration wird automatisch geladen und verwendet!
 import { 
   getApiUrl, 
   getConversationUrl,
-  getLiveWebSocketUrl,
   TERRACE_LOAD_URL 
 } from '@/config/api';
 

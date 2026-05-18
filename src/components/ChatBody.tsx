@@ -1,27 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { useMemo, useState } from 'react';
-import type { InputRequest, Message, QuickReplyAction, QuickReplyOption } from '../types';
+import type { InputRequest, Message } from '../types';
 import { BotMessage } from './Message/BotMessage';
 import { UserMessage } from './Message/UserMessage';
 import { ThinkingIndicator } from './Message/ThinkingIndicator';
 import { useAuth } from '../hooks/useAuth';
 import { DIELEN_COLORS, DIELEN_VARIANTS } from './PlanningEditor/planningData';
 
-export interface QuickReply {
-  label: string;
-  message: string;
-  action?: QuickReplyAction;
-}
-
 interface ChatBodyProps {
   messages: Message[];
   isThinking: boolean;
   thinkingText: string;
   initialGreeting: React.ReactNode;
-  quickReplies: QuickReply[];
-  contextualQuickReplies?: QuickReplyOption[];
   inputRequest?: InputRequest | null;
-  onQuickReply: (reply: QuickReplyOption) => void;
   onSubmitInputRequest: (payloadText: string) => void;
   conversationId?: string | null;
   onRespinLastAnswer?: () => void;
@@ -543,41 +534,51 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   isThinking,
   thinkingText,
   initialGreeting,
-  quickReplies,
-  contextualQuickReplies = [],
   inputRequest,
-  onQuickReply,
   onSubmitInputRequest,
   conversationId,
   onRespinLastAnswer,
   disableRespin = false,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [isInfoViewOpen, setIsInfoViewOpen] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isThinking]);
+  }, [messages, isThinking, isInfoViewOpen]);
+
+  if (isInfoViewOpen) {
+    return (
+      <div className="chat-body">
+        <div style={{placeContent: "center", display: "flex"}}>
+          <img width={"50px"} src='woody.png' alt="Woody" />
+        </div>
+        <div className="brand-info-view" role="region" aria-label="Informationen über den KI-Assistenten">
+          <button
+            className="brand-info-view-close"
+            onClick={() => setIsInfoViewOpen(false)}
+            aria-label="Zurück zum Chat"
+            title="Zurück zum Chat"
+            type="button"
+          >
+            &times;
+          </button>
+          <p>
+            Ich bin ein KI-gestützter Assistent und helfe dir bei Fragen rund um megawood&#174;. Meine
+            Antworten werden automatisch generiert &ndash; ich bin daher möglicherweise nicht immer
+            100&nbsp;% korrekt. Bitte überprüfe wichtige Informationen.
+          </p>
+          <div className="brand-info-view-context">
+            <strong>Kontext-ID:</strong> {conversationId || 'Keine Kontext-ID verfügbar'}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="chat-body">
       {initialGreeting}
-      {messages.length === 0 && quickReplies.length > 0 && (
-        <div className="button-group">
-          {quickReplies.map((reply, i) => (
-            <button
-              key={i}
-              className="chat-btn"
-              onClick={() => onQuickReply({
-                label: reply.label,
-                message: reply.message,
-                action: reply.action || 'send_message',
-              })}
-            >
-              {reply.label}
-            </button>
-          ))}
-        </div>
-      )}
       {messages.map((message) =>
         message.role === 'bot' ? (
           <BotMessage
@@ -586,19 +587,11 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
             conversationId={conversationId}
             onRespin={onRespinLastAnswer}
             disableRespin={disableRespin}
+            onShowInfoView={() => setIsInfoViewOpen(true)}
           />
         ) : (
           <UserMessage key={message.id} message={message} />
         )
-      )}
-      {messages.length > 0 && contextualQuickReplies.length > 0 && (
-        <div className="button-group contextual-button-group" aria-label="Antwortmöglichkeiten">
-          {contextualQuickReplies.map((reply, i) => (
-            <button key={`${reply.label}-${i}`} className="chat-btn" onClick={() => onQuickReply(reply)}>
-              {reply.label}
-            </button>
-          ))}
-        </div>
       )}
       {messages.length > 0 && inputRequest?.type === 'dimension_input' && (
         <DimensionInputCard request={inputRequest} onSubmit={onSubmitInputRequest} />

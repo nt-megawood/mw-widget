@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { Message } from '../../types';
 import { renderMarkdown } from '../../utils/markdown';
 import { speakText, stopSpeaking } from '../../utils/speech';
-import { BrandPopup } from '../BrandPopup';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -11,6 +10,7 @@ interface BotMessageProps {
   conversationId?: string | null;
   onRespin?: () => void;
   disableRespin?: boolean;
+  onShowInfoView?: () => void;
 }
 
 const IconThumbUp = () => (
@@ -57,6 +57,20 @@ const IconInfo = () => (
     <path d="M12 8h.01"/>
   </svg>
 );
+
+const IconChevronDown = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+const IconSearch = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3" />
+  </svg>
+);
+
 const IconSpeak = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -65,11 +79,16 @@ const IconSpeak = () => (
   </svg>
 );
 
-export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId, onRespin, disableRespin = false }) => {
+export const BotMessage: React.FC<BotMessageProps> = ({
+  message,
+  conversationId,
+  onRespin,
+  disableRespin = false,
+  onShowInfoView,
+}) => {
   const [thumbState, setThumbState] = useState<'up' | 'down' | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [showBrandPopup, setShowBrandPopup] = useState(false);
   const [showSources, setShowSources] = useState(false);
 
   const handleCopy = async () => {
@@ -118,12 +137,21 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId,
                 setShowSources((prev) => !prev);
               }}
             >
-              So ist Woody auf seine Antwort gekommen.
+              {/*<span className="sources-summary-icon" aria-hidden="true">
+                <IconSearch />
+              </span>*/}
+              <span className="sources-summary-title">✨ So ist Woody auf seine Antwort gekommen</span>
+              <span className="sources-summary-chevron" aria-hidden="true">
+                <IconChevronDown />
+              </span>
             </summary>
             <div className="sources-content">
               {message.sources.map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                  {url}
+                <a key={i} className="source-item" href={url} target="_blank" rel="noopener noreferrer">
+                  <span className="source-item-icon" aria-hidden="true">
+                    <IconSearch />
+                  </span>
+                  <span className="source-item-url">{url}</span>
                 </a>
               ))}
             </div>
@@ -178,22 +206,16 @@ export const BotMessage: React.FC<BotMessageProps> = ({ message, conversationId,
             title={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
             aria-label={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
             type="button"
+            onClick={onShowInfoView}
           >
             <IconInfo />
           </button>
-          <span
-            className="meta-brand"
-            onClick={() => setShowBrandPopup(true)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setShowBrandPopup(true)}
-          >
+          <span className="meta-brand">
             Erstellt von megawood KI
           </span>
           <span className="meta-time">{formattedTime}</span>
         </div>
       </div>
-      {showBrandPopup && <BrandPopup onClose={() => setShowBrandPopup(false)} />}
     </div>
   );
 };
