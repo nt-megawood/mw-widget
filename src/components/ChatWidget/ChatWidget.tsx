@@ -264,6 +264,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   conversationId={conversationId}
                   onRespinLastAnswer={handleRespinLastAnswer}
                   disableRespin={isThinking}
+                  autoSpeakBotMessages={isLiveMode}
                 />
                 <ChatFooter
                   quickReplies={footerQuickReplies}
@@ -297,6 +298,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 conversationId={conversationId}
                 onRespinLastAnswer={handleRespinLastAnswer}
                 disableRespin={isThinking}
+                autoSpeakBotMessages={isLiveMode}
               />
               <ChatFooter
                 quickReplies={footerQuickReplies}

@@ -17,6 +17,7 @@ interface ChatBodyProps {
   conversationId?: string | null;
   onRespinLastAnswer?: () => void;
   disableRespin?: boolean;
+  autoSpeakBotMessages?: boolean;
 }
 
 function FormSketch({ form }: { form?: InputRequest['form'] }) {
@@ -539,6 +540,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   conversationId,
   onRespinLastAnswer,
   disableRespin = false,
+  autoSpeakBotMessages = false,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isInfoViewOpen, setIsInfoViewOpen] = useState(false);
@@ -588,6 +590,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
             onRespin={onRespinLastAnswer}
             disableRespin={disableRespin}
             onShowInfoView={() => setIsInfoViewOpen(true)}
+            autoSpeak={autoSpeakBotMessages && message.id === messages[messages.length - 1]?.id}
           />
         ) : (
           <UserMessage key={message.id} message={message} />
