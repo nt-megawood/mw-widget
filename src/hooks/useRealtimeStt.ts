@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getBackendBaseUrl } from '../config/api';
+import { getAuthToken } from '../services/api';
 import { RealtimeSttClient } from '../services/sttClient';
 
 const SAMPLE_RATE = 16000;
@@ -18,9 +19,10 @@ const MAX_PENDING_CHUNKS = 10;
 
 export type VadState = 'idle' | 'listening' | 'recording' | 'processing';
 
-function toSttWsUrl(): string {
+function toSttWsUrl(token: string): string {
   const base = getBackendBaseUrl().replace(/\/$/, '');
-  return `${base}/v1/stt/realtime`.replace(/^https:\/\//i, 'wss://').replace(/^http:\/\//i, 'ws://');
+  const url = `${base}/v1/stt/realtime`.replace(/^https:\/\//i, 'wss://').replace(/^http:\/\//i, 'ws://');
+  return `${url}?token=${encodeURIComponent(token)}`;
 }
 
 function floatToPcm16(input: Float32Array): Uint8Array {
@@ -63,6 +65,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
   const [vadState, setVadState] = useState<VadState>('idle');
   const [partialText, setPartialText] = useState('');
   const [finalText, setFinalText] = useState('');
+  const [transcribedText, setTranscribedText] = useState('');
   const [statusText, setStatusText] = useState<string | null>(null);
 
   const clientRef = useRef<RealtimeSttClient | null>(null);
@@ -81,6 +84,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
   const hasConfirmedSpeechRef = useRef(false);
   const abortFramesRef = useRef(0);
   const pendingAudioRef = useRef<Uint8Array[]>([]);
+  const answerTextRef = useRef('');
   const startListeningRef = useRef<() => void>(() => {});
 
   const updateVadState = useCallback((next: VadState) => {
@@ -111,10 +115,12 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
     clientRef.current = null;
   }, []);
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (vadStateRef.current === 'idle') return;
 
-    const client = new RealtimeSttClient(toSttWsUrl(), {
+    const token = await getAuthToken();
+    answerTextRef.current = '';
+    const client = new RealtimeSttClient(toSttWsUrl(token), {
       onInitializing: (msg) => {
         setStatusText(msg);
       },
@@ -136,6 +142,27 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
       },
       onPartialText: (text) => {
         setPartialText(text);
+      },
+      onTranscribed: (text) => {
+        setTranscribedText(text);
+      },
+      onAnswerDelta: (delta) => {
+        answerTextRef.current += delta;
+        setPartialText(answerTextRef.current);
+      },
+      onDone: (answer: string) => {
+        cleanupConnection();
+        pendingAudioRef.current = [];
+        answerTextRef.current = '';
+        setFinalText(answer);
+        setPartialText('');
+        if (vadStateRef.current !== 'idle') {
+          isCooldownRef.current = true;
+          setTimeout(() => {
+            isCooldownRef.current = false;
+          }, COOLDOWN_MS);
+          updateVadState('listening');
+        }
       },
       onFinalText: (text) => {
         cleanupConnection();
@@ -176,6 +203,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
   const stop = useCallback(() => {
     cleanupConnection();
     pendingAudioRef.current = [];
+    answerTextRef.current = '';
     processorRef.current?.disconnect();
     sourceRef.current?.disconnect();
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -199,6 +227,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
     setPartialText('');
     setStatusText(null);
     setFinalText('');
+    setTranscribedText('');
   }, [cleanupConnection, updateVadState]);
 
   const start = useCallback(async () => {
@@ -349,5 +378,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
 
   useEffect(() => () => stop(), [stop]);
 
-  return { vadState, partialText, finalText, statusText, start, stop, clearFinal: () => setFinalText('') };
+  const clearTranscribed = useCallback(() => setTranscribedText(''), []);
+
+  return { vadState, partialText, finalText, transcribedText, statusText, start, stop, clearFinal: () => setFinalText(''), clearTranscribed };
 }

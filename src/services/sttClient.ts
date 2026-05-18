@@ -1,15 +1,20 @@
 export interface RealtimeSttHandlers {
   onReady?: () => void;
   onPartialText?: (text: string) => void;
+  onTranscribed?: (text: string) => void;
+  onAnswerDelta?: (delta: string) => void;
+  onDone?: (answer: string) => void;
   onFinalText?: (text: string) => void;
   onError?: (message: string) => void;
   onClose?: () => void;
-  onInitializing?: (message: string) => void;  // New: called while server initializes model
+  onInitializing?: (message: string) => void;
 }
 
 interface ServerEvent {
   type?: string;
   text?: string;
+  delta?: string;
+  answer?: string;
   message?: string;
 }
 
@@ -60,6 +65,17 @@ export class RealtimeSttClient {
       else if (payload.type === 'partial') {
         console.log(`[STT WebSocket] Partial: "${payload.text}"`);
         this.handlers.onPartialText?.(String(payload.text || ''));
+      }
+      else if (payload.type === 'transcribed') {
+        console.log(`[STT WebSocket] Transcribed: "${payload.text}"`);
+        this.handlers.onTranscribed?.(String(payload.text || ''));
+      }
+      else if (payload.type === 'answer_delta') {
+        this.handlers.onAnswerDelta?.(String(payload.delta || ''));
+      }
+      else if (payload.type === 'done') {
+        console.log(`[STT WebSocket] Done with answer: "${payload.answer}"`);
+        this.handlers.onDone?.(String(payload.answer || ''));
       }
       else if (payload.type === 'final') {
         console.log(`[STT WebSocket] Final: "${payload.text}"`);

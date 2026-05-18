@@ -10,6 +10,7 @@ import { useConversation } from '../../hooks/useConversation';
 import { useTeaser } from '../../hooks/useTeaser';
 import { usePresence } from '../../hooks/usePresence';
 import { useRealtimeStt } from '../../hooks/useRealtimeStt';
+import { speakText, stopSpeaking } from '../../utils/speech';
 //import { useWidgetToken } from '../../hooks/useWidgetToken';
 import { getConversation, deleteConversation } from '../../services/api';
 import type { WidgetConfig, ConversationHistoryItem, QuickReplyOption } from '../../types';
@@ -78,6 +79,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     thinkingText,
     sendMessage,
     handleQuickReply,
+    addUserMessage,
     addBotMessage,
     clearMessages,
     restoreMessages,
@@ -97,9 +99,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   );
 
   const [browserSttPrefill] = useState('');
-  const { vadState, partialText, finalText, statusText: liveStatusText, start: startStt, stop: stopStt, clearFinal } = useRealtimeStt({ isStreaming, language });
+  const { vadState, partialText, finalText, transcribedText, statusText: liveStatusText, start: startStt, stop: stopStt, clearFinal, clearTranscribed } = useRealtimeStt({ isStreaming, language });
   const lastSubmittedSttTextRef = useRef('');
   const lastSubmittedAtRef = useRef(0);
+  const spokenMessageIdsRef = useRef<Set<string>>(new Set());
 
   const handleNewMessages = useCallback(
     (newMessages: ConversationHistoryItem[]) => {
@@ -173,6 +176,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   }, [addBotMessage, isLiveConnecting, isLiveMode, startStt]);
 
   useEffect(() => {
+    const text = transcribedText?.replace(/\s+/g, ' ').trim();
+    if (!text) return;
+    addUserMessage(text);
+    clearTranscribed();
+  }, [transcribedText, addUserMessage, clearTranscribed]);
+
+  useEffect(() => {
     const normalizedText = finalText.replace(/\s+/g, ' ').trim();
     if (!normalizedText) return;
 
@@ -186,9 +196,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     lastSubmittedSttTextRef.current = normalizedText;
     lastSubmittedAtRef.current = now;
 
-    sendMessage(normalizedText);
+    if (isLiveMode) {
+      addBotMessage(normalizedText);
+    } else {
+      sendMessage(normalizedText);
+    }
     clearFinal();
-  }, [clearFinal, finalText, sendMessage]);
+  }, [clearFinal, finalText, sendMessage, addBotMessage, isLiveMode]);
 
   const toggleLiveMode = useCallback(() => {
     if (isLiveMode || isLiveConnecting) {
@@ -206,6 +220,22 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       stopLiveMode(true);
     };
   }, [stopLiveMode]);
+
+  useEffect(() => {
+    if (!isLiveMode) return;
+    stopSpeaking();
+    spokenMessageIdsRef.current.clear();
+  }, [isLiveMode]);
+
+  useEffect(() => {
+    if (!isLiveMode || isStreaming || messages.length === 0) return;
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.role === 'bot' && lastMessage.text && !spokenMessageIdsRef.current.has(lastMessage.id)) {
+      spokenMessageIdsRef.current.add(lastMessage.id);
+      stopSpeaking();
+      speakText(lastMessage.text);
+    }
+  }, [isLiveMode, isStreaming, messages]);
 
   const handleRefresh = async () => {
     if (conversationId) {
