@@ -4,6 +4,7 @@ import type { InputRequest, Message } from '../types';
 import { BotMessage } from './Message/BotMessage';
 import { UserMessage } from './Message/UserMessage';
 import { ThinkingIndicator } from './Message/ThinkingIndicator';
+import { UI_COPY, type UiCopy, type WidgetLanguage } from '../config/i18n';
 
 interface ChatBodyProps {
   messages: Message[];
@@ -16,6 +17,7 @@ interface ChatBodyProps {
   conversationId?: string | null;
   onRespinLastAnswer?: () => void;
   disableRespin?: boolean;
+  language: WidgetLanguage;
 }
 
 function FormSketch({ form }: { form?: InputRequest['form'] }): React.ReactElement | null {
@@ -73,7 +75,15 @@ function FormSketch({ form }: { form?: InputRequest['form'] }): React.ReactEleme
   return <div className="dimension-sketch">{content}</div>;
 }
 
-function DimensionInputCard({ request, onSubmit }: { request: InputRequest; onSubmit: (payloadText: string) => void }): React.ReactElement {
+function DimensionInputCard({
+  request,
+  onSubmit,
+  copy,
+}: {
+  request: InputRequest;
+  onSubmit: (payloadText: string) => void;
+  copy: UiCopy;
+}): React.ReactElement {
   const [values, setValues] = useState<Record<string, string>>({});
 
   const handleSubmit = (): void => {
@@ -97,7 +107,7 @@ function DimensionInputCard({ request, onSubmit }: { request: InputRequest; onSu
 
   return (
     <div className="dimension-input-card" aria-label="Maßeingabe">
-      <strong>{request.title || 'Bitte gib die Maße ein.'}</strong>
+      <strong>{request.title || copy.dimensionInputFallbackTitle}</strong>
       <FormSketch form={request.form} />
       <div className="dimension-input-grid">
         {request.fields.map((field) => (
@@ -109,12 +119,12 @@ function DimensionInputCard({ request, onSubmit }: { request: InputRequest; onSu
               step="0.01"
               value={values[field.key] || ''}
               onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-              placeholder="z.B. 4.2"
+              placeholder={copy.dimensionPlaceholder}
             />
           </label>
         ))}
       </div>
-      <button className="chat-btn dimension-submit-btn" onClick={handleSubmit}>Maße übernehmen</button>
+      <button className="chat-btn dimension-submit-btn" onClick={handleSubmit}>{copy.dimensionSubmitButton}</button>
     </div>
   );
 }
@@ -122,9 +132,11 @@ function DimensionInputCard({ request, onSubmit }: { request: InputRequest; onSu
 function DealerLocationInputCard({
   request,
   onResolve,
+  copy,
 }: {
   request: InputRequest;
   onResolve: (city: string, postalCode: string) => void;
+  copy: UiCopy;
 }): React.ReactElement {
   const [values, setValues] = useState<Record<string, string>>({});
 
@@ -141,7 +153,7 @@ function DealerLocationInputCard({
 
   return (
     <div className="dimension-input-card" aria-label="Standort-Eingabe für Händlersuche">
-      <strong>{request.title || 'Bitte gib Stadt oder Postleitzahl ein.'}</strong>
+      <strong>{request.title || copy.dealerInputFallbackTitle}</strong>
       <div className="dimension-input-grid dealer-input-grid">
         {request.fields.map((field) => (
           <label key={field.key} className="dimension-input-field">
@@ -150,17 +162,25 @@ function DealerLocationInputCard({
               type="text"
               value={values[field.key] || ''}
               onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-              placeholder={field.key === 'postal_code' ? 'z. B. 33442' : 'z. B. Rheda-Wiedenbrück'}
+              placeholder={field.key === 'postal_code' ? copy.dealerPostalPlaceholder : copy.dealerCityPlaceholder}
             />
           </label>
         ))}
       </div>
-      <button className="chat-btn dimension-submit-btn" onClick={handleSubmit}>Händler suchen</button>
+      <button className="chat-btn dimension-submit-btn" onClick={handleSubmit}>{copy.dealerSubmitButton}</button>
     </div>
   );
 }
 
-function PlanningCodeInputCard({ request, onSubmit }: { request: InputRequest; onSubmit: (payloadText: string) => void }): React.ReactElement {
+function PlanningCodeInputCard({
+  request,
+  onSubmit,
+  copy,
+}: {
+  request: InputRequest;
+  onSubmit: (payloadText: string) => void;
+  copy: UiCopy;
+}): React.ReactElement {
   const [planningCode, setPlanningCode] = useState('');
 
   const handleSubmit = (): void => {
@@ -174,19 +194,19 @@ function PlanningCodeInputCard({ request, onSubmit }: { request: InputRequest; o
 
   return (
     <div className="dimension-input-card" aria-label="Planungscode-Eingabe">
-      <strong>{request.title || 'Bitte gib deinen Planungscode ein.'}</strong>
+      <strong>{request.title || copy.planningCodeInputFallbackTitle}</strong>
       <div className="dimension-input-grid dealer-input-grid">
         <label className="dimension-input-field">
-          <span>Planungscode</span>
+          <span>{copy.planningCodeLabel}</span>
           <input
             type="text"
             value={planningCode}
             onChange={(e) => setPlanningCode(e.target.value)}
-            placeholder="z. B. mgw150823"
+            placeholder={copy.planningCodePlaceholder}
           />
         </label>
       </div>
-      <button className="chat-btn dimension-submit-btn" onClick={handleSubmit}>Planung laden</button>
+      <button className="chat-btn dimension-submit-btn" onClick={handleSubmit}>{copy.planningCodeLoadButton}</button>
     </div>
   );
 }
@@ -202,7 +222,9 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
   conversationId,
   onRespinLastAnswer,
   disableRespin = false,
+  language,
 }) => {
+  const copy = UI_COPY[language];
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isInfoViewOpen, setIsInfoViewOpen] = useState(false);
 
@@ -220,19 +242,15 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
           <button
             className="brand-info-view-close"
             onClick={() => setIsInfoViewOpen(false)}
-            aria-label="Zurück zum Chat"
-            title="Zurück zum Chat"
+            aria-label={copy.infoViewBackLabel}
+            title={copy.infoViewBackLabel}
             type="button"
           >
             &times;
           </button>
-          <p>
-            Ich bin ein KI-gestützter Assistent und helfe dir bei Fragen rund um megawood&#174;. Meine
-            Antworten werden automatisch generiert &ndash; ich bin daher möglicherweise nicht immer
-            100&nbsp;% korrekt. Bitte überprüfe wichtige Informationen.
-          </p>
+          <p>{copy.infoViewDescription}</p>
           <div className="brand-info-view-context">
-            <strong>Kontext-ID:</strong> {conversationId || 'Keine Kontext-ID verfügbar'}
+            <strong>{copy.infoViewContextIdLabel}</strong> {conversationId || copy.infoViewNoContextId}
           </div>
         </div>
       </div>
@@ -252,6 +270,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
             onRespin={onRespinLastAnswer}
             disableRespin={disableRespin}
             onShowInfoView={() => setIsInfoViewOpen(true)}
+            language={language}
           />
           )
         ) : (
@@ -259,13 +278,13 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
         )
       )}
       {messages.length > 0 && inputRequest?.type === 'dimension_input' && (
-        <DimensionInputCard request={inputRequest} onSubmit={onSubmitInputRequest} />
+        <DimensionInputCard request={inputRequest} onSubmit={onSubmitInputRequest} copy={copy} />
       )}
       {messages.length > 0 && inputRequest?.type === 'dealer_location_input' && (
-        <DealerLocationInputCard request={inputRequest} onResolve={onDealerLocationSubmit} />
+        <DealerLocationInputCard request={inputRequest} onResolve={onDealerLocationSubmit} copy={copy} />
       )}
       {inputRequest?.type === 'planning_code_input' && (
-        <PlanningCodeInputCard request={inputRequest} onSubmit={onSubmitInputRequest} />
+        <PlanningCodeInputCard request={inputRequest} onSubmit={onSubmitInputRequest} copy={copy} />
       )}
       {isThinking && <ThinkingIndicator text={thinkingText} />}
       <div ref={bottomRef} />

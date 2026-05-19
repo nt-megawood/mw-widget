@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getBackendBaseUrl } from '../config/api';
 import { getAuthToken } from '../services/api';
 import { RealtimeSttClient } from '../services/sttClient';
+import { UI_COPY, type WidgetLanguage } from '../config/i18n';
 
 const SAMPLE_RATE = 16000;
 const CHUNK_SAMPLES = 4096;
@@ -58,10 +59,11 @@ function flushBuffer(pending: Uint8Array[], sendFn: (chunk: Uint8Array) => void)
 
 interface UseRealtimeSttOptions {
   isStreaming?: boolean;
-  language?: string;
+  language?: WidgetLanguage;
 }
 
 export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
+  const copy = UI_COPY[options.language ?? 'de'];
   const [vadState, setVadState] = useState<VadState>('idle');
   const [partialText, setPartialText] = useState('');
   const [finalText, setFinalText] = useState('');
@@ -93,19 +95,19 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
     setVadState(next);
     switch (next) {
       case 'listening':
-        setStatusText('Höre zu…');
+        setStatusText(copy.sttStatusListening);
         setPartialText('');
         break;
       case 'recording':
-        setStatusText('Aufnahme läuft…');
+        setStatusText(copy.sttStatusRecording);
         break;
       case 'processing':
-        setStatusText('Verarbeite Sprache…');
+        setStatusText(copy.sttStatusProcessing);
         break;
       default:
         break;
     }
-  }, []);
+  }, [copy]);
 
   const cleanupConnection = useCallback(() => {
     if (responseTimerRef.current) {
@@ -181,7 +183,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
       onError: (message) => {
         cleanupConnection();
         pendingAudioRef.current = [];
-        setStatusText(`Fehler: ${message}`);
+        setStatusText(`${copy.sttErrorPrefix}${message}`);
         if (vadStateRef.current !== 'idle') {
           isCooldownRef.current = true;
           setTimeout(() => {
@@ -235,12 +237,12 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
   const start = useCallback(async () => {
     if (vadStateRef.current !== 'idle') return;
 
-    setStatusText('Mikrofon wird initialisiert…');
+    setStatusText(copy.sttStatusInitializing);
 
     try {
       const mediaDevices = typeof window !== 'undefined' ? window.navigator?.mediaDevices : undefined;
       if (!mediaDevices?.getUserMedia) {
-        throw new Error('Mikrofonzugriff ist in diesem Browser-Kontext nicht verfügbar.');
+        throw new Error(copy.sttErrorUnavailable);
       }
 
       const stream = await mediaDevices.getUserMedia({ audio: true });
@@ -374,10 +376,10 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
       updateVadState('listening');
     } catch (err) {
       console.error('[STT Error] Failed to start:', err);
-      setStatusText('STT konnte nicht gestartet werden.');
+      setStatusText(copy.sttErrorFailed);
       stop();
     }
-  }, [cleanupConnection, updateVadState, stop, options.isStreaming]);
+  }, [cleanupConnection, updateVadState, stop, options.isStreaming, copy]);
 
   useEffect(() => () => stop(), [stop]);
 

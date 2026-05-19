@@ -12,6 +12,7 @@ import { generateUUID } from '../utils/uuid';
 import { sendMessageStream } from '../services/api';
 import { dispatchDealerConversionEvent } from '../services/analytics';
 import { getAudiencePath, useAuth } from './useAuth';
+import { UI_COPY, LOCALE_MAP, type WidgetLanguage } from '../config/i18n';
 
 const EMPTY_ENTRY_CONTEXT: EntryContext = {
   goal: null,
@@ -56,19 +57,25 @@ function clearEntryContext(widgetId: string): void {
   }
 }
 
-const THINKING_MESSAGES = [
-  'Woody denkt nach...',
-  'Woody überlegt ganz kurz',
-  'Woody sucht die beste Antwort für dich',
-  'Einen Moment, Woody schaut nach',
-  'Woody sammelt gerade alle Infos',
-  'Woody setzt alles für dich zusammen',
-  'Fast geschafft – Woody ist dran',
-  'Woody prüft das nochmal ganz genau',
-  'Oh, gute Frage… Woody denkt darüber nach',
-  'Woody arbeitet dran, gleich fertig',
-];
+function buildThinkingMessages(copy: (typeof UI_COPY)['de']): string[] {
+  return [
+    copy.thinkingMsg0,
+    copy.thinkingMsg1,
+    copy.thinkingMsg2,
+    copy.thinkingMsg3,
+    copy.thinkingMsg4,
+    copy.thinkingMsg5,
+    copy.thinkingMsg6,
+    copy.thinkingMsg7,
+    copy.thinkingMsg8,
+    copy.thinkingMsg9,
+  ];
+}
 
+// Field keys and geometric labels (e.g. "Seite A") are intentionally not in i18n —
+// only the unit suffix "(m)" is universal, and the side letters are convention-neutral.
+// The city/postal labels come from copy. All other "Seite X" labels are geometric,
+// not localisable prose, so they stay as-is.
 const INPUT_FIELDS_BY_FORM: Record<string, Array<{ key: string; label: string }>> = {
   rechteck: [
     { key: 'rechteck_mass_1', label: 'Seite A (Breite, m)' },
@@ -119,7 +126,11 @@ function detectFormFromText(text: string): 'rechteck' | 'lform' | 'uform' | 'ofo
   return matches[0].form;
 }
 
-function normalizeInputRequestFromResponse(answer: string, inputRequest?: InputRequest | null): InputRequest | null {
+function normalizeInputRequestFromResponse(
+  answer: string,
+  inputRequest: InputRequest | null | undefined,
+  dimensionInputRequestTitle: string,
+): InputRequest | null {
   if (!inputRequest) return null;
   // Silently ignore muster_bestellen_input — the flow is now handled via external URL.
   // Cast needed because backend may still send this deprecated type.
@@ -151,7 +162,7 @@ function normalizeInputRequestFromResponse(answer: string, inputRequest?: InputR
     ...inputRequest,
     form: detectedForm,
     fields: INPUT_FIELDS_BY_FORM[detectedForm] || inputRequest.fields,
-    title: 'Bitte gib die Maße für diese Form an.',
+    title: dimensionInputRequestTitle,
   };
 }
 
@@ -241,7 +252,11 @@ function extractColorChoicesFromAnswer(answer: string): string[] {
   return unique;
 }
 
-function buildFallbackQuickReplies(answer: string, fromApi?: QuickReplyOption[]): QuickReplyOption[] {
+function buildFallbackQuickReplies(
+  answer: string,
+  planningCodeEnterLabel: string,
+  fromApi?: QuickReplyOption[],
+): QuickReplyOption[] {
   const lower = String(answer || '').toLowerCase();
   const existingCode = extractPlanningCode(answer);
   const generatedReplies: QuickReplyOption[] = [];
@@ -279,7 +294,7 @@ function buildFallbackQuickReplies(answer: string, fromApi?: QuickReplyOption[])
     lower.includes('planungscode')
     && (lower.includes('nenne') || lower.includes('gib') || lower.includes('hast') || lower.includes('angeben'));
   if (asksForPlanningCode) {
-    return [{ label: 'Planungscode eingeben', message: '', action: 'request_planning_code_input' }];
+    return [{ label: planningCodeEnterLabel, message: '', action: 'request_planning_code_input' }];
   }
 
   const looksLikeLoadedExistingPlan =
@@ -578,6 +593,7 @@ interface UseChatOptions {
   onPlanningCodeDetected?: (code: string) => void;
   pageContext?: PageContext;
   widgetVariant?: 'classic' | 'landscape';
+  language?: WidgetLanguage;
 }
 
 export function useChat({
@@ -587,13 +603,19 @@ export function useChat({
   onPlanningCodeDetected,
   pageContext,
   widgetVariant,
+  language,
 }: UseChatOptions) {
+  const copy = UI_COPY[language ?? 'de'];
+  // LOCALE_MAP is consumed by callers that need the BCP-47 locale string (e.g. speech synthesis).
+  // Expose it via the hook return so consumers don't need to import i18n directly.
+  const locale = LOCALE_MAP[language ?? 'de'];
+  const thinkingMessages = buildThinkingMessages(copy);
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeQuickReplies, setActiveQuickReplies] = useState<QuickReplyOption[]>([]);
   const [activeInputRequest, setActiveInputRequest] = useState<InputRequest | null>(null);
   const [isThinking, setIsThinking] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [thinkingText, setThinkingText] = useState(THINKING_MESSAGES[0]);
+  const [thinkingText, setThinkingText] = useState(thinkingMessages[0]);
   const pendingRequestControllerRef = useRef<AbortController | null>(null);
   const [entryContext, setEntryContext] = useState<EntryContext>(() => readEntryContext(widgetId));
   const [dealerFlowContext, setDealerFlowContext] = useState<DealerFlowContext | null>(null);
@@ -651,6 +673,7 @@ export function useChat({
   const buildEntryStartMessage = useCallback((): string | null => {
     if (!entryContext.goal || !entryContext.audiencePath) return null;
 
+    // goalMessageMap values are sent to the backend as prompt text — keep German always.
     const goalMessageMap: Record<EntryGoal, string> = {
       produktberatung: 'Ich möchte eine Produktberatung.',
       terrassenplanung: 'Ich möchte eine Terrassenplanung starten.',
@@ -658,6 +681,7 @@ export function useChat({
       händler_finden: 'Ich möchte einen Händler in meiner Nähe finden.',
     };
 
+    // Audience suffix is also backend-facing — keep German always.
     const audienceLabel = entryContext.audiencePath === 'gewerblich' ? 'gewerblich' : 'privat';
     return `${goalMessageMap[entryContext.goal]} Ich frage als ${audienceLabel}er Kunde an.`;
   }, [entryContext]);
@@ -666,10 +690,10 @@ export function useChat({
     setIsThinking(true);
     let index = 0;
     thinkingIntervalRef.current = setInterval(() => {
-      index = (index + 1) % THINKING_MESSAGES.length;
-      setThinkingText(THINKING_MESSAGES[index]);
+      index = (index + 1) % thinkingMessages.length;
+      setThinkingText(thinkingMessages[index]);
     }, 2000);
-  }, []);
+  }, [thinkingMessages]);
 
   const stopThinking = useCallback(() => {
     setIsThinking(false);
@@ -818,8 +842,9 @@ export function useChat({
       const normalizedInputRequest = normalizeInputRequestFromResponse(
         response.answer,
         response.input_request || null,
+        copy.dimensionInputRequestTitle,
       );
-      let mergedQuickReplies = buildFallbackQuickReplies(response.answer, response.quick_replies);
+      let mergedQuickReplies = buildFallbackQuickReplies(response.answer, copy.planningCodeEnterLabel, response.quick_replies);
       const recommendationCheckpointReached = isRecommendationCheckpointReached(mergedQuickReplies);
       let nextCheckpointState = dealerCtaCheckpoints;
       if (recommendationCheckpointReached && !dealerCtaCheckpoints.recommendationReached) {
@@ -837,7 +862,7 @@ export function useChat({
           postalCode: nextDealerFlowContext.postal_code,
         });
         mergedQuickReplies = appendUniqueQuickReply(mergedQuickReplies, {
-          label: 'Handlersuche öffnen',
+          label: copy.dealerSearchOpenLabel,
           message: '',
           action: 'open_dealer_results',
           url: resultsUrl,
@@ -884,7 +909,7 @@ export function useChat({
           msg.id === placeholderId
             ? {
                 ...msg,
-                text: 'Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut, oder kontaktiere unseren Support.',
+                text: copy.chatErrorMessage,
               }
             : msg,
         ),
@@ -902,6 +927,7 @@ export function useChat({
     entryContext,
     pageContext,
     emitDealerEvent,
+    copy,
   ]);
 
   const startEntryFlow = useCallback(() => {
@@ -924,11 +950,11 @@ export function useChat({
 
   const handleQuickReply = useCallback((reply: QuickReplyOption) => {
     if (reply.action === 'request_planning_code_input') {
-      addBotMessage('Gerne. Bitte gib deinen Planungscode ein, dann lade ich deine bestehende Planung und biete dir passende Änderungsoptionen an.');
+      addBotMessage(copy.planningCodeBotPrompt);
       setActiveInputRequest({
         type: 'planning_code_input',
-        title: 'Bitte gib deinen Planungscode ein, damit ich deine bestehende Planung laden kann.',
-        fields: [{ key: 'planning_code', label: 'Planungscode' }],
+        title: copy.planningCodeRequestTitle,
+        fields: [{ key: 'planning_code', label: copy.planningCodeLabel }],
       });
       setActiveQuickReplies([]);
       return;
@@ -950,10 +976,10 @@ export function useChat({
       setDealerFlowContext(requestedContext);
       setActiveInputRequest({
         type: 'dealer_location_input',
-        title: 'Bitte gib Stadt oder Postleitzahl ein, damit ich einen Händler in deiner Nähe finden kann.',
+        title: copy.dealerLocationRequestTitle,
         fields: [
-          { key: 'city', label: 'Stadt' },
-          { key: 'postal_code', label: 'Postleitzahl' },
+          { key: 'city', label: copy.dealerCityFieldLabel },
+          { key: 'postal_code', label: copy.dealerPostalFieldLabel },
         ],
       });
       setActiveQuickReplies([]);
@@ -1011,7 +1037,7 @@ export function useChat({
     if (reply.message && reply.message.trim()) {
       sendMessage(reply.message);
     }
-  }, [sendMessage, addBotMessage, dealerFlowContext, emitDealerEvent]);
+  }, [sendMessage, addBotMessage, dealerFlowContext, emitDealerEvent, copy]);
 
   const handleDealerLocationSubmit = useCallback((city: string, postalCode: string) => {
     const submittedContext: DealerFlowContext = {
@@ -1066,6 +1092,7 @@ export function useChat({
     isThinking,
     isStreaming,
     thinkingText,
+    locale,
     setEntryGoal,
     startEntryFlow,
     sendMessage,

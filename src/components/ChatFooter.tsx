@@ -150,8 +150,8 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
             type="button"
             onClick={isGenerating ? onCancelGeneration : handleSend}
             disabled={isGenerating ? !onCancelGeneration : (disabled || (!hasText && !isGenerating))}
-            aria-label={isGenerating ? 'Antwort abbrechen' : copy.sendLabel}
-            title={isGenerating ? 'Antwort abbrechen' : copy.sendLabel}
+            aria-label={isGenerating ? copy.cancelGeneration : copy.sendLabel}
+            title={isGenerating ? copy.cancelGeneration : copy.sendLabel}
           >
             {isGenerating ? <IconStop /> : <IconSend />}
           </button>
@@ -161,8 +161,8 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
             type="button"
             onClick={onToggleLiveMode}
             disabled={disabled && !isLiveMode}
-            aria-label={isLiveMode ? 'Live-Chat beenden' : 'Live-Chat starten'}
-            title={isLiveMode ? 'Live-Chat beenden' : 'Live-Chat starten'}
+            aria-label={isLiveMode ? copy.stopLiveChat : copy.startLiveChat}
+            title={isLiveMode ? copy.stopLiveChat : copy.startLiveChat}
           >
           <span className="live-bars" ref={barsRef} aria-hidden="true">
             <span /><span /><span /><span /><span /><span /><span />
@@ -174,9 +174,9 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
         <div className="branding">
           <span className="ai-disclaimer">{copy.aiDisclaimer}</span>
           <nav className="ai-links" aria-label="Rechtliches">
-            <a className="ai-link" href="https://www.megawood.com/de/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
+            <a className="ai-link" href="https://www.megawood.com/de/datenschutz" target="_blank" rel="noopener noreferrer">{copy.footerPrivacy}</a>
             <span className="ai-dot" aria-hidden="true">•</span>
-            <a className="ai-link" href="https://www.megawood.com/de/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
+            <a className="ai-link" href="https://www.megawood.com/de/impressum" target="_blank" rel="noopener noreferrer">{copy.footerImprint}</a>
           </nav>
         </div>
         {showLiveButton && liveStatusText && (

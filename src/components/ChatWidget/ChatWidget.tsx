@@ -34,7 +34,7 @@ function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; la
   const copy = UI_COPY[language];
   //const time = new Date().toLocaleTimeString(language === 'de' ? 'de-DE' : 'en-US', { hour: '2-digit', minute: '2-digit' });
   const auth = getAuthData();
-  const userName = auth?.user?.name ? ` Hallo ${auth.user.name}!` : '';
+  const userName = auth?.user?.name ? ` ${copy.greetingHelloPrefix} ${auth.user.name}!` : '';
 
   return (
     <div className="message-wrapper bot initial">
@@ -93,6 +93,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       onPlanningCodeDetected,
       pageContext: config.pageContext,
       widgetVariant: config.mode,
+      language,
     });
   const { isVisible: isTeaserVisible, dismiss: dismissTeaser } = useTeaser(
     config.teaser.show,
@@ -165,16 +166,16 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     setIsLiveMode(false);
 
     if (!silent) {
-      addBotMessage('Live-Chat wurde beendet. Du kannst wie gewohnt weiterschreiben.');
+      addBotMessage(UI_COPY[language].liveChatStopped);
     }
-  }, [addBotMessage, stopStt]);
+  }, [addBotMessage, language, stopStt]);
 
   const startLiveMode = useCallback(async () => {
     if (isLiveMode || isLiveConnecting) return;
     await startStt();
     setIsLiveMode(true);
-    addBotMessage('Live-Chat wurde gestartet.');
-  }, [addBotMessage, isLiveConnecting, isLiveMode, startStt]);
+    addBotMessage(UI_COPY[language].liveChatStarted);
+  }, [addBotMessage, isLiveConnecting, isLiveMode, language, startStt]);
 
   useEffect(() => {
     const text = transcribedText?.replace(/\s+/g, ' ').trim();
@@ -211,10 +212,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       return;
     }
     startLiveMode().catch(() => {
-      addBotMessage('Live-Chat konnte nicht gestartet werden. Du kannst normal weiterschreiben.');
+      addBotMessage(UI_COPY[language].liveChatStartError);
       stopLiveMode(true);
     });
-  }, [addBotMessage, isLiveConnecting, isLiveMode, startLiveMode, stopLiveMode]);
+  }, [addBotMessage, isLiveConnecting, isLiveMode, language, startLiveMode, stopLiveMode]);
 
   useEffect(() => {
     return () => {
@@ -276,6 +277,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           position={config.position}
           onClose={dismissTeaser}
           onOpen={handleOpen}
+          language={language}
         />
       )}
       {!isOpen && <ChatToggle onClick={handleOpen} position={config.position} language={language} />}
@@ -296,6 +298,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   conversationId={conversationId}
                   onRespinLastAnswer={handleRespinLastAnswer}
                   disableRespin={isThinking}
+                  language={language}
                 />
                 <ChatFooter
                   quickReplies={footerQuickReplies}
@@ -310,7 +313,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   showLiveButton={SHOW_VOICE_BUTTON}
                   isLiveMode={isLiveMode}
                   onToggleLiveMode={toggleLiveMode}
-                  liveStatusText={partialText ? `Erkannt: ${partialText}` : liveStatusText}
+                  liveStatusText={partialText ? `${copy.liveRecognizedPrefix}${partialText}` : liveStatusText}
                   vadState={vadState}
                   liveLevelRef={liveLevelRef}
                 />
@@ -331,6 +334,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 conversationId={conversationId}
                 onRespinLastAnswer={handleRespinLastAnswer}
                 disableRespin={isThinking}
+                language={language}
               />
               <ChatFooter
                 quickReplies={footerQuickReplies}
@@ -339,15 +343,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 disabled={isStreaming || isLiveMode || isLiveConnecting}
                 isGenerating={isStreaming}
                 onCancelGeneration={cancelResponseGeneration}
-                placeholder={
-                  isLiveMode
-                    ? language === 'de' ? 'Woody hört dir zu...' : 'Woody is listening...'
-                    : copy.inputPlaceholder
-                }
+                placeholder={isLiveMode ? copy.liveListeningPlaceholder : copy.inputPlaceholder}
                 showLiveButton={SHOW_VOICE_BUTTON}
                 isLiveMode={isLiveMode}
                 onToggleLiveMode={toggleLiveMode}
-                liveStatusText={partialText ? `Erkannt: ${partialText}` : liveStatusText}
+                liveStatusText={partialText ? `${copy.liveRecognizedPrefix}${partialText}` : liveStatusText}
                 vadState={vadState}
                 language={language}
                 prefillInput={browserSttPrefill}
@@ -357,7 +357,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           )}
         </div>
       )}
-      {isOpen && isLoginOpen && <LoginModal onClose={handleCloseLogin} />}
+      {isOpen && isLoginOpen && <LoginModal onClose={handleCloseLogin} language={language} />}
     </>
   );
 };

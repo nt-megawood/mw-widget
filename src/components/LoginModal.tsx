@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import type { WidgetLanguage } from '../config/i18n';
+import { UI_COPY } from '../config/i18n';
 
 interface LoginModalProps {
   onClose: () => void;
+  language: WidgetLanguage;
 }
 
-export const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
+export const LoginModal: React.FC<LoginModalProps> = ({ onClose, language }) => {
+  const copy = UI_COPY[language];
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -32,43 +36,43 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
         className="login-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Einloggen"
+        aria-label={copy.loginModalAriaLabel}
         onClick={(event) => event.stopPropagation()}
       >
-        <button className="login-modal-close" type="button" onClick={onClose} aria-label="Schließen" title="Schließen">
+        <button className="login-modal-close" type="button" onClick={onClose} aria-label={copy.loginModalCloseLabel} title={copy.loginModalCloseLabel}>
           &times;
         </button>
         <div className="login-modal-header">
-          <h3>Einloggen</h3>
-          <p>Bitte melde dich mit deinem Benutzernamen und Passwort an.</p>
+          <h3>{copy.loginModalHeading}</h3>
+          <p>{copy.loginModalSubtitle}</p>
         </div>
         <form className="login-modal-form" onSubmit={handleSubmit}>
           <label className="login-modal-field">
-            <span>Benutzername</span>
+            <span>{copy.loginModalUsernameLabel}</span>
             <input
               type="text"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              placeholder="Benutzername"
+              placeholder={copy.loginModalUsernamePlaceholder}
               autoComplete="username"
             />
           </label>
           <label className="login-modal-field">
-            <span>Passwort</span>
+            <span>{copy.loginModalPasswordLabel}</span>
             <input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Passwort"
+              placeholder={copy.loginModalPasswordPlaceholder}
               autoComplete="current-password"
             />
           </label>
           <div className="login-modal-actions">
             <button className="chat-btn login-modal-secondary" type="button" onClick={onClose}>
-              Abbrechen
+              {copy.loginModalCancelButton}
             </button>
             <button className="chat-btn login-modal-primary" type="submit">
-              Anmelden
+              {copy.loginModalSubmitButton}
             </button>
           </div>
         </form>

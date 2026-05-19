@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import type { Message } from '../../types';
 import { renderMarkdown } from '../../utils/markdown';
 import { speakText, stopSpeaking } from '../../utils/speech';
+import type { WidgetLanguage } from '../../config/i18n';
+import { UI_COPY, LOCALE_MAP } from '../../config/i18n';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -11,6 +13,7 @@ interface BotMessageProps {
   onRespin?: () => void;
   disableRespin?: boolean;
   onShowInfoView?: () => void;
+  language: WidgetLanguage;
 }
 
 const IconThumbUp = () => (
@@ -85,7 +88,9 @@ export const BotMessage: React.FC<BotMessageProps> = ({
   onRespin,
   disableRespin = false,
   onShowInfoView,
+  language,
 }) => {
+  const copy = UI_COPY[language];
   const [thumbState, setThumbState] = useState<'up' | 'down' | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -117,7 +122,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({
     setThumbState((prev) => (prev === direction ? null : direction));
   };
 
-  const formattedTime = message.timestamp.toLocaleTimeString('de-DE', {
+  const formattedTime = message.timestamp.toLocaleTimeString(LOCALE_MAP[language], {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -140,7 +145,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({
               {/*<span className="sources-summary-icon" aria-hidden="true">
                 <IconSearch />
               </span>*/}
-              <span className="sources-summary-title">✨ So ist Woody auf seine Antwort gekommen</span>
+              <span className="sources-summary-title">{copy.sourcesTitle}</span>
               <span className="sources-summary-chevron" aria-hidden="true">
                 <IconChevronDown />
               </span>
@@ -162,40 +167,40 @@ export const BotMessage: React.FC<BotMessageProps> = ({
           <button
             className={`thumb-btn thumb-up${thumbState === 'up' ? ' active' : ''}`}
             onClick={() => handleThumb('up')}
-            title="Hilfreich"
-            aria-label="Hilfreich"
+            title={copy.thumbUpLabel}
+            aria-label={copy.thumbUpLabel}
           >
             <IconThumbUp />
           </button>
           <button
             className={`thumb-btn thumb-down${thumbState === 'down' ? ' active' : ''}`}
             onClick={() => handleThumb('down')}
-            title="Nicht hilfreich"
-            aria-label="Nicht hilfreich"
+            title={copy.thumbDownLabel}
+            aria-label={copy.thumbDownLabel}
           >
             <IconThumbDown />
           </button>
           <button
             className="copy-btn"
             onClick={handleCopy}
-            title="Kopieren"
-            aria-label="Kopieren"
+            title={copy.copyLabel}
+            aria-label={copy.copyLabel}
           >
             {copied ? <IconCopied /> : <IconCopy />}
           </button>
           <button
             className={`speak-btn${isSpeaking ? ' active' : ''}`}
             onClick={handleSpeak}
-            title="Vorlesen"
-            aria-label="Vorlesen"
+            title={copy.speakLabel}
+            aria-label={copy.speakLabel}
           >
             <IconSpeak />
           </button>
           <button
             className="respin-btn"
             onClick={onRespin}
-            title="Neu generieren"
-            aria-label="Neu generieren"
+            title={copy.respinLabel}
+            aria-label={copy.respinLabel}
             type="button"
             disabled={disableRespin || !onRespin}
           >
@@ -203,15 +208,15 @@ export const BotMessage: React.FC<BotMessageProps> = ({
           </button>
           <button
             className="info-btn"
-            title={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
-            aria-label={conversationId ? `Kontext-ID: ${conversationId}` : 'Keine Kontext-ID verfügbar'}
+            title={conversationId ? `${copy.contextIdLabel} ${conversationId}` : copy.noContextId}
+            aria-label={conversationId ? `${copy.contextIdLabel} ${conversationId}` : copy.noContextId}
             type="button"
             onClick={onShowInfoView}
           >
             <IconInfo />
           </button>
           <span className="meta-brand">
-            Erstellt von megawood KI
+            {copy.createdBy}
           </span>
           <span className="meta-time">{formattedTime}</span>
         </div>

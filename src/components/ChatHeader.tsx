@@ -37,8 +37,8 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onRefresh, onClose, onLo
         <button
           className="header-pill-btn"
           onClick={() => onLanguageChange(nextLanguage)}
-          title={language === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'}
-          aria-label={language === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'}
+          title={nextLanguage === 'en' ? copy.switchToEnglish : copy.switchToGerman}
+          aria-label={nextLanguage === 'en' ? copy.switchToEnglish : copy.switchToGerman}
           type="button"
         >
           {language.toUpperCase()}
