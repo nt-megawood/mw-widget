@@ -11,8 +11,8 @@ import {
 import type { TerraceHistoryItem, TerracePlanData } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import {
-  DIELEN_VARIANTS, DIELEN_COLORS, PLANNING_FORM_FIELDS, SHAPE_LABELS, PROFIL_OPTIONS, UK_OPTIONS,
-  normalizePlanningForm, parseGroesseValue, toPositiveNumber,
+  DIELEN_VARIANTS, DIELEN_COLORS, PLANNING_FORM_FIELDS, PROFIL_OPTIONS, UK_OPTIONS,
+  normalizePlanningForm, parseGroesseValue, toPositiveNumber, getShapeLabels,
 } from './planningData';
 import type { ShapeVariant } from './planningData';
 import { UI_COPY, LOCALE_MAP } from '../../config/i18n';
@@ -209,7 +209,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode, la
     const groesseObj: Record<string, number> = {};
     for (const field of fields) {
       const val = toPositiveNumber(dimensionValues[field.key]);
-      if (val === null) throw new Error(`Bitte '${field.label}' als Zahl größer 0 eingeben.`);
+      if (val === null) throw new Error(copy.planningEditorInvalidDimensionError.replace('{field}', field.label));
       groesseObj[field.key] = val;
     }
     return {
@@ -358,8 +358,8 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode, la
               value={selectedForm}
               onChange={(e) => handleFormChange(e.target.value as ShapeVariant)}
             >
-              {(Object.keys(SHAPE_LABELS) as ShapeVariant[]).map((shape) => (
-                <option key={shape} value={shape}>{SHAPE_LABELS[shape]}</option>
+              {(Object.keys(getShapeLabels(language)) as ShapeVariant[]).map((shape) => (
+                <option key={shape} value={shape}>{getShapeLabels(language)[shape]}</option>
               ))}
             </select>
 

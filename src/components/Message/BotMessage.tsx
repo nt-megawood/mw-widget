@@ -110,7 +110,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({
     setIsSpeaking((prev) => {
       const next = !prev;
       if (next) {
-        speakText(message.text);
+        speakText(message.text, LOCALE_MAP[language]);
       } else {
         stopSpeaking();
       }

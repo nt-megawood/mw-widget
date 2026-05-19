@@ -164,6 +164,46 @@ export interface UiCopy {
   planningEditorUnknownForm: string;
   planningEditorUnknownDiele: string;
   planningEditorColorFallback: string;
+
+  // ── Quick-reply labels — loaded plan ────────────────────────────
+  quickReplyChangeDimensions: string;
+  quickReplyChangeDiele: string;
+  quickReplyChangeProfilfarbe: string;
+  quickReplyChangeUK: string;
+  quickReplyBauplanPdf: string;
+  quickReplyMateriallistePdf: string;
+  quickReplyDealerNearMe: string;
+
+  // ── Quick-reply labels — general ────────────────────────────────
+  quickReplyFindDealerProximity: string;
+  quickReplyOrderSample: string;
+  quickReplyFindSpecialistDealer: string;
+
+  // ── Profile colours ──────────────────────────────────────────────
+  profileColorSilver: string;
+  profileColorAnthracite: string;
+
+  // ── Aria labels for input cards ──────────────────────────────────
+  dimensionCardAriaLabel: string;
+  dealerCardAriaLabel: string;
+  planningCodeCardAriaLabel: string;
+  infoViewAriaLabel: string;
+  shapeRectangleAriaLabel: string;
+  shapeLAriaLabel: string;
+  shapeUAriaLabel: string;
+  shapeOAriaLabel: string;
+
+  // ── Footer ───────────────────────────────────────────────────────
+  quickRepliesAriaLabel: string;
+
+  // ── PlanningEditor validation ────────────────────────────────────
+  planningEditorInvalidDimensionError: string;
+
+  // ── Shape labels (for planningData dropdowns) ────────────────────
+  shapeRecteck: string;
+  shapeLForm: string;
+  shapeUForm: string;
+  shapeOForm: string;
 }
 
 export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
@@ -329,6 +369,46 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     planningEditorUnknownForm: 'Unbekannte Form',
     planningEditorUnknownDiele: 'Diele unbekannt',
     planningEditorColorFallback: 'Farbe',
+
+    // ── Quick-reply labels — loaded plan ────────────────────────────
+    quickReplyChangeDimensions: 'Form/Maße ändern',
+    quickReplyChangeDiele: 'Diele/Farbe ändern',
+    quickReplyChangeProfilfarbe: 'Profilfarbe anpassen',
+    quickReplyChangeUK: 'Unterkonstruktion ändern',
+    quickReplyBauplanPdf: 'Bauplan als PDF',
+    quickReplyMateriallistePdf: 'Materialliste als PDF',
+    quickReplyDealerNearMe: 'Händler in meiner Nähe finden',
+
+    // ── Quick-reply labels — general ────────────────────────────────
+    quickReplyFindDealerProximity: 'Passenden Händler finden',
+    quickReplyOrderSample: 'Muster bestellen',
+    quickReplyFindSpecialistDealer: 'Fachhändler finden',
+
+    // ── Profile colours ──────────────────────────────────────────────
+    profileColorSilver: 'Silber',
+    profileColorAnthracite: 'Anthrazit',
+
+    // ── Aria labels for input cards ──────────────────────────────────
+    dimensionCardAriaLabel: 'Maßeingabe',
+    dealerCardAriaLabel: 'Standort-Eingabe für Händlersuche',
+    planningCodeCardAriaLabel: 'Planungscode-Eingabe',
+    infoViewAriaLabel: 'Informationen über den KI-Assistenten',
+    shapeRectangleAriaLabel: 'Rechteck mit Seitenmarkierung',
+    shapeLAriaLabel: 'L-Form mit Seitenmarkierungen',
+    shapeUAriaLabel: 'U-Form mit Seitenmarkierungen',
+    shapeOAriaLabel: 'O-Form mit Seitenmarkierungen',
+
+    // ── Footer ───────────────────────────────────────────────────────
+    quickRepliesAriaLabel: 'Schnellaktionen',
+
+    // ── PlanningEditor validation ────────────────────────────────────
+    planningEditorInvalidDimensionError: 'Bitte "{field}" als Zahl größer 0 eingeben.',
+
+    // ── Shape labels (for planningData dropdowns) ────────────────────
+    shapeRecteck: 'Rechteck',
+    shapeLForm: 'L-Form',
+    shapeUForm: 'U-Form',
+    shapeOForm: 'O-Form',
   },
   en: {
     // ── existing keys ────────────────────────────────────────────────
@@ -492,5 +572,45 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     planningEditorUnknownForm: 'Unknown shape',
     planningEditorUnknownDiele: 'Decking unknown',
     planningEditorColorFallback: 'Colour',
+
+    // ── Quick-reply labels — loaded plan ────────────────────────────
+    quickReplyChangeDimensions: 'Change dimensions',
+    quickReplyChangeDiele: 'Change decking/colour',
+    quickReplyChangeProfilfarbe: 'Adjust profile colour',
+    quickReplyChangeUK: 'Change substructure',
+    quickReplyBauplanPdf: 'Construction plan as PDF',
+    quickReplyMateriallistePdf: 'Materials list as PDF',
+    quickReplyDealerNearMe: 'Find dealer near me',
+
+    // ── Quick-reply labels — general ────────────────────────────────
+    quickReplyFindDealerProximity: 'Find suitable dealer',
+    quickReplyOrderSample: 'Order sample',
+    quickReplyFindSpecialistDealer: 'Find specialist dealer',
+
+    // ── Profile colours ──────────────────────────────────────────────
+    profileColorSilver: 'Silver',
+    profileColorAnthracite: 'Anthracite',
+
+    // ── Aria labels for input cards ──────────────────────────────────
+    dimensionCardAriaLabel: 'Dimension input',
+    dealerCardAriaLabel: 'Location input for dealer search',
+    planningCodeCardAriaLabel: 'Planning code input',
+    infoViewAriaLabel: 'Information about the AI assistant',
+    shapeRectangleAriaLabel: 'Rectangle with side labels',
+    shapeLAriaLabel: 'L-shape with side labels',
+    shapeUAriaLabel: 'U-shape with side labels',
+    shapeOAriaLabel: 'O-shape with side labels',
+
+    // ── Footer ───────────────────────────────────────────────────────
+    quickRepliesAriaLabel: 'Quick actions',
+
+    // ── PlanningEditor validation ────────────────────────────────────
+    planningEditorInvalidDimensionError: 'Please enter a number greater than 0 for "{field}".',
+
+    // ── Shape labels (for planningData dropdowns) ────────────────────
+    shapeRecteck: 'Rectangle',
+    shapeLForm: 'L-shape',
+    shapeUForm: 'U-shape',
+    shapeOForm: 'O-shape',
   },
 };

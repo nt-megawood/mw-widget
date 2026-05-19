@@ -17,7 +17,7 @@ import type { WidgetConfig, ConversationHistoryItem, QuickReplyOption } from '..
 import { getDefaultPromptPack, getPromptPack } from '../../config/promptPacks';
 import { getAuthData } from '../../hooks/useAuth';
 import type { WidgetLanguage } from '../../config/i18n';
-import { UI_COPY } from '../../config/i18n';
+import { UI_COPY, LOCALE_MAP } from '../../config/i18n';
 
 const BASE_URL = import.meta.env.BASE_URL;
 const SHOW_VOICE_BUTTON = (import.meta.env.VITE_SHOW_VOICE_BUTTON ?? 'true') === 'true';
@@ -33,7 +33,6 @@ interface ChatWidgetProps {
 
 function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; language: WidgetLanguage }) {
   const copy = UI_COPY[language];
-  //const time = new Date().toLocaleTimeString(language === 'de' ? 'de-DE' : 'en-US', { hour: '2-digit', minute: '2-digit' });
   const auth = getAuthData();
   const userName = auth?.user?.name ? ` ${copy.greetingHelloPrefix} ${auth.user.name}!` : '';
 
@@ -241,7 +240,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     if (lastMessage.role === 'bot' && lastMessage.text && !spokenMessageIdsRef.current.has(lastMessage.id)) {
       spokenMessageIdsRef.current.add(lastMessage.id);
       stopSpeaking();
-      speakText(lastMessage.text);
+      speakText(lastMessage.text, LOCALE_MAP[language]);
     }
   }, [isLiveMode, isStreaming, messages]);
 

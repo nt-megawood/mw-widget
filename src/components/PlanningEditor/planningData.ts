@@ -1,5 +1,8 @@
 // Planning editor data for the terrace planner — mirrors DIELEN_VARIANTS / DIELEN_COLORS in script.js
 
+import { UI_COPY } from '../../config/i18n';
+import type { WidgetLanguage } from '../../config/i18n';
+
 export type ShapeVariant = 'rechteck' | 'lform' | 'uform' | 'oform';
 
 export interface PlanningFormField {
@@ -94,12 +97,23 @@ export const DIELEN_COLORS: Record<number, string> = {
   38: 'Amber Grey',
 };
 
+/** @deprecated Use getShapeLabels(language) for localised labels. */
 export const SHAPE_LABELS: Record<ShapeVariant, string> = {
   rechteck: 'Rechteck',
   lform: 'L-Form',
   uform: 'U-Form',
   oform: 'O-Form',
 };
+
+export function getShapeLabels(language: WidgetLanguage): Record<ShapeVariant, string> {
+  const copy = UI_COPY[language];
+  return {
+    rechteck: copy.shapeRecteck,
+    lform: copy.shapeLForm,
+    uform: copy.shapeUForm,
+    oform: copy.shapeOForm,
+  };
+}
 
 export const PROFIL_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'bronze', label: 'Bronze' },

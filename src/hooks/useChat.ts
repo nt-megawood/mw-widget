@@ -180,14 +180,14 @@ function extractVariantChoicesFromAnswer(answer: string): string[] {
   return variants;
 }
 
-function buildProfileQuickReplies(answer: string): QuickReplyOption[] {
+function buildProfileQuickReplies(answer: string, copy: (typeof UI_COPY)['de']): QuickReplyOption[] {
   const codeMatch = String(answer || '').match(/\b(mgw[a-z0-9]{4,})\b/i);
   const code = codeMatch?.[1];
   const codePrefix = code ? `bei ${code} ` : '';
   return [
     { label: 'Bronze', message: `Bitte ändere ${codePrefix}die Profilfarbe auf bronze.`, action: 'send_message' },
-    { label: 'Silber', message: `Bitte ändere ${codePrefix}die Profilfarbe auf silver (Silber).`, action: 'send_message' },
-    { label: 'Anthrazit', message: `Bitte ändere ${codePrefix}die Profilfarbe auf anthracite (Anthrazit).`, action: 'send_message' },
+    { label: copy.profileColorSilver, message: `Bitte ändere ${codePrefix}die Profilfarbe auf silver (Silber).`, action: 'send_message' },
+    { label: copy.profileColorAnthracite, message: `Bitte ändere ${codePrefix}die Profilfarbe auf anthracite (Anthrazit).`, action: 'send_message' },
   ];
 }
 
@@ -255,6 +255,7 @@ function extractColorChoicesFromAnswer(answer: string): string[] {
 function buildFallbackQuickReplies(
   answer: string,
   planningCodeEnterLabel: string,
+  copy: (typeof UI_COPY)['de'],
   fromApi?: QuickReplyOption[],
 ): QuickReplyOption[] {
   const lower = String(answer || '').toLowerCase();
@@ -270,7 +271,7 @@ function buildFallbackQuickReplies(
   }
 
   if (lower.includes('muster') || lower.includes('kostenfreies exemplar') || lower.includes('kostenfreies muster')) {
-    generatedReplies.push(buildMusterBestellenReply());
+    generatedReplies.push(buildMusterBestellenReply(copy));
   }
 
   if (
@@ -280,7 +281,7 @@ function buildFallbackQuickReplies(
     || lower.includes('haendlersuche')
     || lower.includes('händler')
   ) {
-    generatedReplies.push(buildDealerFinderReply());
+    generatedReplies.push(buildDealerFinderReply(copy));
   }
 
   if (generatedReplies.length > 0) {
@@ -310,39 +311,39 @@ function buildFallbackQuickReplies(
   if (looksLikeLoadedExistingPlan && existingCode) {
     return [
       {
-        label: 'Form/Maße ändern',
+        label: copy.quickReplyChangeDimensions,
         message: `Ich möchte bei ${existingCode} Form/Maße ändern. Bitte zeige mir dafür passende Optionen als Buttons.`,
         action: 'send_message',
       },
       {
-        label: 'Diele/Farbe ändern',
+        label: copy.quickReplyChangeDiele,
         message: `Ich möchte bei ${existingCode} Diele/Farbe ändern. Bitte zeige mir dafür passende Optionen als Buttons.`,
         action: 'send_message',
       },
       {
-        label: 'Profilfarbe anpassen',
+        label: copy.quickReplyChangeProfilfarbe,
         message: `Ich möchte bei ${existingCode} die Profilfarbe anpassen. Bitte nenne mir alle verfügbaren Optionen und stelle passende Buttons bereit.`,
         action: 'send_message',
       },
       {
-        label: 'Unterkonstruktion ändern',
+        label: copy.quickReplyChangeUK,
         message: `Ich möchte bei ${existingCode} die Unterkonstruktion ändern. Bitte nenne mir alle verfügbaren Optionen und stelle passende Buttons bereit.`,
         action: 'send_message',
       },
       {
-        label: 'Bauplan als PDF',
+        label: copy.quickReplyBauplanPdf,
         message: '',
         action: 'open_url',
         url: `https://betaplaner.megawood.com/api/bauplan/pdf/${existingCode}`,
       },
       {
-        label: 'Materialliste als PDF',
+        label: copy.quickReplyMateriallistePdf,
         message: '',
         action: 'open_url',
         url: `https://betaplaner.megawood.com/api/materialliste/pdf/${existingCode}`,
       },
       {
-        label: 'Händler in meiner Nähe finden',
+        label: copy.quickReplyDealerNearMe,
         message: '',
         action: 'request_location_input',
       },
@@ -367,7 +368,7 @@ function buildFallbackQuickReplies(
     const labels = (fromApi || []).map((item) => String(item.label || '').toLowerCase());
     const hasAll = required.every((token) => labels.some((label) => label.includes(token)));
     if (hasAll) return fromApi || [];
-    return buildProfileQuickReplies(answer);
+    return buildProfileQuickReplies(answer, copy);
   }
 
   const variantChoices = extractVariantChoicesFromAnswer(answer);
@@ -521,17 +522,17 @@ function appendUniqueQuickReply(quickReplies: QuickReplyOption[], reply: QuickRe
   return [...quickReplies, reply];
 }
 
-function buildStartDealerFlowReply(): QuickReplyOption {
+function buildStartDealerFlowReply(copy: (typeof UI_COPY)['de']): QuickReplyOption {
   return {
-    label: 'Passenden Händler finden',
+    label: copy.quickReplyFindDealerProximity,
     message: '',
     action: 'start_dealer_flow',
   };
 }
 
-function buildMusterBestellenReply(): QuickReplyOption {
+function buildMusterBestellenReply(copy: (typeof UI_COPY)['de']): QuickReplyOption {
   return {
-    label: 'Muster bestellen',
+    label: copy.quickReplyOrderSample,
     message: '',
     action: 'open_url',
     url: 'https://www.megawood.com/de/service/musteranforderung',
@@ -547,9 +548,9 @@ function buildPlannerReply(): QuickReplyOption {
   };
 }
 
-function buildDealerFinderReply(): QuickReplyOption {
+function buildDealerFinderReply(copy: (typeof UI_COPY)['de']): QuickReplyOption {
   return {
-    label: 'Fachhändler finden',
+    label: copy.quickReplyFindSpecialistDealer,
     message: '',
     action: 'request_location_input',
   };
@@ -844,7 +845,7 @@ export function useChat({
         response.input_request || null,
         copy.dimensionInputRequestTitle,
       );
-      let mergedQuickReplies = buildFallbackQuickReplies(response.answer, copy.planningCodeEnterLabel, response.quick_replies);
+      let mergedQuickReplies = buildFallbackQuickReplies(response.answer, copy.planningCodeEnterLabel, copy, response.quick_replies);
       const recommendationCheckpointReached = isRecommendationCheckpointReached(mergedQuickReplies);
       let nextCheckpointState = dealerCtaCheckpoints;
       if (recommendationCheckpointReached && !dealerCtaCheckpoints.recommendationReached) {
@@ -854,7 +855,7 @@ export function useChat({
       const shouldInjectFromCheckpoint = shouldInjectDealerCtaByCheckpoint(nextCheckpointState);
       const shouldInjectFromLegacyHeuristic = shouldInjectDealerCta(response.answer, pageContext);
       if ((shouldInjectFromCheckpoint || shouldInjectFromLegacyHeuristic) && !hasDealerFlowAction(mergedQuickReplies)) {
-        mergedQuickReplies = appendUniqueQuickReply(mergedQuickReplies, buildStartDealerFlowReply());
+        mergedQuickReplies = appendUniqueQuickReply(mergedQuickReplies, buildStartDealerFlowReply(copy));
       }
       if (nextDealerFlowContext?.status === 'location_submitted') {
         const resultsUrl = buildDealerResultsUrl({
@@ -1012,7 +1013,7 @@ export function useChat({
         const filename = `${filenamePrefix}-${Date.now()}.pdf`;
         fetch(url)
           .then((res) => {
-            if (!res.ok) throw new Error('Download fehlgeschlagen');
+            if (!res.ok) throw new Error('PDF download failed');
             return res.blob();
           })
           .then((blob) => {

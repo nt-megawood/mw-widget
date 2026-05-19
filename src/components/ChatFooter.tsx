@@ -119,7 +119,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   return (
     <div className="chat-footer">
       {quickReplies.length > 0 && (
-        <div className="chat-footer-cta-row" aria-label="Schnellaktionen">
+        <div className="chat-footer-cta-row" aria-label={copy.quickRepliesAriaLabel}>
           {quickReplies.map((reply, i) => (
             <button
               key={`${reply.label}-${i}`}

@@ -20,14 +20,14 @@ interface ChatBodyProps {
   language: WidgetLanguage;
 }
 
-function FormSketch({ form }: { form?: InputRequest['form'] }): React.ReactElement | null {
+function FormSketch({ form, copy }: { form?: InputRequest['form']; copy: UiCopy }): React.ReactElement | null {
   const content = useMemo(() => {
     if (!form) {
       return null;
     }
     if (form === 'rechteck') {
       return (
-        <svg viewBox="0 0 180 120" className="dimension-sketch-svg" aria-label="Rechteck mit Seitenmarkierung">
+        <svg viewBox="0 0 180 120" className="dimension-sketch-svg" aria-label={copy.shapeRectangleAriaLabel}>
           <rect x="25" y="20" width="130" height="80" fill="#fff" stroke="#b4032f" strokeWidth="2" />
           <text x="90" y="14" textAnchor="middle">Seite A</text>
           <text x="12" y="64" textAnchor="middle" transform="rotate(-90 12 64)">Seite B</text>
@@ -36,7 +36,7 @@ function FormSketch({ form }: { form?: InputRequest['form'] }): React.ReactEleme
     }
     if (form === 'lform') {
       return (
-        <svg viewBox="0 0 180 130" className="dimension-sketch-svg" aria-label="L-Form mit Seitenmarkierungen">
+        <svg viewBox="0 0 180 130" className="dimension-sketch-svg" aria-label={copy.shapeLAriaLabel}>
           <path d="M20 20 H120 V60 H80 V110 H20 Z" fill="#fff" stroke="#b4032f" strokeWidth="2" />
           <text x="70" y="14" textAnchor="middle">Seite A</text>
           <text x="10" y="64" textAnchor="middle" transform="rotate(-90 10 64)">Seite B</text>
@@ -47,7 +47,7 @@ function FormSketch({ form }: { form?: InputRequest['form'] }): React.ReactEleme
     }
     if (form === 'uform') {
       return (
-        <svg viewBox="0 0 190 130" className="dimension-sketch-svg" aria-label="U-Form mit Seitenmarkierungen">
+        <svg viewBox="0 0 190 130" className="dimension-sketch-svg" aria-label={copy.shapeUAriaLabel}>
           <path d="M20 20 H170 V110 H130 V60 H60 V110 H20 Z" fill="#fff" stroke="#b4032f" strokeWidth="2" />
           <text x="44" y="14" textAnchor="middle">Seite A</text>
           <text x="10" y="64" textAnchor="middle" transform="rotate(-90 10 64)">Seite B</text>
@@ -59,7 +59,7 @@ function FormSketch({ form }: { form?: InputRequest['form'] }): React.ReactEleme
       );
     }
     return (
-      <svg viewBox="0 0 190 130" className="dimension-sketch-svg" aria-label="O-Form mit Seitenmarkierungen">
+      <svg viewBox="0 0 190 130" className="dimension-sketch-svg" aria-label={copy.shapeOAriaLabel}>
         <rect x="20" y="20" width="150" height="90" fill="#fff" stroke="#b4032f" strokeWidth="2" />
         <rect x="65" y="45" width="60" height="40" fill="#fafafa" stroke="#b4032f" strokeWidth="1.5" />
         <text x="43" y="14" textAnchor="middle">Seite A</text>
@@ -70,7 +70,7 @@ function FormSketch({ form }: { form?: InputRequest['form'] }): React.ReactEleme
         <text x="180" y="66" textAnchor="middle" transform="rotate(-90 180 66)">Seite F</text>
       </svg>
     );
-  }, [form]);
+  }, [form, copy]);
 
   return <div className="dimension-sketch">{content}</div>;
 }
@@ -106,9 +106,9 @@ function DimensionInputCard({
   };
 
   return (
-    <div className="dimension-input-card" aria-label="Maßeingabe">
+    <div className="dimension-input-card" aria-label={copy.dimensionCardAriaLabel}>
       <strong>{request.title || copy.dimensionInputFallbackTitle}</strong>
-      <FormSketch form={request.form} />
+      <FormSketch form={request.form} copy={copy} />
       <div className="dimension-input-grid">
         {request.fields.map((field) => (
           <label key={field.key} className="dimension-input-field">
@@ -152,7 +152,7 @@ function DealerLocationInputCard({
   };
 
   return (
-    <div className="dimension-input-card" aria-label="Standort-Eingabe für Händlersuche">
+    <div className="dimension-input-card" aria-label={copy.dealerCardAriaLabel}>
       <strong>{request.title || copy.dealerInputFallbackTitle}</strong>
       <div className="dimension-input-grid dealer-input-grid">
         {request.fields.map((field) => (
@@ -193,7 +193,7 @@ function PlanningCodeInputCard({
   };
 
   return (
-    <div className="dimension-input-card" aria-label="Planungscode-Eingabe">
+    <div className="dimension-input-card" aria-label={copy.planningCodeCardAriaLabel}>
       <strong>{request.title || copy.planningCodeInputFallbackTitle}</strong>
       <div className="dimension-input-grid dealer-input-grid">
         <label className="dimension-input-field">
@@ -238,7 +238,7 @@ export const ChatBody: React.FC<ChatBodyProps> = ({
         <div style={{placeContent: "center", display: "flex"}}>
           <img width={"50px"} src='woody.png' alt="Woody" />
         </div>
-        <div className="brand-info-view" role="region" aria-label="Informationen über den KI-Assistenten">
+        <div className="brand-info-view" role="region" aria-label={copy.infoViewAriaLabel}>
           <button
             className="brand-info-view-close"
             onClick={() => setIsInfoViewOpen(false)}
