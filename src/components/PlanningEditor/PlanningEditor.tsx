@@ -15,6 +15,8 @@ import {
   normalizePlanningForm, parseGroesseValue, toPositiveNumber,
 } from './planningData';
 import type { ShapeVariant } from './planningData';
+import { UI_COPY, LOCALE_MAP } from '../../config/i18n';
+import type { WidgetLanguage } from '../../config/i18n';
 
 const DEFAULT_DIELEN_ID = 5;
 const DEFAULT_FARBE_ID = 37;
@@ -29,6 +31,7 @@ interface DimensionValues {
 interface PlanningEditorProps {
   onPlanningCodeDetected?: (code: string) => void;
   detectedCode?: string;
+  language: WidgetLanguage;
 }
 
 function dispatchPlannerCheckpoint(checkpoint: PlannerCheckpoint): void {
@@ -39,7 +42,8 @@ function dispatchPlannerCheckpoint(checkpoint: PlannerCheckpoint): void {
   }
 }
 
-export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) => {
+export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode, language }) => {
+  const copy = UI_COPY[language];
   const auth = useAuth();
   const [planningCode, setPlanningCode] = useState(detectedCode || '');
   const [loadedPayload, setLoadedPayload] = useState<TerracePlanData | null>(null);
@@ -81,11 +85,11 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
   const handleLoad = useCallback(async (codeOverride?: string) => {
     const code = (codeOverride ?? planningCode).trim();
     if (!code) {
-      setStatusMsg('Bitte zuerst einen Planungscode eingeben.', 'error');
+      setStatusMsg(copy.planningEditorEnterCodeError, 'error');
       return;
     }
     setIsLoading(true);
-    setStatusMsg('Planungsdaten werden geladen ...');
+    setStatusMsg(copy.planningEditorLoadingStatus);
     try {
       const payload = await loadTerracePlanData(code);
       saveRecentTerraceCode(code);
@@ -104,14 +108,14 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       setSelectedProfil(String(payload.profil || 'bronze'));
       setSelectedUK(String(payload.uk || 'standard'));
       if (payload.terrassencode) setPlanningCode(payload.terrassencode);
-      setStatusMsg('Planungsdaten erfolgreich geladen.', 'success');
+      setStatusMsg(copy.planningEditorLoadedSuccess, 'success');
       void loadHistory();
     } catch (err) {
-      setStatusMsg((err as Error).message || 'Planung konnte nicht geladen werden.', 'error');
+      setStatusMsg((err as Error).message || copy.planningEditorLoadError, 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [planningCode]);
+  }, [planningCode, copy]);
 
   const mergeHistoryItems = useCallback((items: TerraceHistoryItem[]) => {
     const merged = new Map<string, TerraceHistoryItem>();
@@ -154,14 +158,14 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
 
       const hasFailure = settled.some((result) => result.status === 'rejected');
       if (hasFailure && collected.length === 0) {
-        setHistoryError('Vorherige Planungen konnten nicht geladen werden.');
+        setHistoryError(copy.planningEditorHistoryLoadError);
       }
     } catch {
-      setHistoryError('Vorherige Planungen konnten nicht geladen werden.');
+      setHistoryError(copy.planningEditorHistoryLoadError);
     } finally {
       setIsHistoryLoading(false);
     }
-  }, [auth?.user?.id, mergeHistoryItems]);
+  }, [auth?.user?.id, mergeHistoryItems, copy]);
 
   // When a planning code is detected in the chat, automatically update the input
   // and trigger a load — but only for new codes that differ from the current one.
@@ -190,7 +194,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
     if (!value) return '';
     const parsed = new Date(String(value).replace(' ', 'T'));
     if (Number.isNaN(parsed.getTime())) return String(value);
-    return parsed.toLocaleString('de-DE', {
+    return parsed.toLocaleString(LOCALE_MAP[language], {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -200,7 +204,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
   };
 
   const buildPayload = (): TerracePlanData => {
-    if (!loadedPayload) throw new Error('Es sind noch keine Planungsdaten geladen.');
+    if (!loadedPayload) throw new Error(copy.planningEditorNoPlanError);
     const fields = PLANNING_FORM_FIELDS[selectedForm] || [];
     const groesseObj: Record<string, number> = {};
     for (const field of fields) {
@@ -225,13 +229,13 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
   const handleSave = async () => {
     if (!loadedPayload) return;
     setIsSaving(true);
-    setStatusMsg('Änderungen werden gespeichert ...');
+    setStatusMsg(copy.planningEditorSavingStatus);
     try {
       const payload = buildPayload();
       const result = await saveTerracePlanData(payload);
       const nextCode = result.terrassencode || String(payload.terrassencode || '');
       if (nextCode) setPlanningCode(nextCode);
-      setStatusMsg(`Planung gespeichert. Aktueller Code: ${nextCode}`, 'success');
+      setStatusMsg(`${copy.planningEditorSavedSuccess} ${nextCode}`, 'success');
       if (nextCode) {
         saveRecentTerraceCode(nextCode);
       }
@@ -241,7 +245,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       setLoadedPayload(reloaded);
       void loadHistory();
     } catch (err) {
-      setStatusMsg((err as Error).message || 'Speichern fehlgeschlagen.', 'error');
+      setStatusMsg((err as Error).message || copy.planningEditorSaveError, 'error');
     } finally {
       setIsSaving(false);
     }
@@ -250,7 +254,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
   const handleDownloadBauplan = () => {
     const code = (planningCode || loadedPayload?.terrassencode || '').trim();
     if (!code) {
-      setStatusMsg('Bitte zuerst einen gültigen Planungscode laden.', 'error');
+      setStatusMsg(copy.planningEditorInvalidCodeError, 'error');
       return;
     }
     const url = buildBauplanPdfUrl(code);
@@ -261,7 +265,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
   const handleDownloadMaterialliste = () => {
     const code = (planningCode || loadedPayload?.terrassencode || '').trim();
     if (!code) {
-      setStatusMsg('Bitte zuerst einen gültigen Planungscode laden.', 'error');
+      setStatusMsg(copy.planningEditorInvalidCodeError, 'error');
       return;
     }
     const url = buildMateriallistePdfUrl(code);
@@ -273,15 +277,15 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
   const availableColors = getAvailableColors(selectedDielenId);
 
   return (
-    <aside className="chat-side-menu" aria-label="Planung bearbeiten">
-      <h3>Planung bearbeiten</h3>
+    <aside className="chat-side-menu" aria-label={copy.planningEditorTitle}>
+      <h3>{copy.planningEditorTitle}</h3>
       <div className="side-menu-card planning-history-card">
-        <strong>Vorherige Planungen</strong>
-        <p>Wähle eine frühere Planung direkt aus, um sofort in die Bearbeitung zu springen.</p>
-        {isHistoryLoading && <p className="planning-history-empty">Planungen werden geladen …</p>}
+        <strong>{copy.planningEditorHistorySectionTitle}</strong>
+        <p>{copy.planningEditorHistorySectionDesc}</p>
+        {isHistoryLoading && <p className="planning-history-empty">{copy.planningEditorHistoryLoading}</p>}
         {!isHistoryLoading && historyError && <p className="planning-status is-error">{historyError}</p>}
         {!isHistoryLoading && !historyError && historyItems.length === 0 && (
-          <p className="planning-history-empty">Noch keine gespeicherten Planungen gefunden.</p>
+          <p className="planning-history-empty">{copy.planningEditorHistoryEmpty}</p>
         )}
         {historyItems.length > 0 && (
           <div className="planning-history-list">
@@ -297,9 +301,9 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
                   disabled={isLoading || isSaving}
                 >
                   <span className="planning-history-code">{code}</span>
-                  <span className="planning-history-meta">{item.form || 'Unbekannte Form'}</span>
+                  <span className="planning-history-meta">{item.form || copy.planningEditorUnknownForm}</span>
                   <span className="planning-history-meta">
-                    {item.diele ? `${item.diele}${item.farbe ? ` · ${item.farbe}` : ''}` : 'Diele unbekannt'}
+                    {item.diele ? `${item.diele}${item.farbe ? ` · ${item.farbe}` : ''}` : copy.planningEditorUnknownDiele}
                   </span>
                   <span className="planning-history-date">{formatHistoryDate(item.zuletztaktualisiert)}</span>
                 </button>
@@ -309,13 +313,13 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
         )}
       </div>
       <div className="side-menu-card planning-card">
-        <label className="planning-label" htmlFor="planning-code-input">Planungscode</label>
+        <label className="planning-label" htmlFor="planning-code-input">{copy.planningEditorCodeLabel}</label>
         <div className="planning-code-row">
           <input
             id="planning-code-input"
             className="planning-input"
             type="text"
-            placeholder="z.B. mgw150823"
+            placeholder={copy.planningCodePlaceholder}
             autoComplete="off"
             value={planningCode}
             onChange={(e) => setPlanningCode(e.target.value)}
@@ -327,11 +331,11 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
             onClick={() => handleLoad()}
             disabled={isLoading}
           >
-            {isLoading ? '…' : 'Laden'}
+            {isLoading ? '…' : copy.planningEditorLoadButton}
           </button>
         </div>
         <p className="planning-hint">
-          Sobald Woody eine Planung erstellt hat, wird der Code hier automatisch erkannt.
+          {copy.planningEditorCodeHint}
         </p>
         <p
           className={`planning-status${status.type === 'error' ? ' is-error' : status.type === 'success' ? ' is-success' : ''}`}
@@ -344,10 +348,10 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
       {loadedPayload && (
         <div className="side-menu-card planning-editor" aria-live="polite">
           <strong className="planning-editor-title">
-            Geladene Planung: {loadedPayload.terrassencode || planningCode}
+            {copy.planningEditorLoadedPlanPrefix} {loadedPayload.terrassencode || planningCode}
           </strong>
           <div className="planning-form-grid">
-            <label className="planning-label" htmlFor="planning-form">Form</label>
+            <label className="planning-label" htmlFor="planning-form">{copy.planningEditorFormLabel}</label>
             <select
               id="planning-form"
               className="planning-input"
@@ -380,7 +384,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
               </div>
             )}
 
-            <label className="planning-label" htmlFor="planning-dielen-id">Diele</label>
+            <label className="planning-label" htmlFor="planning-dielen-id">{copy.planningEditorDielenLabel}</label>
             <select
               id="planning-dielen-id"
               className="planning-input"
@@ -396,7 +400,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
                 ))}
             </select>
 
-            <label className="planning-label" htmlFor="planning-dielen-farbe-id">Dielenfarbe</label>
+            <label className="planning-label" htmlFor="planning-dielen-farbe-id">{copy.planningEditorDielenFarbeLabel}</label>
             <select
               id="planning-dielen-farbe-id"
               className="planning-input"
@@ -405,12 +409,12 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
             >
               {availableColors.map((colorId) => (
                 <option key={colorId} value={colorId}>
-                  {DIELEN_COLORS[colorId] ?? `Farbe ${colorId}`}
+                  {DIELEN_COLORS[colorId] ?? `${copy.planningEditorColorFallback} ${colorId}`}
                 </option>
               ))}
             </select>
 
-            <label className="planning-label" htmlFor="planning-profil">Profil</label>
+            <label className="planning-label" htmlFor="planning-profil">{copy.planningEditorProfilLabel}</label>
             <select
               id="planning-profil"
               className="planning-input"
@@ -422,7 +426,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
               ))}
             </select>
 
-            <label className="planning-label" htmlFor="planning-uk">UK</label>
+            <label className="planning-label" htmlFor="planning-uk">{copy.planningEditorUkLabel}</label>
             <select
               id="planning-uk"
               className="planning-input"
@@ -442,7 +446,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
               onClick={() => handleLoad()}
               disabled={isLoading}
             >
-              Neu laden
+              {copy.planningEditorReloadButton}
             </button>
             <button
               className="side-menu-btn"
@@ -450,7 +454,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
               onClick={handleDownloadBauplan}
               disabled={isLoading}
             >
-              Bauplan PDF
+              {copy.planningEditorBauplanButton}
             </button>
             <button
               className="side-menu-btn"
@@ -458,7 +462,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
               onClick={handleDownloadMaterialliste}
               disabled={isLoading}
             >
-              Materialliste PDF
+              {copy.planningEditorMateriallisteButton}
             </button>
             <button
               className="side-menu-btn side-menu-btn-primary"
@@ -466,7 +470,7 @@ export const PlanningEditor: React.FC<PlanningEditorProps> = ({ detectedCode }) 
               onClick={handleSave}
               disabled={isSaving || isLoading}
             >
-              {isSaving ? 'Wird gespeichert…' : 'Speichern'}
+              {isSaving ? copy.planningEditorSavingButton : copy.planningEditorSaveButton}
             </button>
           </div>
         </div>

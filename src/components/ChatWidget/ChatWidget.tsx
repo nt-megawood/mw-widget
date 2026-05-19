@@ -26,6 +26,7 @@ interface ChatWidgetProps {
   config: WidgetConfig;
   widgetId: string;
   onPlanningCodeDetected?: (code: string) => void;
+  onLanguageChange?: (language: WidgetLanguage) => void;
   children?: React.ReactNode;
 }
 
@@ -61,11 +62,16 @@ function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; la
   );
 }
 
-export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlanningCodeDetected, children }) => {
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlanningCodeDetected, onLanguageChange, children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [language, setLanguage] = useState<WidgetLanguage>('de');
+
+  const handleLanguageChange = useCallback((lang: WidgetLanguage) => {
+    setLanguage(lang);
+    onLanguageChange?.(lang);
+  }, [onLanguageChange]);
   const isLiveConnecting = false;
   const { conversationId, saveConversationId, clearConversation } = useConversation(widgetId);
   const {
@@ -286,7 +292,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
           {config.mode === 'landscape' ? (
             <div className="chat-layout">
               <div className="chat-main">
-                <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} language={language} onLanguageChange={setLanguage} />
+                <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} language={language} onLanguageChange={handleLanguageChange} />
                 <ChatBody
                   messages={messages}
                   isThinking={isThinking}
@@ -322,7 +328,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
             </div>
           ) : (
             <>
-              <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} language={language} onLanguageChange={setLanguage} />
+              <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} language={language} onLanguageChange={handleLanguageChange} />
               <ChatBody
                 messages={messages}
                 isThinking={isThinking}
