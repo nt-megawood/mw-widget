@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import type { QuickReplyOption } from '../types';
 import type { WidgetLanguage } from '../config/i18n';
 import { UI_COPY } from '../config/i18n';
@@ -18,6 +18,7 @@ interface ChatFooterProps {
   onQuickReply?: (reply: QuickReplyOption) => void;
   language?: WidgetLanguage;
   prefillInput?: string;
+  liveLevelRef?: React.MutableRefObject<number>;
 }
 
 const IconSend = () => (
@@ -48,10 +49,33 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   quickReplies = [],
   onQuickReply,
   prefillInput,
+  liveLevelRef,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const barsRef = useRef<HTMLSpanElement>(null);
   const [inputValue, setInputValue] = useState('');
   const copy = UI_COPY[language];
+
+  useEffect(() => {
+    const isActive = isLiveMode && (vadState === 'listening' || vadState === 'recording');
+    if (!isActive || !liveLevelRef) {
+      barsRef.current?.style.setProperty('--live-level', '0');
+      return;
+    }
+
+    let rafId: number;
+    const loop = (): void => {
+      const level = liveLevelRef.current;
+      barsRef.current?.style.setProperty('--live-level', String(level));
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      barsRef.current?.style.setProperty('--live-level', '0');
+    };
+  }, [isLiveMode, vadState, liveLevelRef]);
 
   React.useEffect(() => {
     if (typeof prefillInput === 'string' && prefillInput.trim().length > 0) {
@@ -140,7 +164,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
             aria-label={isLiveMode ? 'Live-Chat beenden' : 'Live-Chat starten'}
             title={isLiveMode ? 'Live-Chat beenden' : 'Live-Chat starten'}
           >
-          <span className="live-bars" aria-hidden="true">
+          <span className="live-bars" ref={barsRef} aria-hidden="true">
             <span /><span /><span /><span /><span /><span /><span />
           </span>
           </button>
@@ -150,9 +174,9 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
         <div className="branding">
           <span className="ai-disclaimer">{copy.aiDisclaimer}</span>
           <nav className="ai-links" aria-label="Rechtliches">
-            <a className="ai-link" href="/datenschutz">Datenschutz</a>
+            <a className="ai-link" href="https://www.megawood.com/de/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
             <span className="ai-dot" aria-hidden="true">•</span>
-            <a className="ai-link" href="/impressum">Impressum</a>
+            <a className="ai-link" href="https://www.megawood.com/de/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
           </nav>
         </div>
         {showLiveButton && liveStatusText && (

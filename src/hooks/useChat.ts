@@ -121,6 +121,9 @@ function detectFormFromText(text: string): 'rechteck' | 'lform' | 'uform' | 'ofo
 
 function normalizeInputRequestFromResponse(answer: string, inputRequest?: InputRequest | null): InputRequest | null {
   if (!inputRequest) return null;
+  // Silently ignore muster_bestellen_input — the flow is now handled via external URL.
+  // Cast needed because backend may still send this deprecated type.
+  if ((inputRequest.type as string) === 'muster_bestellen_input') return null;
   if (inputRequest.type !== 'dimension_input') return inputRequest;
 
   const lowerAnswer = String(answer || '').toLowerCase();
@@ -515,7 +518,8 @@ function buildMusterBestellenReply(): QuickReplyOption {
   return {
     label: 'Muster bestellen',
     message: '',
-    action: 'request_muster_bestellen_input',
+    action: 'open_url',
+    url: 'https://www.megawood.com/de/service/musteranforderung',
   };
 }
 
@@ -930,17 +934,6 @@ export function useChat({
       return;
     }
 
-    if (reply.action === 'request_muster_bestellen_input') {
-      addBotMessage('Gerne. Ich öffne dir die Musterbestellung. Du kannst mehrere Dielen hinzufügen und die Lieferadresse direkt im Formular angeben.');
-      setActiveInputRequest({
-        type: 'muster_bestellen_input',
-        title: 'Muster bestellen',
-        fields: [],
-      });
-      setActiveQuickReplies([]);
-      return;
-    }
-
     if (reply.action === 'start_dealer_flow' || reply.action === 'request_location_input') {
       const startedContext: DealerFlowContext = {
         status: 'started',
@@ -987,34 +980,71 @@ export function useChat({
         return;
       }
       if (isPlannerPdfUrl(url)) {
+        // PDF blob download path (bauplan / materialliste)
         setDealerCtaCheckpoints((prev) => ({ ...prev, pdfExportClickedReached: true }));
+        const filenamePrefix = url.includes('/materialliste/') ? 'materialliste' : 'bauplan';
+        const filename = `${filenamePrefix}-${Date.now()}.pdf`;
+        fetch(url)
+          .then((res) => {
+            if (!res.ok) throw new Error('Download fehlgeschlagen');
+            return res.blob();
+          })
+          .then((blob) => {
+            const objectUrl = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = objectUrl;
+            anchor.download = filename;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            URL.revokeObjectURL(objectUrl);
+          })
+          .catch(() => {
+            window.open(url, '_blank', 'noopener,noreferrer');
+          });
+        return;
       }
-      const filenamePrefix = url.includes('/materialliste/') ? 'materialliste' : 'bauplan';
-      const filename = `${filenamePrefix}-${Date.now()}.pdf`;
-      fetch(url)
-        .then((res) => {
-          if (!res.ok) throw new Error('Download fehlgeschlagen');
-          return res.blob();
-        })
-        .then((blob) => {
-          const objectUrl = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = objectUrl;
-          anchor.download = filename;
-          document.body.appendChild(anchor);
-          anchor.click();
-          anchor.remove();
-          URL.revokeObjectURL(objectUrl);
-        })
-        .catch(() => {
-          window.open(url, '_blank', 'noopener,noreferrer');
-        });
+      // All other URLs (e.g. musteranforderung, haendlersuche, etc.) open in a new tab directly.
+      window.open(url, '_blank', 'noopener,noreferrer');
       return;
     }
     if (reply.message && reply.message.trim()) {
       sendMessage(reply.message);
     }
   }, [sendMessage, addBotMessage, dealerFlowContext, emitDealerEvent]);
+
+  const handleDealerLocationSubmit = useCallback((city: string, postalCode: string) => {
+    const submittedContext: DealerFlowContext = {
+      status: 'location_submitted',
+      city,
+      postal_code: postalCode,
+    };
+    setDealerFlowContext(submittedContext);
+    emitDealerEvent('dealer_location_submitted', submittedContext);
+
+    const resultsUrl = buildDealerResultsUrl({ city, postalCode });
+
+    const resultsContext: DealerFlowContext = {
+      status: 'results_shown',
+      city,
+      postal_code: postalCode,
+      results_url: resultsUrl,
+    };
+    setDealerFlowContext(resultsContext);
+    emitDealerEvent('dealer_results_shown', resultsContext);
+
+    const clickContext: DealerFlowContext = {
+      status: 'click_completed_intent',
+      city,
+      postal_code: postalCode,
+      results_url: resultsUrl,
+    };
+    setDealerFlowContext(clickContext);
+    emitDealerEvent('dealer_click_completed', clickContext);
+
+    window.open(resultsUrl, '_blank', 'noopener,noreferrer');
+    setActiveInputRequest(null);
+  }, [emitDealerEvent]);
 
   const restoreMessages = useCallback((historyItems: Array<{ role: string; text: string }>) => {
     const restored: Message[] = historyItems.map((item) => ({
@@ -1040,6 +1070,7 @@ export function useChat({
     startEntryFlow,
     sendMessage,
     handleQuickReply,
+    handleDealerLocationSubmit,
     addUserMessage,
     addBotMessage,
     clearMessages,

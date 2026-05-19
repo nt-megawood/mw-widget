@@ -79,6 +79,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     thinkingText,
     sendMessage,
     handleQuickReply,
+    handleDealerLocationSubmit,
     addUserMessage,
     addBotMessage,
     clearMessages,
@@ -99,7 +100,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   );
 
   const [browserSttPrefill] = useState('');
-  const { vadState, partialText, finalText, transcribedText, statusText: liveStatusText, start: startStt, stop: stopStt, clearFinal, clearTranscribed } = useRealtimeStt({ isStreaming, language });
+  const { vadState, partialText, finalText, transcribedText, statusText: liveStatusText, start: startStt, stop: stopStt, clearFinal, clearTranscribed, levelRef: liveLevelRef } = useRealtimeStt({ isStreaming, language });
   const lastSubmittedSttTextRef = useRef('');
   const lastSubmittedAtRef = useRef(0);
   const spokenMessageIdsRef = useRef<Set<string>>(new Set());
@@ -291,6 +292,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   initialGreeting={initialGreeting}
                   inputRequest={activeInputRequest}
                   onSubmitInputRequest={handleSend}
+                  onDealerLocationSubmit={handleDealerLocationSubmit}
                   conversationId={conversationId}
                   onRespinLastAnswer={handleRespinLastAnswer}
                   disableRespin={isThinking}
@@ -310,6 +312,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                   onToggleLiveMode={toggleLiveMode}
                   liveStatusText={partialText ? `Erkannt: ${partialText}` : liveStatusText}
                   vadState={vadState}
+                  liveLevelRef={liveLevelRef}
                 />
               </div>
               {children}
@@ -324,6 +327,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 initialGreeting={initialGreeting}
                 inputRequest={activeInputRequest}
                 onSubmitInputRequest={handleSend}
+                onDealerLocationSubmit={handleDealerLocationSubmit}
                 conversationId={conversationId}
                 onRespinLastAnswer={handleRespinLastAnswer}
                 disableRespin={isThinking}
@@ -347,6 +351,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
                 vadState={vadState}
                 language={language}
                 prefillInput={browserSttPrefill}
+                liveLevelRef={liveLevelRef}
               />
             </>
           )}

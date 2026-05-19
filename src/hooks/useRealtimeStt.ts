@@ -73,6 +73,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const levelRef = useRef(0);
 
   const vadStateRef = useRef<VadState>('idle');
   const silenceFramesRef = useRef(0);
@@ -223,6 +224,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
       clearTimeout(responseTimerRef.current);
       responseTimerRef.current = null;
     }
+    levelRef.current = 0;
     updateVadState('idle');
     setPartialText('');
     setStatusText(null);
@@ -254,6 +256,7 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
       processor.onaudioprocess = (e) => {
         const ch = e.inputBuffer.getChannelData(0);
         const rms = computeRms(ch);
+        levelRef.current = levelRef.current * 0.7 + Math.min(1, rms / 0.3) * 0.3;
         const state = vadStateRef.current;
 
         if (state === 'listening' || state === 'idle') {
@@ -380,5 +383,5 @@ export function useRealtimeStt(options: UseRealtimeSttOptions = {}) {
 
   const clearTranscribed = useCallback(() => setTranscribedText(''), []);
 
-  return { vadState, partialText, finalText, transcribedText, statusText, start, stop, clearFinal: () => setFinalText(''), clearTranscribed };
+  return { vadState, partialText, finalText, transcribedText, statusText, start, stop, clearFinal: () => setFinalText(''), clearTranscribed, levelRef };
 }
