@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Message } from '../../types';
 import { renderMarkdown } from '../../utils/markdown';
 import { speakText, stopSpeaking } from '../../utils/speech';
@@ -11,6 +11,7 @@ interface BotMessageProps {
   onRespin?: () => void;
   disableRespin?: boolean;
   onShowInfoView?: () => void;
+  autoSpeak?: boolean;
 }
 
 const IconThumbUp = () => (
@@ -85,11 +86,24 @@ export const BotMessage: React.FC<BotMessageProps> = ({
   onRespin,
   disableRespin = false,
   onShowInfoView,
+  autoSpeak = false,
 }) => {
   const [thumbState, setThumbState] = useState<'up' | 'down' | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showSources, setShowSources] = useState(false);
+
+  const hasAutoSpokenRef = useRef(false);
+
+  useEffect(() => {
+    if (!autoSpeak || hasAutoSpokenRef.current) return;
+
+    hasAutoSpokenRef.current = true;
+    setIsSpeaking(true);
+    speakText(message.text, {
+      onEnd: () => setIsSpeaking(false),
+    });
+  }, [autoSpeak, message.text]);
 
   const handleCopy = async () => {
     try {
@@ -105,7 +119,7 @@ export const BotMessage: React.FC<BotMessageProps> = ({
     setIsSpeaking((prev) => {
       const next = !prev;
       if (next) {
-        speakText(message.text);
+        speakText(message.text, { onEnd: () => setIsSpeaking(false) });
       } else {
         stopSpeaking();
       }
