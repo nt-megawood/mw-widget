@@ -204,6 +204,24 @@ export interface UiCopy {
   shapeLForm: string;
   shapeUForm: string;
   shapeOForm: string;
+
+  // ── PromptPacks — button labels ───────────────────────────────────
+  promptPackHowCanYouHelp: string;
+  promptPackDiscoverDecking: string;
+  promptPackFindDealer: string;
+  promptPackProjectConsulting: string;
+  promptPackTechnicalProperties: string;
+  promptPackFindPartnerDealer: string;
+  promptPackQuickstartDecking: string;
+  promptPackChooseColour: string;
+  promptPackProductInProjectContext: string;
+  promptPackVariantComparison: string;
+  promptPackFindRegionalPartner: string;
+  promptPackCreateNewPlan: string;
+  promptPackUseExistingPlan: string;
+  promptPackStartProjectPlan: string;
+  promptPackContinueWithCode: string;
+  promptPackFindDealerForImplementation: string;
 }
 
 export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
@@ -409,6 +427,24 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     shapeLForm: 'L-Form',
     shapeUForm: 'U-Form',
     shapeOForm: 'O-Form',
+
+    // ── PromptPacks — button labels ───────────────────────────────────
+    promptPackHowCanYouHelp: 'Wie kannst du mir helfen?',
+    promptPackDiscoverDecking: 'Dielen entdecken',
+    promptPackFindDealer: 'Händler finden',
+    promptPackProjectConsulting: 'Projektbezogene Beratung',
+    promptPackTechnicalProperties: 'Technische Eigenschaften',
+    promptPackFindPartnerDealer: 'Partnerhändler finden',
+    promptPackQuickstartDecking: 'Schnellstart: Welche Diele passt?',
+    promptPackChooseColour: 'Farbe einfach auswählen',
+    promptPackProductInProjectContext: 'Produkt im Projektkontext',
+    promptPackVariantComparison: 'Variantenvergleich',
+    promptPackFindRegionalPartner: 'Regionalen Partner finden',
+    promptPackCreateNewPlan: 'Neue Planung erstellen',
+    promptPackUseExistingPlan: 'Vorhandene Planung nutzen',
+    promptPackStartProjectPlan: 'Projektplanung starten',
+    promptPackContinueWithCode: 'Planungscode weiterbearbeiten',
+    promptPackFindDealerForImplementation: 'Händler/Partner für Umsetzung',
   },
   en: {
     // ── existing keys ────────────────────────────────────────────────
@@ -612,5 +648,23 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     shapeLForm: 'L-shape',
     shapeUForm: 'U-shape',
     shapeOForm: 'O-shape',
+
+    // ── PromptPacks — button labels ───────────────────────────────────
+    promptPackHowCanYouHelp: 'How can you help me?',
+    promptPackDiscoverDecking: 'Discover decking',
+    promptPackFindDealer: 'Find dealer',
+    promptPackProjectConsulting: 'Project-specific consulting',
+    promptPackTechnicalProperties: 'Technical properties',
+    promptPackFindPartnerDealer: 'Find partner dealer',
+    promptPackQuickstartDecking: 'Quick start: Which decking fits?',
+    promptPackChooseColour: 'Choose colour easily',
+    promptPackProductInProjectContext: 'Product in project context',
+    promptPackVariantComparison: 'Variant comparison',
+    promptPackFindRegionalPartner: 'Find regional partner',
+    promptPackCreateNewPlan: 'Create new plan',
+    promptPackUseExistingPlan: 'Use existing plan',
+    promptPackStartProjectPlan: 'Start project plan',
+    promptPackContinueWithCode: 'Continue with planning code',
+    promptPackFindDealerForImplementation: 'Dealer/partner for implementation',
   },
 };

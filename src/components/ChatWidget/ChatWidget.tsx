@@ -264,8 +264,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
     sendMessage(previousMessage.text);
   }, [messages, isThinking, sendMessage]);
   const quickReplies: QuickReplyOption[] = isEntryComplete && entryContext.audiencePath
-    ? getPromptPack(config.pageContext, entryContext.audiencePath)
-    : getDefaultPromptPack(config.pageContext);
+    ? getPromptPack(config.pageContext, entryContext.audiencePath, language)
+    : getDefaultPromptPack(config.pageContext, language);
   const footerQuickReplies: QuickReplyOption[] = messages.length > 0
     ? activeQuickReplies
     : quickReplies;
