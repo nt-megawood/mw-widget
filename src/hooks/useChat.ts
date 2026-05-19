@@ -593,7 +593,7 @@ interface UseChatOptions {
   onConversationIdChange: (id: string) => void;
   onPlanningCodeDetected?: (code: string) => void;
   pageContext?: PageContext;
-  widgetVariant?: 'classic' | 'landscape';
+  widgetVariant?: 'website' | 'planner';
   language?: WidgetLanguage;
 }
 

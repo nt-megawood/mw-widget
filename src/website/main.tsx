@@ -26,7 +26,7 @@ function getPageContext() {
 }
 
 const config: WidgetConfig = {
-  mode: 'classic',
+  mode: 'website',
   position: getPosition(),
   pageContext: getPageContext(),
   teaser: getTeaserConfig(),
@@ -37,7 +37,7 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <ChatWidget config={config} widgetId="classic" />
+      <ChatWidget config={config} widgetId="website" />
     </React.StrictMode>
   );
 }

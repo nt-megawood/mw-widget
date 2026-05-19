@@ -124,7 +124,7 @@ export interface TeaserConfig {
 }
 
 export interface WidgetConfig {
-  mode: 'classic' | 'landscape';
+  mode: 'website' | 'planner';
   position: Position;
   pageContext: PageContext;
   teaser: TeaserConfig;

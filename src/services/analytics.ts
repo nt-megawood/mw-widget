@@ -7,7 +7,7 @@ export type DealerConversionEventName =
   | 'dealer_click_completed';
 
 export interface DealerConversionEventPayload {
-  widget_variant?: 'classic' | 'landscape';
+  widget_variant?: 'website' | 'planner';
   page_context?: PageContext;
   audience_path?: string | null;
   conversation_id?: string | null;

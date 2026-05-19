@@ -1,11 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { LandscapeApp } from './LandscapeApp';
+import { PlannerApp } from './PlannerApp';
 import type { WidgetConfig, TeaserConfig, Position } from '../types';
 import { normalizePageContext } from '../config/pageContext';
 import { getApiUrl } from '../config/api';
 import '../styles/classic.css';
-import '../styles/landscape.css';
+import '../styles/planner.css';
 
 // Configure API URL globally for all API calls
 // This is read from VITE_API_BASE_URL environment variable
@@ -32,7 +32,7 @@ function getPageContext() {
 }
 
 const config: WidgetConfig = {
-  mode: 'landscape',
+  mode: 'planner',
   position: getPosition(),
   pageContext: getPageContext(),
   teaser: getTeaserConfig(),
@@ -43,7 +43,7 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <LandscapeApp config={config} />
+      <PlannerApp config={config} />
     </React.StrictMode>
   );
 }

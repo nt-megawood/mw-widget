@@ -31,7 +31,7 @@ interface ChatWidgetProps {
 }
 
 
-function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; language: WidgetLanguage }) {
+function InitialGreeting({ mode, language }: { mode: 'website' | 'planner'; language: WidgetLanguage }) {
   const copy = UI_COPY[language];
   const auth = getAuthData();
   const userName = auth?.user?.name ? ` ${copy.greetingHelloPrefix} ${auth.user.name}!` : '';
@@ -42,7 +42,7 @@ function InitialGreeting({ mode, language }: { mode: 'classic' | 'landscape'; la
       <div className="bot-bubble-col">
         <div className="bubble">
           <p>{userName} {copy.greetingWelcome}</p>
-          {mode === 'landscape' ? (
+          {mode === 'planner' ? (
             <>
               <p>{copy.greetingLandscapeLine1}</p>
               <p>{copy.greetingLandscapeLine3}</p>
@@ -287,8 +287,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       )}
       {!isOpen && <ChatToggle onClick={handleOpen} position={config.position} language={language} />}
       {isOpen && (
-        <div className={`chat-container ${config.mode === 'landscape' ? 'landscape-widget' : ''} ${posClass}`}>
-          {config.mode === 'landscape' ? (
+        <div className={`chat-container ${config.mode === 'planner' ? 'planner-widget' : ''} ${posClass}`}>
+          {config.mode === 'planner' ? (
             <div className="chat-layout">
               <div className="chat-main">
                 <ChatHeader onRefresh={handleRefresh} onClose={handleClose} onLoginClick={handleOpenLogin} language={language} onLanguageChange={handleLanguageChange} />

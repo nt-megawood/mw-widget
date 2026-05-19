@@ -10,8 +10,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        classic: `${root}index.html`,
-        landscape: `${root}index-landscape.html`,
+        website: `${root}index.html`,
+        planner: `${root}index-planner.html`,
         example: `${root}example.html`,
       },
     },

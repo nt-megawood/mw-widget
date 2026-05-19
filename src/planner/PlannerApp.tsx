@@ -4,11 +4,11 @@ import { PlanningEditor } from '../components/PlanningEditor';
 import type { WidgetConfig } from '../types';
 import type { WidgetLanguage } from '../config/i18n';
 
-interface LandscapeAppProps {
+interface PlannerAppProps {
   config: WidgetConfig;
 }
 
-export function LandscapeApp({ config }: LandscapeAppProps) {
+export function PlannerApp({ config }: PlannerAppProps) {
   const [detectedPlanningCode, setDetectedPlanningCode] = useState<string | undefined>(undefined);
   const [language, setLanguage] = useState<WidgetLanguage>('de');
 
@@ -23,7 +23,7 @@ export function LandscapeApp({ config }: LandscapeAppProps) {
   return (
     <ChatWidget
       config={config}
-      widgetId="landscape"
+      widgetId="planner"
       onPlanningCodeDetected={handlePlanningCodeDetected}
       onLanguageChange={handleLanguageChange}
     >
