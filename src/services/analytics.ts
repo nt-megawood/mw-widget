@@ -1,4 +1,4 @@
-import type { DealerFlowStatus, PageContext } from '../types';
+import type { AudiencePath, DealerFlowStatus, WidgetVariant } from '../types';
 
 export type DealerConversionEventName =
   | 'dealer_flow_started'
@@ -7,9 +7,8 @@ export type DealerConversionEventName =
   | 'dealer_click_completed';
 
 export interface DealerConversionEventPayload {
-  widget_variant?: 'website' | 'planner';
-  page_context?: PageContext;
-  audience_path?: string | null;
+  widget_variant?: WidgetVariant;
+  audience_path?: AudiencePath | null;
   conversation_id?: string | null;
   dealer_flow_status?: DealerFlowStatus;
   city?: string;
@@ -26,7 +25,7 @@ function pushMatomoEvent(eventName: DealerConversionEventName, payload: DealerCo
     'trackEvent',
     'chatbot_conversion',
     eventName,
-    payload.page_context || payload.widget_variant || 'unknown',
+    payload.widget_variant || 'unknown',
   ]);
 }
 

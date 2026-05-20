@@ -2,7 +2,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ChatWidget } from '../components/ChatWidget';
 import type { WidgetConfig, TeaserConfig, Position } from '../types';
-import { normalizePageContext } from '../config/pageContext';
 import '../styles/classic.css';
 
 function getTeaserConfig(): TeaserConfig {
@@ -19,16 +18,9 @@ function getPosition(): Position {
   return (params.get('position') as Position) || 'bottom-right';
 }
 
-function getPageContext() {
-  const params = new URLSearchParams(window.location.search);
-  const rawValue = params.get('page_context') || params.get('page-context');
-  return normalizePageContext(rawValue, 'start');
-}
-
 const config: WidgetConfig = {
   mode: 'website',
   position: getPosition(),
-  pageContext: getPageContext(),
   teaser: getTeaserConfig(),
 };
 

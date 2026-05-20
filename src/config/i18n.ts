@@ -212,11 +212,6 @@ export interface UiCopy {
   promptPackProjectConsulting: string;
   promptPackTechnicalProperties: string;
   promptPackFindPartnerDealer: string;
-  promptPackQuickstartDecking: string;
-  promptPackChooseColour: string;
-  promptPackProductInProjectContext: string;
-  promptPackVariantComparison: string;
-  promptPackFindRegionalPartner: string;
   promptPackCreateNewPlan: string;
   promptPackUseExistingPlan: string;
   promptPackStartProjectPlan: string;
@@ -435,11 +430,6 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     promptPackProjectConsulting: 'Projektbezogene Beratung',
     promptPackTechnicalProperties: 'Technische Eigenschaften',
     promptPackFindPartnerDealer: 'Partnerhändler finden',
-    promptPackQuickstartDecking: 'Schnellstart: Welche Diele passt?',
-    promptPackChooseColour: 'Farbe einfach auswählen',
-    promptPackProductInProjectContext: 'Produkt im Projektkontext',
-    promptPackVariantComparison: 'Variantenvergleich',
-    promptPackFindRegionalPartner: 'Regionalen Partner finden',
     promptPackCreateNewPlan: 'Neue Planung erstellen',
     promptPackUseExistingPlan: 'Vorhandene Planung nutzen',
     promptPackStartProjectPlan: 'Projektplanung starten',
@@ -656,11 +646,6 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     promptPackProjectConsulting: 'Project-specific consulting',
     promptPackTechnicalProperties: 'Technical properties',
     promptPackFindPartnerDealer: 'Find partner dealer',
-    promptPackQuickstartDecking: 'Quick start: Which decking fits?',
-    promptPackChooseColour: 'Choose colour easily',
-    promptPackProductInProjectContext: 'Product in project context',
-    promptPackVariantComparison: 'Variant comparison',
-    promptPackFindRegionalPartner: 'Find regional partner',
     promptPackCreateNewPlan: 'Create new plan',
     promptPackUseExistingPlan: 'Use existing plan',
     promptPackStartProjectPlan: 'Start project plan',

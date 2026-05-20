@@ -6,9 +6,8 @@ import type {
   ConversationResponse,
   TerraceHistoryItem,
   TerracePlanData,
-  EntryContext,
-  PageContext,
   DealerFlowContext,
+  WidgetVariant,
 } from '../types';
 import { getAuthData } from '../hooks/useAuth';
 import { isB2BUser } from '../hooks/useAuth';
@@ -106,36 +105,17 @@ function writeRecentTerraceCodes(codes: string[]): void {
   }
 }
 
-function toApiEntryContext(entryContext: EntryContext | null | undefined): Record<string, string> | undefined {
-  if (!entryContext || !entryContext.goal || !entryContext.audiencePath) {
-    return undefined;
-  }
-  return {
-    goal: entryContext.goal,
-    audience_path: entryContext.audiencePath,
-  };
-}
-
 export async function sendMessage(
   message: string,
   conversationId: string | null,
-  entryContext?: EntryContext | null,
-  pageContext?: PageContext,
   dealerFlowContext?: DealerFlowContext | null,
   signal?: AbortSignal,
+  widgetVariant?: WidgetVariant,
 ): Promise<ApiResponse> {
   const body: Record<string, unknown> = { message };
   if (conversationId) body.conversation_id = conversationId;
-  const apiEntryContext = toApiEntryContext(entryContext);
-  if (apiEntryContext) body.entry_context = apiEntryContext;
-  if (pageContext) body.page_context = pageContext;
-  if (dealerFlowContext) {
-    body.dealer_flow_context = dealerFlowContext;
-    body.context = {
-      dealer_flow: dealerFlowContext,
-      page_context: pageContext,
-    };
-  }
+  if (widgetVariant) body.widget_variant = widgetVariant;
+  if (dealerFlowContext) body.dealer_flow_context = dealerFlowContext;
 
   // Include user context from localStorage if available
   const auth = getAuthData();
@@ -169,24 +149,15 @@ export async function sendMessage(
 export async function sendMessageStream(
   message: string,
   conversationId: string | null,
-  entryContext: EntryContext | null | undefined,
-  pageContext: PageContext | undefined,
   dealerFlowContext: DealerFlowContext | null | undefined,
   signal: AbortSignal | undefined,
   onDelta: (fullText: string) => void,
+  widgetVariant?: WidgetVariant,
 ): Promise<ApiResponse> {
   const body: Record<string, unknown> = { message, stream: true };
   if (conversationId) body.conversation_id = conversationId;
-  const apiEntryContext = toApiEntryContext(entryContext);
-  if (apiEntryContext) body.entry_context = apiEntryContext;
-  if (pageContext) body.page_context = pageContext;
-  if (dealerFlowContext) {
-    body.dealer_flow_context = dealerFlowContext;
-    body.context = {
-      dealer_flow: dealerFlowContext,
-      page_context: pageContext,
-    };
-  }
+  if (widgetVariant) body.widget_variant = widgetVariant;
+  if (dealerFlowContext) body.dealer_flow_context = dealerFlowContext;
 
   const auth = getAuthData();
   if (auth?.user) {

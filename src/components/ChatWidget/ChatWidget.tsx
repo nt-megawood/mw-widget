@@ -14,8 +14,8 @@ import { speakText, stopSpeaking } from '../../utils/speech';
 //import { useWidgetToken } from '../../hooks/useWidgetToken';
 import { getConversation, deleteConversation } from '../../services/api';
 import type { WidgetConfig, ConversationHistoryItem, QuickReplyOption } from '../../types';
-import { getDefaultPromptPack, getPromptPack } from '../../config/promptPacks';
-import { getAuthData } from '../../hooks/useAuth';
+import { getPromptPack } from '../../config/promptPacks';
+import { getAuthData, getAudiencePath } from '../../hooks/useAuth';
 import type { WidgetLanguage } from '../../config/i18n';
 import { UI_COPY, LOCALE_MAP } from '../../config/i18n';
 
@@ -73,12 +73,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   }, [onLanguageChange]);
   const isLiveConnecting = false;
   const { conversationId, saveConversationId, clearConversation } = useConversation(widgetId);
+  const audiencePath = getAudiencePath(getAuthData()) ?? 'privatkunde';
   const {
     messages,
     activeQuickReplies,
     activeInputRequest,
-    entryContext,
-    isEntryComplete,
     isThinking,
     isStreaming,
     thinkingText,
@@ -96,8 +95,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       conversationId,
       onConversationIdChange: saveConversationId,
       onPlanningCodeDetected,
-      pageContext: config.pageContext,
       widgetVariant: config.mode,
+      audiencePath,
       language,
     });
   const { isVisible: isTeaserVisible, dismiss: dismissTeaser } = useTeaser(
@@ -263,9 +262,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
 
     sendMessage(previousMessage.text);
   }, [messages, isThinking, sendMessage]);
-  const quickReplies: QuickReplyOption[] = isEntryComplete && entryContext.audiencePath
-    ? getPromptPack(config.pageContext, entryContext.audiencePath, language)
-    : getDefaultPromptPack(config.pageContext, language);
+  const quickReplies: QuickReplyOption[] = getPromptPack(config.mode, audiencePath, language);
   const footerQuickReplies: QuickReplyOption[] = messages.length > 0
     ? activeQuickReplies
     : quickReplies;

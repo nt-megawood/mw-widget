@@ -1,61 +1,17 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type {
+  AudiencePath,
   DealerFlowContext,
-  EntryContext,
-  EntryGoal,
   InputRequest,
   Message,
-  PageContext,
   QuickReplyOption,
+  WidgetVariant,
 } from '../types';
 import { generateUUID } from '../utils/uuid';
 import { sendMessageStream } from '../services/api';
 import { dispatchDealerConversionEvent } from '../services/analytics';
-import { getAudiencePath, useAuth } from './useAuth';
+import { useAuth } from './useAuth';
 import { UI_COPY, LOCALE_MAP, type WidgetLanguage } from '../config/i18n';
-
-const EMPTY_ENTRY_CONTEXT: EntryContext = {
-  goal: null,
-  audiencePath: null,
-};
-
-const ENTRY_CONTEXT_STORAGE_KEY_PREFIX = 'mw_entry_context_';
-
-function getEntryContextStorageKey(widgetId: string): string {
-  return `${ENTRY_CONTEXT_STORAGE_KEY_PREFIX}${widgetId}`;
-}
-
-function readEntryContext(widgetId: string): EntryContext {
-  try {
-    const raw = sessionStorage.getItem(getEntryContextStorageKey(widgetId));
-    if (!raw) return EMPTY_ENTRY_CONTEXT;
-    const parsed = JSON.parse(raw) as Partial<EntryContext>;
-    const goal = parsed.goal || null;
-    const audiencePath = parsed.audiencePath || null;
-    if (!goal || !audiencePath) {
-      return { goal, audiencePath };
-    }
-    return { goal, audiencePath };
-  } catch {
-    return EMPTY_ENTRY_CONTEXT;
-  }
-}
-
-function saveEntryContext(widgetId: string, entryContext: EntryContext): void {
-  try {
-    sessionStorage.setItem(getEntryContextStorageKey(widgetId), JSON.stringify(entryContext));
-  } catch {
-    // Ignore storage failures to keep chat usable.
-  }
-}
-
-function clearEntryContext(widgetId: string): void {
-  try {
-    sessionStorage.removeItem(getEntryContextStorageKey(widgetId));
-  } catch {
-    // Ignore storage failures to keep chat usable.
-  }
-}
 
 function buildThinkingMessages(copy: (typeof UI_COPY)['de']): string[] {
   return [
@@ -482,7 +438,7 @@ function shouldInjectDealerCtaByCheckpoint(state: DealerCtaCheckpointState): boo
   return state.recommendationReached || state.plannerSavedReached || state.pdfExportClickedReached;
 }
 
-function shouldInjectDealerCta(answer: string, pageContext?: PageContext): boolean {
+function shouldInjectDealerCta(answer: string, widgetVariant?: WidgetVariant): boolean {
   const lower = String(answer || '').toLowerCase();
   const recommendationSignals = [
     'ich empfehle',
@@ -498,7 +454,7 @@ function shouldInjectDealerCta(answer: string, pageContext?: PageContext): boole
   const isRecommendationMoment = recommendationSignals.some((token) => lower.includes(token));
   const isPlannerMoment = plannerSignals.some((token) => lower.includes(token));
 
-  if (pageContext === 'planner') return isRecommendationMoment || isPlannerMoment;
+  if (widgetVariant === 'planner') return isRecommendationMoment || isPlannerMoment;
   return isRecommendationMoment;
 }
 
@@ -592,18 +548,18 @@ interface UseChatOptions {
   conversationId: string | null;
   onConversationIdChange: (id: string) => void;
   onPlanningCodeDetected?: (code: string) => void;
-  pageContext?: PageContext;
-  widgetVariant?: 'website' | 'planner';
+  widgetVariant?: WidgetVariant;
+  audiencePath?: AudiencePath | null;
   language?: WidgetLanguage;
 }
 
 export function useChat({
-  widgetId,
+  widgetId: _widgetId,
   conversationId,
   onConversationIdChange,
   onPlanningCodeDetected,
-  pageContext,
   widgetVariant,
+  audiencePath,
   language,
 }: UseChatOptions) {
   const copy = UI_COPY[language ?? 'de'];
@@ -618,35 +574,14 @@ export function useChat({
   const [isStreaming, setIsStreaming] = useState(false);
   const [thinkingText, setThinkingText] = useState(thinkingMessages[0]);
   const pendingRequestControllerRef = useRef<AbortController | null>(null);
-  const [entryContext, setEntryContext] = useState<EntryContext>(() => readEntryContext(widgetId));
   const [dealerFlowContext, setDealerFlowContext] = useState<DealerFlowContext | null>(null);
   const [dealerCtaCheckpoints, setDealerCtaCheckpoints] = useState<DealerCtaCheckpointState>(
     INITIAL_DEALER_CTA_CHECKPOINTS,
   );
-  const auth = useAuth();
+  useAuth(); // subscribe to auth changes so dependent UI rerenders
   const sessionIdRef = useRef(generateUUID());
   const thinkingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const emittedDealerEventsRef = useRef<Set<string>>(new Set());
-
-  const isEntryComplete = Boolean(entryContext.goal && entryContext.audiencePath);
-
-  useEffect(() => {
-    saveEntryContext(widgetId, entryContext);
-  }, [widgetId, entryContext]);
-
-  // Auto-set audience path from auth state: logged in => gewerblich, otherwise privatkunde.
-  useEffect(() => {
-    const audiencePath = getAudiencePath(auth) ?? 'privatkunde';
-    setEntryContext((prev) => {
-      if (prev.audiencePath === audiencePath) {
-        return prev;
-      }
-      return {
-        ...prev,
-        audiencePath,
-      };
-    });
-  }, [auth]);
 
   useEffect(() => {
     const handlePlannerCheckpoint = (event: Event) => {
@@ -666,26 +601,6 @@ export function useChat({
       window.removeEventListener(PLANNER_CHECKPOINT_EVENT, handlePlannerCheckpoint as EventListener);
     };
   }, []);
-
-  const setEntryGoal = useCallback((goal: EntryGoal) => {
-    setEntryContext((prev) => ({ ...prev, goal }));
-  }, []);
-
-  const buildEntryStartMessage = useCallback((): string | null => {
-    if (!entryContext.goal || !entryContext.audiencePath) return null;
-
-    // goalMessageMap values are sent to the backend as prompt text — keep German always.
-    const goalMessageMap: Record<EntryGoal, string> = {
-      produktberatung: 'Ich möchte eine Produktberatung.',
-      terrassenplanung: 'Ich möchte eine Terrassenplanung starten.',
-      vorhandene_planung: 'Ich möchte eine vorhandene Planung nutzen.',
-      händler_finden: 'Ich möchte einen Händler in meiner Nähe finden.',
-    };
-
-    // Audience suffix is also backend-facing — keep German always.
-    const audienceLabel = entryContext.audiencePath === 'gewerblich' ? 'gewerblich' : 'privat';
-    return `${goalMessageMap[entryContext.goal]} Ich frage als ${audienceLabel}er Kunde an.`;
-  }, [entryContext]);
 
   const startThinking = useCallback(() => {
     setIsThinking(true);
@@ -763,15 +678,14 @@ export function useChat({
 
     dispatchDealerConversionEvent(eventName, {
       widget_variant: widgetVariant,
-      page_context: pageContext,
-      audience_path: entryContext.audiencePath,
+      audience_path: audiencePath ?? null,
       conversation_id: conversationIdRef.current,
       dealer_flow_status: payload.status,
       city: payload.city,
       postal_code: payload.postal_code,
       results_url: payload.results_url,
     });
-  }, [entryContext.audiencePath, pageContext, widgetVariant]);
+  }, [audiencePath, widgetVariant]);
 
   const sendMessage = useCallback(async (text: string) => {
     const location = extractDealerLocationFromMessage(text);
@@ -814,8 +728,6 @@ export function useChat({
       const response = await sendMessageStream(
         text,
         currentConversationId,
-        entryContext,
-        pageContext,
         nextDealerFlowContext,
         requestController.signal,
         (fullText) => {
@@ -830,6 +742,7 @@ export function useChat({
             ),
           );
         },
+        widgetVariant,
       );
       if (pendingRequestControllerRef.current === requestController) {
         pendingRequestControllerRef.current = null;
@@ -853,7 +766,7 @@ export function useChat({
         setDealerCtaCheckpoints(nextCheckpointState);
       }
       const shouldInjectFromCheckpoint = shouldInjectDealerCtaByCheckpoint(nextCheckpointState);
-      const shouldInjectFromLegacyHeuristic = shouldInjectDealerCta(response.answer, pageContext);
+      const shouldInjectFromLegacyHeuristic = shouldInjectDealerCta(response.answer, widgetVariant);
       if ((shouldInjectFromCheckpoint || shouldInjectFromLegacyHeuristic) && !hasDealerFlowAction(mergedQuickReplies)) {
         mergedQuickReplies = appendUniqueQuickReply(mergedQuickReplies, buildStartDealerFlowReply(copy));
       }
@@ -925,17 +838,10 @@ export function useChat({
     addBotMessage,
     startThinking,
     stopThinking,
-    entryContext,
-    pageContext,
+    widgetVariant,
     emitDealerEvent,
     copy,
   ]);
-
-  const startEntryFlow = useCallback(() => {
-    const startMessage = buildEntryStartMessage();
-    if (!startMessage) return;
-    sendMessage(startMessage);
-  }, [buildEntryStartMessage, sendMessage]);
 
   const clearMessages = useCallback(() => {
     sessionIdRef.current = generateUUID();
@@ -945,9 +851,7 @@ export function useChat({
     setDealerFlowContext(null);
     setDealerCtaCheckpoints(INITIAL_DEALER_CTA_CHECKPOINTS);
     emittedDealerEventsRef.current.clear();
-    setEntryContext(EMPTY_ENTRY_CONTEXT);
-    clearEntryContext(widgetId);
-  }, [widgetId]);
+  }, []);
 
   const handleQuickReply = useCallback((reply: QuickReplyOption) => {
     if (reply.action === 'request_planning_code_input') {
@@ -1088,14 +992,10 @@ export function useChat({
     messages,
     activeQuickReplies,
     activeInputRequest,
-    entryContext,
-    isEntryComplete,
     isThinking,
     isStreaming,
     thinkingText,
     locale,
-    setEntryGoal,
-    startEntryFlow,
     sendMessage,
     handleQuickReply,
     handleDealerLocationSubmit,

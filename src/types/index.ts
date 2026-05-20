@@ -9,20 +9,9 @@ export interface Message {
   sessionId?: string;
 }
 
-export type EntryGoal =
-  | 'produktberatung'
-  | 'terrassenplanung'
-  | 'vorhandene_planung'
-  | 'händler_finden';
-
 export type AudiencePath = 'privatkunde' | 'gewerblich';
 
-export type PageContext = 'start' | 'product_detail' | 'planner';
-
-export interface EntryContext {
-  goal: EntryGoal | null;
-  audiencePath: AudiencePath | null;
-}
+export type WidgetVariant = 'website' | 'planner';
 
 export type Source = string;
 
@@ -124,9 +113,8 @@ export interface TeaserConfig {
 }
 
 export interface WidgetConfig {
-  mode: 'website' | 'planner';
+  mode: WidgetVariant;
   position: Position;
-  pageContext: PageContext;
   teaser: TeaserConfig;
   apiUrl?: string;
 }
