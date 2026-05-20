@@ -743,6 +743,7 @@ export function useChat({
           );
         },
         widgetVariant,
+        language,
       );
       if (pendingRequestControllerRef.current === requestController) {
         pendingRequestControllerRef.current = null;
@@ -839,6 +840,7 @@ export function useChat({
     startThinking,
     stopThinking,
     widgetVariant,
+    language,
     emitDealerEvent,
     copy,
   ]);

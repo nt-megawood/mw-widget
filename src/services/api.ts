@@ -111,10 +111,12 @@ export async function sendMessage(
   dealerFlowContext?: DealerFlowContext | null,
   signal?: AbortSignal,
   widgetVariant?: WidgetVariant,
+  language?: string,
 ): Promise<ApiResponse> {
   const body: Record<string, unknown> = { message };
   if (conversationId) body.conversation_id = conversationId;
   if (widgetVariant) body.widget_variant = widgetVariant;
+  if (language) body.language = language;
   if (dealerFlowContext) body.dealer_flow_context = dealerFlowContext;
 
   // Include user context from localStorage if available
@@ -153,10 +155,12 @@ export async function sendMessageStream(
   signal: AbortSignal | undefined,
   onDelta: (fullText: string) => void,
   widgetVariant?: WidgetVariant,
+  language?: string,
 ): Promise<ApiResponse> {
   const body: Record<string, unknown> = { message, stream: true };
   if (conversationId) body.conversation_id = conversationId;
   if (widgetVariant) body.widget_variant = widgetVariant;
+  if (language) body.language = language;
   if (dealerFlowContext) body.dealer_flow_context = dealerFlowContext;
 
   const auth = getAuthData();
