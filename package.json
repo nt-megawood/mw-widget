@@ -6,6 +6,7 @@
     "dev": "vite --host",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "serve": "npm run build && vite preview --port 5175",
     "deploy": "gh-pages -d dist"
   },
   "repository": {

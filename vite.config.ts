@@ -7,6 +7,14 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 export default defineConfig({
   base: '/mw-widget/',
   plugins: [react()],
+  server: {
+    cors: true,
+    allowedHosts: true,
+  },
+  preview: {
+    cors: true,
+    allowedHosts: true,
+  },
   build: {
     rollupOptions: {
       input: {

@@ -13,14 +13,17 @@
   const teaserTitle   = (script && script.getAttribute('data-teaser-title')) || '';
   const teaserText    = (script && script.getAttribute('data-teaser-text'))  || '';
   const pageContext   = (script && script.getAttribute('data-page-context')) || '';
+  const planningCode  = (script && script.getAttribute('data-planning-code')) || '';
 
-  const isLandscapeWidget = /index-landscape\.html/i.test(widgetUrl);
-  const defaultWidth = isLandscapeWidget ? 980 : 480;
-  const defaultHeight = isLandscapeWidget ? 620 : 720;
+  const isPlannerWidget = /index-(planner|landscape)\.html/i.test(widgetUrl);
+  const defaultWidth = isPlannerWidget ? 720 : 480;
+  const defaultHeight = isPlannerWidget ? 520 : 720;
   const widthAttr = script && parseInt(script.getAttribute('data-width'), 10);
   const heightAttr = script && parseInt(script.getAttribute('data-height'), 10);
-  const iframeWidth = Number.isFinite(widthAttr) ? widthAttr : defaultWidth;
-  const iframeHeight = Number.isFinite(heightAttr) ? heightAttr : defaultHeight;
+  // Planner widget always uses the fixed default size, so older embed snippets
+  // with large data-width/data-height values still render correctly.
+  const iframeWidth = isPlannerWidget || !Number.isFinite(widthAttr) ? defaultWidth : widthAttr;
+  const iframeHeight = isPlannerWidget || !Number.isFinite(heightAttr) ? defaultHeight : heightAttr;
   const halfWidth = Math.round(iframeWidth / 2);
   const halfHeight = Math.round(iframeHeight / 2);
 
@@ -34,6 +37,7 @@
   if (teaserTitle) params.push('teaser-title=' + encodeURIComponent(teaserTitle));
   if (teaserText) params.push('teaser-text=' + encodeURIComponent(teaserText));
   if (pageContext) params.push('page_context=' + encodeURIComponent(pageContext));
+  if (planningCode) params.push('planning_code=' + encodeURIComponent(planningCode));
   
   finalUrl = widgetUrl + sep + params.join('&');
 

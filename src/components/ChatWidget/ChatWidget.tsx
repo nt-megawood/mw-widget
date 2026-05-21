@@ -98,6 +98,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
       widgetVariant: config.mode,
       audiencePath,
       language,
+      planningCode: config.planningCode,
     });
   const { isVisible: isTeaserVisible, dismiss: dismissTeaser } = useTeaser(
     config.teaser.show,
@@ -252,6 +253,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   };
 
   const handleSend = (text: string) => sendMessage(text);
+
   const handleRespinLastAnswer = useCallback(() => {
     if (isThinking || messages.length < 2) return;
 
@@ -269,6 +271,18 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config, widgetId, onPlan
   const posClass = `pos-${config.position}`;
   const copy = UI_COPY[language];
   const initialGreeting = <InitialGreeting mode={config.mode} language={language} />;
+
+  const autoSentPlanningCodeRef = useRef(false);
+  useEffect(() => {
+    if (autoSentPlanningCodeRef.current) return;
+    if (!isOpen) return;
+    if (config.mode !== 'planner') return;
+    const code = config.planningCode?.trim();
+    if (!code || !/^mgw[a-z0-9]{4,}$/i.test(code)) return;
+    if (messages.length > 0) return;
+    autoSentPlanningCodeRef.current = true;
+    sendMessage(copy.planningCodeAutoLoadMessage.replace('{code}', code));
+  }, [isOpen, config.mode, config.planningCode, messages.length, sendMessage, copy]);
 
   return (
     <>

@@ -112,12 +112,15 @@ export async function sendMessage(
   signal?: AbortSignal,
   widgetVariant?: WidgetVariant,
   language?: string,
+  planningCode?: string | null,
 ): Promise<ApiResponse> {
   const body: Record<string, unknown> = { message };
   if (conversationId) body.conversation_id = conversationId;
   if (widgetVariant) body.widget_variant = widgetVariant;
   if (language) body.language = language;
   if (dealerFlowContext) body.dealer_flow_context = dealerFlowContext;
+  const trimmedPlanningCode = planningCode?.trim();
+  if (trimmedPlanningCode) body.planning_code = trimmedPlanningCode;
 
   // Include user context from localStorage if available
   const auth = getAuthData();
@@ -156,12 +159,15 @@ export async function sendMessageStream(
   onDelta: (fullText: string) => void,
   widgetVariant?: WidgetVariant,
   language?: string,
+  planningCode?: string | null,
 ): Promise<ApiResponse> {
   const body: Record<string, unknown> = { message, stream: true };
   if (conversationId) body.conversation_id = conversationId;
   if (widgetVariant) body.widget_variant = widgetVariant;
   if (language) body.language = language;
   if (dealerFlowContext) body.dealer_flow_context = dealerFlowContext;
+  const trimmedPlanningCode = planningCode?.trim();
+  if (trimmedPlanningCode) body.planning_code = trimmedPlanningCode;
 
   const auth = getAuthData();
   if (auth?.user) {

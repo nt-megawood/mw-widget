@@ -551,6 +551,7 @@ interface UseChatOptions {
   widgetVariant?: WidgetVariant;
   audiencePath?: AudiencePath | null;
   language?: WidgetLanguage;
+  planningCode?: string | null;
 }
 
 export function useChat({
@@ -561,6 +562,7 @@ export function useChat({
   widgetVariant,
   audiencePath,
   language,
+  planningCode,
 }: UseChatOptions) {
   const copy = UI_COPY[language ?? 'de'];
   // LOCALE_MAP is consumed by callers that need the BCP-47 locale string (e.g. speech synthesis).
@@ -744,6 +746,7 @@ export function useChat({
         },
         widgetVariant,
         language,
+        planningCode,
       );
       if (pendingRequestControllerRef.current === requestController) {
         pendingRequestControllerRef.current = null;
@@ -841,6 +844,7 @@ export function useChat({
     stopThinking,
     widgetVariant,
     language,
+    planningCode,
     emitDealerEvent,
     copy,
   ]);

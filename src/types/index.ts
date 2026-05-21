@@ -117,4 +117,5 @@ export interface WidgetConfig {
   position: Position;
   teaser: TeaserConfig;
   apiUrl?: string;
+  planningCode?: string;
 }

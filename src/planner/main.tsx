@@ -24,10 +24,17 @@ function getPosition(): Position {
   return (params.get('position') as Position) || 'bottom-right';
 }
 
+function getPlanningCode(): string | undefined {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('planning_code')?.trim();
+  return code ? code : undefined;
+}
+
 const config: WidgetConfig = {
   mode: 'planner',
   position: getPosition(),
   teaser: getTeaserConfig(),
+  planningCode: getPlanningCode(),
 };
 
 const container = document.getElementById('root');

@@ -116,6 +116,7 @@ export interface UiCopy {
 
   // ── useChat — planning-code flow bot message ─────────────────────
   planningCodeBotPrompt: string;
+  planningCodeAutoLoadMessage: string;
 
   // ── useChat — error message ──────────────────────────────────────
   chatErrorMessage: string;
@@ -128,42 +129,6 @@ export interface UiCopy {
   sttErrorUnavailable: string;
   sttErrorFailed: string;
   sttErrorPrefix: string;
-
-  // ── PlanningEditor — status & error messages ─────────────────────
-  planningEditorEnterCodeError: string;
-  planningEditorLoadingStatus: string;
-  planningEditorLoadedSuccess: string;
-  planningEditorLoadError: string;
-  planningEditorHistoryLoadError: string;
-  planningEditorHistoryLoading: string;
-  planningEditorHistoryEmpty: string;
-  planningEditorSavingStatus: string;
-  planningEditorSavedSuccess: string;
-  planningEditorSaveError: string;
-  planningEditorNoPlanError: string;
-  planningEditorInvalidCodeError: string;
-
-  // ── PlanningEditor — UI labels ───────────────────────────────────
-  planningEditorTitle: string;
-  planningEditorHistorySectionTitle: string;
-  planningEditorHistorySectionDesc: string;
-  planningEditorCodeLabel: string;
-  planningEditorCodeHint: string;
-  planningEditorLoadedPlanPrefix: string;
-  planningEditorFormLabel: string;
-  planningEditorDielenLabel: string;
-  planningEditorDielenFarbeLabel: string;
-  planningEditorProfilLabel: string;
-  planningEditorUkLabel: string;
-  planningEditorReloadButton: string;
-  planningEditorBauplanButton: string;
-  planningEditorMateriallisteButton: string;
-  planningEditorSavingButton: string;
-  planningEditorSaveButton: string;
-  planningEditorLoadButton: string;
-  planningEditorUnknownForm: string;
-  planningEditorUnknownDiele: string;
-  planningEditorColorFallback: string;
 
   // ── Quick-reply labels — loaded plan ────────────────────────────
   quickReplyChangeDimensions: string;
@@ -195,15 +160,6 @@ export interface UiCopy {
 
   // ── Footer ───────────────────────────────────────────────────────
   quickRepliesAriaLabel: string;
-
-  // ── PlanningEditor validation ────────────────────────────────────
-  planningEditorInvalidDimensionError: string;
-
-  // ── Shape labels (for planningData dropdowns) ────────────────────
-  shapeRecteck: string;
-  shapeLForm: string;
-  shapeUForm: string;
-  shapeOForm: string;
 
   // ── PromptPacks — button labels ───────────────────────────────────
   promptPackHowCanYouHelp: string;
@@ -334,6 +290,7 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
 
     // ── useChat — planning-code flow bot message ─────────────────────
     planningCodeBotPrompt: 'Gerne. Bitte gib deinen Planungscode ein, dann lade ich deine bestehende Planung und biete dir passende Änderungsoptionen an.',
+    planningCodeAutoLoadMessage: 'Bitte lade meine bestehende Planung mit dem Planungscode {code} und zeige mir danach passende Änderungsoptionen.',
 
     // ── useChat — error message ──────────────────────────────────────
     chatErrorMessage: 'Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuche es erneut, oder kontaktiere unseren Support.',
@@ -346,42 +303,6 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     sttErrorUnavailable: 'Mikrofonzugriff ist in diesem Browser-Kontext nicht verfügbar.',
     sttErrorFailed: 'STT konnte nicht gestartet werden.',
     sttErrorPrefix: 'Fehler: ',
-
-    // ── PlanningEditor — status & error messages ─────────────────────
-    planningEditorEnterCodeError: 'Bitte zuerst einen Planungscode eingeben.',
-    planningEditorLoadingStatus: 'Planungsdaten werden geladen ...',
-    planningEditorLoadedSuccess: 'Planungsdaten erfolgreich geladen.',
-    planningEditorLoadError: 'Planung konnte nicht geladen werden.',
-    planningEditorHistoryLoadError: 'Vorherige Planungen konnten nicht geladen werden.',
-    planningEditorHistoryLoading: 'Planungen werden geladen …',
-    planningEditorHistoryEmpty: 'Noch keine gespeicherten Planungen gefunden.',
-    planningEditorSavingStatus: 'Änderungen werden gespeichert ...',
-    planningEditorSavedSuccess: 'Planung gespeichert. Aktueller Code:',
-    planningEditorSaveError: 'Speichern fehlgeschlagen.',
-    planningEditorNoPlanError: 'Es sind noch keine Planungsdaten geladen.',
-    planningEditorInvalidCodeError: 'Bitte zuerst einen gültigen Planungscode laden.',
-
-    // ── PlanningEditor — UI labels ───────────────────────────────────
-    planningEditorTitle: 'Planung bearbeiten',
-    planningEditorHistorySectionTitle: 'Vorherige Planungen',
-    planningEditorHistorySectionDesc: 'Wähle eine frühere Planung direkt aus, um sofort in die Bearbeitung zu springen.',
-    planningEditorCodeLabel: 'Planungscode',
-    planningEditorCodeHint: 'Sobald Woody eine Planung erstellt hat, wird der Code hier automatisch erkannt.',
-    planningEditorLoadedPlanPrefix: 'Geladene Planung:',
-    planningEditorFormLabel: 'Form',
-    planningEditorDielenLabel: 'Diele',
-    planningEditorDielenFarbeLabel: 'Dielenfarbe',
-    planningEditorProfilLabel: 'Profil',
-    planningEditorUkLabel: 'UK',
-    planningEditorReloadButton: 'Neu laden',
-    planningEditorBauplanButton: 'Bauplan PDF',
-    planningEditorMateriallisteButton: 'Materialliste PDF',
-    planningEditorSavingButton: 'Wird gespeichert…',
-    planningEditorSaveButton: 'Speichern',
-    planningEditorLoadButton: 'Laden',
-    planningEditorUnknownForm: 'Unbekannte Form',
-    planningEditorUnknownDiele: 'Diele unbekannt',
-    planningEditorColorFallback: 'Farbe',
 
     // ── Quick-reply labels — loaded plan ────────────────────────────
     quickReplyChangeDimensions: 'Form/Maße ändern',
@@ -413,15 +334,6 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
 
     // ── Footer ───────────────────────────────────────────────────────
     quickRepliesAriaLabel: 'Schnellaktionen',
-
-    // ── PlanningEditor validation ────────────────────────────────────
-    planningEditorInvalidDimensionError: 'Bitte "{field}" als Zahl größer 0 eingeben.',
-
-    // ── Shape labels (for planningData dropdowns) ────────────────────
-    shapeRecteck: 'Rechteck',
-    shapeLForm: 'L-Form',
-    shapeUForm: 'U-Form',
-    shapeOForm: 'O-Form',
 
     // ── PromptPacks — button labels ───────────────────────────────────
     promptPackHowCanYouHelp: 'Wie kannst du mir helfen?',
@@ -550,6 +462,7 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
 
     // ── useChat — planning-code flow bot message ─────────────────────
     planningCodeBotPrompt: 'Sure. Please enter your planning code and I will load your existing planning and offer suitable options.',
+    planningCodeAutoLoadMessage: 'Please load my existing planning with the planning code {code} and then show me suitable change options.',
 
     // ── useChat — error message ──────────────────────────────────────
     chatErrorMessage: 'Sorry, an error occurred. Please try again or contact our support.',
@@ -562,42 +475,6 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
     sttErrorUnavailable: 'Microphone access is not available in this browser context.',
     sttErrorFailed: 'STT could not be started.',
     sttErrorPrefix: 'Error: ',
-
-    // ── PlanningEditor — status & error messages ─────────────────────
-    planningEditorEnterCodeError: 'Please enter a planning code first.',
-    planningEditorLoadingStatus: 'Loading planning data ...',
-    planningEditorLoadedSuccess: 'Planning data loaded successfully.',
-    planningEditorLoadError: 'Planning could not be loaded.',
-    planningEditorHistoryLoadError: 'Previous plannings could not be loaded.',
-    planningEditorHistoryLoading: 'Loading plannings …',
-    planningEditorHistoryEmpty: 'No saved plannings found yet.',
-    planningEditorSavingStatus: 'Saving changes ...',
-    planningEditorSavedSuccess: 'Planning saved. Current code:',
-    planningEditorSaveError: 'Saving failed.',
-    planningEditorNoPlanError: 'No planning data has been loaded yet.',
-    planningEditorInvalidCodeError: 'Please load a valid planning code first.',
-
-    // ── PlanningEditor — UI labels ───────────────────────────────────
-    planningEditorTitle: 'Edit planning',
-    planningEditorHistorySectionTitle: 'Previous plannings',
-    planningEditorHistorySectionDesc: 'Select a previous planning directly to jump straight into editing.',
-    planningEditorCodeLabel: 'Planning code',
-    planningEditorCodeHint: 'Once Woody has created a planning, the code will be detected here automatically.',
-    planningEditorLoadedPlanPrefix: 'Loaded planning:',
-    planningEditorFormLabel: 'Shape',
-    planningEditorDielenLabel: 'Decking',
-    planningEditorDielenFarbeLabel: 'Decking colour',
-    planningEditorProfilLabel: 'Profile',
-    planningEditorUkLabel: 'Substructure',
-    planningEditorReloadButton: 'Reload',
-    planningEditorBauplanButton: 'Construction plan PDF',
-    planningEditorMateriallisteButton: 'Materials list PDF',
-    planningEditorSavingButton: 'Saving…',
-    planningEditorSaveButton: 'Save',
-    planningEditorLoadButton: 'Load',
-    planningEditorUnknownForm: 'Unknown shape',
-    planningEditorUnknownDiele: 'Decking unknown',
-    planningEditorColorFallback: 'Colour',
 
     // ── Quick-reply labels — loaded plan ────────────────────────────
     quickReplyChangeDimensions: 'Change dimensions',
@@ -629,15 +506,6 @@ export const UI_COPY: Record<WidgetLanguage, UiCopy> = {
 
     // ── Footer ───────────────────────────────────────────────────────
     quickRepliesAriaLabel: 'Quick actions',
-
-    // ── PlanningEditor validation ────────────────────────────────────
-    planningEditorInvalidDimensionError: 'Please enter a number greater than 0 for "{field}".',
-
-    // ── Shape labels (for planningData dropdowns) ────────────────────
-    shapeRecteck: 'Rectangle',
-    shapeLForm: 'L-shape',
-    shapeUForm: 'U-shape',
-    shapeOForm: 'O-shape',
 
     // ── PromptPacks — button labels ───────────────────────────────────
     promptPackHowCanYouHelp: 'How can you help me?',
